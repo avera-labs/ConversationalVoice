@@ -1,0 +1,42 @@
+config_version = "dialogue-extension-v1"
+
+[openrouter]
+model = "google/gemini-3.7-flash"
+max_tokens = 8192
+timeout_seconds = 90
+max_attempts = 2
+retry_backoff_seconds = 1.0
+require_parameters = true
+allow_fallbacks = true
+
+[fish_audio]
+model = "fish-audio/s2.1-pro"
+transcription_model = "fish-audio/transcribe-1"
+timeout_seconds = 180
+max_attempts = 3
+retry_backoff_seconds = 2.0
+temperature = 0.7
+top_p = 0.7
+chunk_length = 300
+min_chunk_length = 50
+max_new_tokens = 2048
+repetition_penalty = 1.2
+sample_rate_hz = 44100
+latency = "normal"
+normalize_text = true
+normalize_loudness = true
+
+[dialogue]
+target_duration_seconds = 120
+words_per_minute = 150
+min_utterances = 8
+max_utterances = 40
+
+[timeline]
+turn_gap_ms = 250
+overlap_ms = 400
+same_speaker_gap_ms = 80
+
+[task]
+workspace_prefix = "voice-pipeline-extend-chunk-"
+error_max_length = 512

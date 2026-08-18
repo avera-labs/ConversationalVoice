@@ -1,0 +1,46 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "voice-pipeline-split-raw-audio-into-parts"
+version = "0.1.0"
+description = "Celery task for splitting normalized raw audio into conversation parts"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "boto3>=1.35.0,<2.0.0",
+    "celery[redis]>=5.4.0,<6.0.0",
+    "pydantic>=2.10.0,<3.0.0",
+    "psycopg[binary]>=3.2.0,<4.0.0",
+    "pyannote.audio>=4.0.0,<5.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    "sqlalchemy>=2.0.0,<3.0.0",
+    "torch>=2.8.0,<3.0.0",
+    "voice-pipeline-models",
+    "voice-pipeline-task-client",
+    "voice-pipeline-task-contracts",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0,<10.0.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+markers = [
+    "integration: requires services configured by the OSS .env.test file",
+    "model_smoke: downloads and runs the configured real VAD model",
+    "capacity: exercises long-audio local disk and memory behavior",
+]
+
+[tool.uv.build-backend]
+module-name = "voice_pipeline_split_raw_audio_into_parts"
+module-root = "src"
+
+[tool.uv.sources]
+voice-pipeline-models = { path = "../../packages/models" }
+voice-pipeline-task-client = { path = "../../packages/task-client" }
+voice-pipeline-task-contracts = { path = "../../packages/task-contracts" }

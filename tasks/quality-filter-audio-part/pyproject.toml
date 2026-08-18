@@ -1,0 +1,51 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "voice-pipeline-quality-filter-audio-part"
+version = "0.1.0"
+description = "Celery worker for deterministic audio-part quality filtering"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "boto3>=1.35,<2",
+  "celery[redis]>=5.4,<6",
+  "keras>=3.8,<4",
+  "librosa>=0.10,<1",
+  "numpy>=1.26,<2",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic>=2.10,<3",
+  "python-dotenv>=1.0,<2",
+  "sqlalchemy>=2.0,<3",
+  "tensorflow>=2.18,<2.19",
+  "voice-pipeline-diarization-artifact",
+  "voice-pipeline-models",
+  "voice-pipeline-task-contracts",
+  "voice-pipeline-task-client",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.3,<9"]
+
+[project.scripts]
+quality-filter-audio-part-worker = "voice_pipeline_quality_filter_audio_part.worker:main"
+
+[tool.uv.sources]
+voice-pipeline-diarization-artifact = { path = "../../packages/diarization-artifact" }
+voice-pipeline-models = { path = "../../packages/models" }
+voice-pipeline-task-contracts = { path = "../../packages/task-contracts" }
+voice-pipeline-task-client = { path = "../../packages/task-client" }
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+markers = [
+  "integration: requires PostgreSQL, Redis, and S3-compatible services",
+  "model_smoke: requires configured public model artifacts",
+  "capacity: runs a 900-second WAV workload",
+]
+
+[tool.uv.build-backend]
+module-name = "voice_pipeline_quality_filter_audio_part"
+module-root = "src"

@@ -1,0 +1,3 @@
+[ingest]
+max_upload_bytes = 314572800
+max_concurrent_requests = 10

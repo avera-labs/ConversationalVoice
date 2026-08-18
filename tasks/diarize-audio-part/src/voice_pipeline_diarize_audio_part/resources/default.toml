@@ -1,0 +1,14 @@
+[diarization]
+model = "BUT-FIT/diarizen-wavlm-large-s80-md-v2"
+device = "auto"
+
+[speaker_reference]
+min_segment_ms = 4000
+edge_trim_ms = 500
+min_speaker_effective_ms = 4000
+max_speaker_effective_ms = 30000
+inter_segment_silence_ms = 500
+
+[task]
+error_max_length = 512
+workspace_prefix = "voice-pipeline-diarize-audio-part-"

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "voice-pipeline-persona-chunk"
+version = "0.1.0"
+description = "Celery worker for OpenRouter chunk persona analysis"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "boto3>=1.35,<2",
+  "celery[redis]>=5.4,<6",
+  "httpx>=0.27,<1",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic>=2.10,<3",
+  "python-dotenv>=1.0,<2",
+  "sqlalchemy>=2.0,<3",
+  "voice-pipeline-chunk-contracts",
+  "voice-pipeline-models",
+  "voice-pipeline-task-client",
+  "voice-pipeline-task-contracts",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.3,<9"]
+
+[project.scripts]
+persona-chunk-worker = "voice_pipeline_persona_chunk.worker:main"
+
+[tool.uv.sources]
+voice-pipeline-chunk-contracts = { path = "../../packages/chunk-contracts" }
+voice-pipeline-models = { path = "../../packages/models" }
+voice-pipeline-task-client = { path = "../../packages/task-client" }
+voice-pipeline-task-contracts = { path = "../../packages/task-contracts" }
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+markers = [
+  "provider_smoke: sends a paid request to the configured OpenRouter model",
+  "integration: requires external services",
+]
+
+[tool.uv]
+required-environments = [
+  "sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "sys_platform == 'linux' and platform_machine == 'aarch64'",
+]
+
+[tool.uv.build-backend]
+module-name = "voice_pipeline_persona_chunk"
+module-root = "src"

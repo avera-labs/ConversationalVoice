@@ -1,0 +1,293 @@
+{
+  "s0": [
+    {
+      "id": 0,
+      "t0": 0.0,
+      "t1": 2.16,
+      "text": "That was the one we were to have right after the honeymoon.",
+      "confidence": 0.990715
+    },
+    {
+      "id": 1,
+      "t0": 3.04,
+      "t1": 4.24,
+      "text": "Honeymoon.",
+      "confidence": 0.978791
+    },
+    {
+      "id": 2,
+      "t0": 10.88,
+      "t1": 14.56,
+      "text": "All I know is that instead of two weeks in Atlantic City with my bridegroom,",
+      "confidence": 0.99858
+    },
+    {
+      "id": 3,
+      "t0": 14.64,
+      "t1": 17.6,
+      "text": "I spent two weeks in a coal mine with John Kruptzky.",
+      "confidence": 0.986715
+    },
+    {
+      "id": 4,
+      "t0": 17.68,
+      "t1": 19.76,
+      "text": "You don't deny that, do you, Walter?",
+      "confidence": 0.994692
+    },
+    {
+      "id": 5,
+      "t0": 22.08,
+      "t1": 22.72,
+      "text": "Suppose we did?",
+      "confidence": 0.915613
+    },
+    {
+      "id": 6,
+      "t0": 22.8,
+      "t1": 24.56,
+      "text": "That isn't what I got married for!",
+      "confidence": 0.987215
+    },
+    {
+      "id": 7,
+      "t0": 26.24,
+      "t1": 31.44,
+      "text": "A husband. You know—a man who occasionally notices there's a wife in the room.",
+      "confidence": 0.985703
+    },
+    {
+      "id": 8,
+      "t0": 32.8,
+      "t1": 37.12,
+      "text": "To the pressroom! With a note asking for six hundred words on the cave-in.",
+      "confidence": 0.961232
+    },
+    {
+      "id": 9,
+      "t0": 39.04,
+      "t1": 41.04,
+      "text": "I wanted to make the breakfast table.",
+      "confidence": 0.999075
+    },
+    {
+      "id": 10,
+      "t0": 41.2,
+      "t1": 45.6,
+      "text": "I spent our honeymoon eating sandwiches with miners while you telephoned for copy.",
+      "confidence": 0.977776
+    },
+    {
+      "id": 11,
+      "t0": 47.36,
+      "t1": 48.8,
+      "text": "Neither do trains.",
+      "confidence": 0.978347
+    },
+    {
+      "id": 12,
+      "t0": 48.96,
+      "t1": 50.8,
+      "text": "Ours left without us.",
+      "confidence": 0.991757
+    },
+    {
+      "id": 13,
+      "t0": 53.92,
+      "t1": 54.24,
+      "text": "You?",
+      "confidence": 0.949679
+    },
+    {
+      "id": 14,
+      "t0": 54.72,
+      "t1": 58.64,
+      "text": "The first fire bell would ring and you'd send your bride out to interview it.",
+      "confidence": 0.996928
+    },
+    {
+      "id": 15,
+      "t0": 62.24,
+      "t1": 63.84,
+      "text": "That's the trouble, Walter.",
+      "confidence": 0.996291
+    },
+    {
+      "id": 16,
+      "t0": 64.0,
+      "t1": 65.04,
+      "text": "You never had a wife.",
+      "confidence": 0.990339
+    },
+    {
+      "id": 17,
+      "t0": 65.2,
+      "t1": 68.32,
+      "text": "You had a reporter who didn't charge you overtime.",
+      "confidence": 0.999361
+    },
+    {
+      "id": 18,
+      "t0": 70.4,
+      "t1": 73.68,
+      "text": "No—you thought of me as newspaper property.",
+      "confidence": 0.997048
+    },
+    {
+      "id": 19,
+      "t0": 76.88,
+      "t1": 78.24,
+      "text": "And no Walter.",
+      "confidence": 0.960446
+    },
+    {
+      "id": 20,
+      "t0": 78.4,
+      "t1": 79.92,
+      "text": "That's the part you've forgotten.",
+      "confidence": 0.960446
+    },
+    {
+      "id": 21,
+      "t0": 80.08,
+      "t1": 83.28,
+      "text": "The honeymoon is over—and so is the marriage.",
+      "confidence": 0.978491
+    },
+    {
+      "id": 22,
+      "t0": 86.32,
+      "t1": 89.68,
+      "text": "Because you won't stop calling me long enough to hear it any other way.",
+      "confidence": 0.998879
+    }
+  ],
+  "s1": [
+    {
+      "id": 0,
+      "t0": 4.08,
+      "t1": 4.8,
+      "text": "Was it my fault?",
+      "confidence": 0.94318
+    },
+    {
+      "id": 1,
+      "t0": 4.88,
+      "t1": 7.52,
+      "text": "Did I know that coal mine was gonna have another cave-in?",
+      "confidence": 0.970253
+    },
+    {
+      "id": 2,
+      "t0": 7.84,
+      "t1": 10.64,
+      "text": "I intended to be with you on our honeymoon, Hildy. Honest,",
+      "confidence": 0.94679
+    },
+    {
+      "id": 3,
+      "t0": 10.88,
+      "t1": 11.44,
+      "text": "I did.",
+      "confidence": 0.942091
+    },
+    {
+      "id": 4,
+      "t0": 18.8,
+      "t1": 20.24,
+      "text": "Deny it? I'm proud of it!",
+      "confidence": 0.919144
+    },
+    {
+      "id": 5,
+      "t0": 20.4,
+      "t1": 22.64,
+      "text": "We beat the whole country on that story.",
+      "confidence": 0.991445
+    },
+    {
+      "id": 6,
+      "t0": 24.16,
+      "t1": 26.24,
+      "text": "Then what did you get married for?",
+      "confidence": 0.998145
+    },
+    {
+      "id": 7,
+      "t0": 30.8,
+      "t1": 31.76,
+      "text": "I noticed you.",
+      "confidence": 0.970103
+    },
+    {
+      "id": 8,
+      "t0": 31.84,
+      "t1": 33.28,
+      "text": "I sent you flowers.",
+      "confidence": 0.938728
+    },
+    {
+      "id": 9,
+      "t0": 37.2,
+      "t1": 39.28,
+      "text": "And you made the front page.",
+      "confidence": 0.995565
+    },
+    {
+      "id": 10,
+      "t0": 45.52,
+      "t1": 47.6,
+      "text": "News doesn't wait for newlyweds.",
+      "confidence": 0.980269
+    },
+    {
+      "id": 11,
+      "t0": 50.48,
+      "t1": 51.92,
+      "text": "Atlantic City is still there.",
+      "confidence": 0.97795
+    },
+    {
+      "id": 12,
+      "t0": 52.08,
+      "t1": 53.6,
+      "text": "We could go this afternoon.",
+      "confidence": 0.998
+    },
+    {
+      "id": 13,
+      "t0": 58.48,
+      "t1": 61.92,
+      "text": "Only because my bride could spell better than the fire chief.",
+      "confidence": 0.996378
+    },
+    {
+      "id": 14,
+      "t0": 68.24,
+      "t1": 70.08,
+      "text": "I never thought of you as an employee.",
+      "confidence": 0.977043
+    },
+    {
+      "id": 15,
+      "t0": 73.44,
+      "t1": 75.36,
+      "text": "All right, we'll take a proper honeymoon.",
+      "confidence": 0.969953
+    },
+    {
+      "id": 16,
+      "t0": 75.44,
+      "t1": 78.16,
+      "text": "No telephones, no headlines, no coal mines.",
+      "confidence": 0.999033
+    },
+    {
+      "id": 17,
+      "t0": 83.6,
+      "t1": 86.16,
+      "text": "Then why come all the way up here to tell me?",
+      "confidence": 0.997439
+    }
+  ]
+}

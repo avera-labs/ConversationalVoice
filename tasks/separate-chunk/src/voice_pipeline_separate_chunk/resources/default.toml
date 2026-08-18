@@ -1,0 +1,39 @@
+config_version = "sidon-v1"
+
+[model]
+repo_id = "sarulab-speech/DialogueSidon"
+revision = "d43d7478402a5527136c6733c3f4359c37b312ab"
+inference_steps = 100
+device = "auto"
+
+[alignment]
+repo_id = "microsoft/wavlm-base-plus-sv"
+revision = "feb593a6c23c1cc3d9510425c29b0a14d2b07b1e"
+similarity_min = 0.86
+margin_min = 0.01
+voice_rms_min = 0.0001
+
+[window]
+initial_ms = 20000
+maximum_ms = 120000
+extension_ms = 5000
+overlap_ms = 10000
+crossfade_ms = 5000
+speaker_once_ms = 4000
+speaker_total_ms = 8000
+
+[audit]
+pure_min_ms = 3000
+trim_ms = 1000
+min_rms_ratio = 1.05
+require_both_speakers = true
+
+[output]
+sample_rate_hz = 16000
+peak = 0.9
+silence_peak_max = 0.000001
+
+[task]
+workspace_prefix = "voice-pipeline-separate-chunk-"
+error_max_length = 512
+max_diarization_bytes = 16777216

@@ -1,0 +1,67 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "voice-pipeline-transcribe-chunk"
+version = "0.1.0"
+description = "Celery worker for chunk-level Parakeet transcription"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "boto3>=1.35,<2",
+  "celery[redis]>=5.4,<6",
+  "huggingface-hub>=0.36,<1",
+  "nemo-toolkit[asr]>=2.1,<2.2",
+  "numpy>=2.0,<2.3",
+  "omegaconf>=2.3,<3",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic>=2.10,<3",
+  "python-dotenv>=1.0,<2",
+  "sqlalchemy>=2.0,<3",
+  "torch>=2.9,<2.10",
+  "torchaudio>=2.9,<2.10",
+  "voice-pipeline-chunk-contracts",
+  "voice-pipeline-models",
+  "voice-pipeline-task-client",
+  "voice-pipeline-task-contracts",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.3,<9"]
+
+[project.scripts]
+transcribe-chunk-worker = "voice_pipeline_transcribe_chunk.worker:main"
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu126", marker = "sys_platform == 'linux'" }]
+torchaudio = [{ index = "pytorch-cu126", marker = "sys_platform == 'linux'" }]
+voice-pipeline-chunk-contracts = { path = "../../packages/chunk-contracts" }
+voice-pipeline-models = { path = "../../packages/models" }
+voice-pipeline-task-client = { path = "../../packages/task-client" }
+voice-pipeline-task-contracts = { path = "../../packages/task-contracts" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.uv]
+override-dependencies = ["numpy>=2.0,<2.3"]
+required-environments = [
+  "sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "sys_platform == 'linux' and platform_machine == 'aarch64'",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+markers = [
+  "model_smoke: downloads and runs the pinned Parakeet model",
+  "model_capacity: runs a representative long ASR slice on CUDA",
+  "integration: requires external services",
+]
+
+[tool.uv.build-backend]
+module-name = "voice_pipeline_transcribe_chunk"
+module-root = "src"

@@ -1,0 +1,48 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "voice-pipeline-ingest-api"
+version = "0.1.0"
+description = "HTTP ingest service for normalized podcast audio"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "audioop-lts>=0.2.1; python_version >= '3.13'",
+    "boto3>=1.35.0,<2.0.0",
+    "celery[redis]>=5.4.0,<6.0.0",
+    "fastapi>=0.115.0,<1.0.0",
+    "pydub>=0.25.1,<1.0.0",
+    "psycopg[binary]>=3.2.0,<4.0.0",
+    "pydantic>=2.10.0,<3.0.0",
+    "python-multipart>=0.0.20,<1.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    "sqlalchemy>=2.0.0,<3.0.0",
+    "uvicorn[standard]>=0.34.0,<1.0.0",
+    "voice-pipeline-models",
+    "voice-pipeline-task-client",
+    "voice-pipeline-task-contracts",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.0,<1.0.0",
+    "pytest>=8.0.0,<10.0.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q -m 'not integration'"
+testpaths = ["tests"]
+markers = [
+    "integration: requires PostgreSQL, Redis, and S3-compatible test services",
+]
+
+[tool.uv.build-backend]
+module-name = "voice_pipeline_ingest_api"
+module-root = "src"
+
+[tool.uv.sources]
+voice-pipeline-models = { path = "../../packages/models" }
+voice-pipeline-task-client = { path = "../../packages/task-client" }
+voice-pipeline-task-contracts = { path = "../../packages/task-contracts" }

@@ -1,0 +1,21 @@
+config_version = "persona-v1"
+
+[openrouter]
+model = "xiaomi/mimo-v2.5"
+max_tokens = 4096
+reasoning_effort = "none"
+timeout_seconds = 60
+max_attempts = 2
+retry_backoff_seconds = 1.0
+require_parameters = true
+allow_fallbacks = true
+
+[audio]
+format = "mp3"
+sample_rate_hz = 16000
+channels = 1
+bitrate_kbps = 48
+
+[task]
+workspace_prefix = "voice-pipeline-persona-chunk-"
+error_max_length = 512

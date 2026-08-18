@@ -1,0 +1,10 @@
+[vad]
+model = "pyannote/segmentation-3.0"
+device = "cpu"
+
+[windowing]
+gap_threshold_ms = 15000
+min_window_ms = 20000
+max_window_ms = 900000
+pad_before_ms = 250
+pad_after_ms = 250

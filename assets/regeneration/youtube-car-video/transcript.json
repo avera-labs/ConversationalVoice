@@ -1,0 +1,286 @@
+{
+  "s0": [
+    {
+      "id": 0,
+      "t0": 0.64,
+      "t1": 4.88,
+      "text": "But I have to go way faster than normal to scare you in the canyons in this.",
+      "confidence": 0.997658
+    },
+    {
+      "id": 1,
+      "t0": 5.68,
+      "t1": 9.44,
+      "text": "It's confidence. It gets the job done.",
+      "confidence": 0.981998
+    },
+    {
+      "id": 2,
+      "t0": 9.6,
+      "t1": 13.68,
+      "text": "You know what it is? Have you ever seen the video online of Harry Potter.",
+      "confidence": 0.999194
+    },
+    {
+      "id": 3,
+      "t0": 13.68,
+      "t1": 16.72,
+      "text": "Just, grabbing a 9mm and shooting Voldemort?",
+      "confidence": 0.955053
+    },
+    {
+      "id": 4,
+      "t0": 18.0,
+      "t1": 20.32,
+      "text": "And then it just plays the theme tune now.",
+      "confidence": 0.995488
+    },
+    {
+      "id": 5,
+      "t0": 20.56,
+      "t1": 22.08,
+      "text": "That's what the Turbo S is.",
+      "confidence": 0.978458
+    },
+    {
+      "id": 6,
+      "t0": 22.08,
+      "t1": 23.76,
+      "text": "When it comes to acceleration. It doesn't have time.",
+      "confidence": 1.0
+    },
+    {
+      "id": 7,
+      "t0": 25.68,
+      "t1": 32.16,
+      "text": "So if you think... If you think that would have been a better version of Harry Potter, this would be the car for you.",
+      "confidence": 0.990872
+    },
+    {
+      "id": 8,
+      "t0": 32.64,
+      "t1": 38.08,
+      "text": "So, yes, the Turbo S has basically removed the plot from acceleration.",
+      "confidence": 0.994042
+    },
+    {
+      "id": 9,
+      "t0": 44.24,
+      "t1": 50.0,
+      "text": "And the electric turbos mean there's no waiting. No boost building, no dramatic pause—",
+      "confidence": 0.987541
+    },
+    {
+      "id": 10,
+      "t0": 50.48,
+      "t1": 57.12,
+      "text": "Exactly! Click. Gone. The PDK shifts, but your body receives absolutely no paperwork.",
+      "confidence": 0.973803
+    },
+    {
+      "id": 11,
+      "t0": 60.96,
+      "t1": 66.64,
+      "text": "But the really clever bit is that the hybrid system also powers the active suspension.",
+      "confidence": 0.998476
+    },
+    {
+      "id": 12,
+      "t0": 70.64,
+      "t1": 76.08,
+      "text": "PDCC. It uses the high-voltage battery to keep the body almost completely flat.",
+      "confidence": 0.992244
+    },
+    {
+      "id": 13,
+      "t0": 80.0,
+      "t1": 85.52,
+      "text": "We are! And look—turn in, power down, and the corner just disappears.",
+      "confidence": 0.969151
+    },
+    {
+      "id": 14,
+      "t0": 88.64,
+      "t1": 93.2,
+      "text": "Sorry. Porsche has decided corners are now an optional experience.",
+      "confidence": 0.988187
+    },
+    {
+      "id": 15,
+      "t0": 100.0,
+      "t1": 108.32,
+      "text": "Yes. It hides the weight brilliantly, but it can't make nearly four thousand pounds become not nearly four thousand pounds.",
+      "confidence": 0.970646
+    },
+    {
+      "id": 16,
+      "t0": 110.48,
+      "t1": 112.0,
+      "text": "Give them another facelift.",
+      "confidence": 0.982739
+    },
+    {
+      "id": 17,
+      "t0": 114.48,
+      "t1": 119.52,
+      "text": "But then you remember the GTS exists, and that's already shockingly fast.",
+      "confidence": 0.986387
+    },
+    {
+      "id": 18,
+      "t0": 123.44,
+      "t1": 127.04,
+      "text": "The superlative. The fastest, most capable, most—",
+      "confidence": 0.950655
+    },
+    {
+      "id": 19,
+      "t0": 127.36,
+      "t1": 128.8,
+      "text": "The vent is important!",
+      "confidence": 0.923805
+    },
+    {
+      "id": 20,
+      "t0": 133.6,
+      "t1": 137.04,
+      "text": "And apparently, your sense of financial responsibility.",
+      "confidence": 0.960246
+    }
+  ],
+  "s1": [
+    {
+      "id": 0,
+      "t0": 4.56,
+      "t1": 5.04,
+      "text": "Yeah.",
+      "confidence": 0.898655
+    },
+    {
+      "id": 1,
+      "t0": 9.76,
+      "t1": 10.4,
+      "text": "Yes.",
+      "confidence": 0.909399
+    },
+    {
+      "id": 2,
+      "t0": 17.12,
+      "t1": 17.76,
+      "text": "Yeah~",
+      "confidence": 1.0
+    },
+    {
+      "id": 3,
+      "t0": 20.0,
+      "t1": 20.64,
+      "text": "Yeah, yeah, yeah, yeah~",
+      "confidence": 1.0
+    },
+    {
+      "id": 4,
+      "t0": 21.84,
+      "t1": 22.56,
+      "text": "Exactly.",
+      "confidence": 0.9852
+    },
+    {
+      "id": 5,
+      "t0": 22.88,
+      "t1": 26.72,
+      "text": "It doesn't have time for the story.",
+      "confidence": 0.996685
+    },
+    {
+      "id": 6,
+      "t0": 29.04,
+      "t1": 33.2,
+      "text": "Yeah, that would be the car for you. Exactly.",
+      "confidence": 0.97635
+    },
+    {
+      "id": 7,
+      "t0": 38.0,
+      "t1": 44.56,
+      "text": "Completely! You press the throttle, there's a noise, and then—oh! We're over here now.",
+      "confidence": 0.977434
+    },
+    {
+      "id": 8,
+      "t0": 48.56,
+      "t1": 50.96,
+      "text": "—not even a proper gear change!",
+      "confidence": 0.998159
+    },
+    {
+      "id": 9,
+      "t0": 56.8,
+      "t1": 61.2,
+      "text": "Nothing! It's like the gearbox changed gear in another room.",
+      "confidence": 0.994359
+    },
+    {
+      "id": 10,
+      "t0": 66.32,
+      "t1": 70.96,
+      "text": "Ah, yes—the system controlled by that incredibly German button.",
+      "confidence": 0.968875
+    },
+    {
+      "id": 11,
+      "t0": 75.92,
+      "t1": 80.32,
+      "text": "Which is upsetting, because we are going very quickly through here.",
+      "confidence": 0.999469
+    },
+    {
+      "id": 12,
+      "t0": 85.2,
+      "t1": 88.8,
+      "text": "Stop deleting the road! I was using that!",
+      "confidence": 0.959007
+    },
+    {
+      "id": 13,
+      "t0": 92.96,
+      "t1": 100.56,
+      "text": "And yet, when the surface gets rough, you can feel that this 911 has become a substantial German object.",
+      "confidence": 0.992229
+    },
+    {
+      "id": 14,
+      "t0": 108.0,
+      "t1": 111.12,
+      "text": "Even Porsche hasn't defeated mathematics.",
+      "confidence": 0.962716
+    },
+    {
+      "id": 15,
+      "t0": 111.84,
+      "t1": 114.88,
+      "text": "They'll put an electric motor on mathematics!",
+      "confidence": 0.981796
+    },
+    {
+      "id": 16,
+      "t0": 119.44,
+      "t1": 124.08,
+      "text": "So what does the Turbo S actually give you for all that extra money?",
+      "confidence": 0.986285
+    },
+    {
+      "id": 17,
+      "t0": 124.48,
+      "t1": 125.92,
+      "text": "—the side vent!",
+      "confidence": 0.899907
+    },
+    {
+      "id": 18,
+      "t0": 129.12,
+      "t1": 133.92,
+      "text": "Of course it is! That's where Porsche stores the extra hundred thousand dollars.",
+      "confidence": 0.968878
+    }
+  ]
+}

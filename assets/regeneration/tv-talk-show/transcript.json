@@ -1,0 +1,454 @@
+{
+  "s0": [
+    {
+      "id": 0,
+      "t0": 2.56,
+      "t1": 3.44,
+      "text": "Man, it was great.",
+      "confidence": 0.972267
+    },
+    {
+      "id": 1,
+      "t0": 3.52,
+      "t1": 5.28,
+      "text": "I'm very jet-lagged right now...",
+      "confidence": 0.998243
+    },
+    {
+      "id": 2,
+      "t0": 5.44,
+      "t1": 10.0,
+      "text": "I was gone for a week and I forgot how much of a dumpster fire I was going to come back to.",
+      "confidence": 0.989127
+    },
+    {
+      "id": 3,
+      "t0": 10.32,
+      "t1": 14.48,
+      "text": "At the airports and... They took away the only thing that's good about airports:",
+      "confidence": 0.971577
+    },
+    {
+      "id": 4,
+      "t0": 14.72,
+      "t1": 15.92,
+      "text": "TSA PreCheck.",
+      "confidence": 0.899722
+    },
+    {
+      "id": 5,
+      "t0": 16.0,
+      "t1": 17.04,
+      "text": "It's gone.",
+      "confidence": 0.977225
+    },
+    {
+      "id": 6,
+      "t0": 18.48,
+      "t1": 20.24,
+      "text": "It’s not officially gone—",
+      "confidence": 0.981705
+    },
+    {
+      "id": 7,
+      "t0": 20.4,
+      "t1": 22.72,
+      "text": "they just closed the PreCheck lane.",
+      "confidence": 0.96021
+    },
+    {
+      "id": 8,
+      "t0": 22.96,
+      "t1": 25.76,
+      "text": "So technically I still had PreCheck;",
+      "confidence": 0.952144
+    },
+    {
+      "id": 9,
+      "t0": 26.0,
+      "t1": 28.16,
+      "text": "I just couldn’t use it for anything.",
+      "confidence": 0.997966
+    },
+    {
+      "id": 10,
+      "t0": 30.8,
+      "t1": 31.76,
+      "text": "Exactly!",
+      "confidence": 0.919276
+    },
+    {
+      "id": 11,
+      "t0": 32.08,
+      "t1": 34.56,
+      "text": "I walked into the airport feeling very confident,",
+      "confidence": 0.98503
+    },
+    {
+      "id": 12,
+      "t0": 34.88,
+      "t1": 36.96,
+      "text": "took out my little PreCheck boarding pass,",
+      "confidence": 0.989954
+    },
+    {
+      "id": 13,
+      "t0": 37.04,
+      "t1": 41.12,
+      "text": "and the agent just pointed at this enormous regular line.",
+      "confidence": 0.995459
+    },
+    {
+      "id": 14,
+      "t0": 41.36,
+      "t1": 43.76,
+      "text": "“Everybody goes over there today.”",
+      "confidence": 0.993744
+    },
+    {
+      "id": 15,
+      "t0": 44.88,
+      "t1": 47.36,
+      "text": "This line had its own ecosystem.",
+      "confidence": 0.97822
+    },
+    {
+      "id": 16,
+      "t0": 47.52,
+      "t1": 50.48,
+      "text": "I met a couple near the entrance, watched them fall in love,",
+      "confidence": 0.991817
+    },
+    {
+      "id": 17,
+      "t0": 50.64,
+      "t1": 54.24,
+      "text": "get married, and start a family before we reached the scanners.",
+      "confidence": 0.996983
+    },
+    {
+      "id": 18,
+      "t0": 55.68,
+      "t1": 56.88,
+      "text": "The baby did.",
+      "confidence": 0.96153
+    },
+    {
+      "id": 19,
+      "t0": 57.12,
+      "t1": 59.12,
+      "text": "His lane was closed too.",
+      "confidence": 0.985553
+    },
+    {
+      "id": 20,
+      "t0": 59.68,
+      "t1": 65.52,
+      "text": "And I had just come from Hong Kong, where the airport train gets you downtown in twenty-four minutes.",
+      "confidence": 0.987694
+    },
+    {
+      "id": 21,
+      "t0": 65.76,
+      "t1": 68.64,
+      "text": "The sign says the train arrives at 3:10,",
+      "confidence": 0.977319
+    },
+    {
+      "id": 22,
+      "t0": 68.72,
+      "t1": 70.72,
+      "text": "and somehow, at 3:10,",
+      "confidence": 0.955938
+    },
+    {
+      "id": 23,
+      "t0": 70.8,
+      "t1": 72.16,
+      "text": "a train appears.",
+      "confidence": 0.998357
+    },
+    {
+      "id": 24,
+      "t0": 73.36,
+      "t1": 73.92,
+      "text": "Yeah!",
+      "confidence": 0.856229
+    },
+    {
+      "id": 25,
+      "t0": 74.08,
+      "t1": 77.6,
+      "text": "In Los Angeles, the numbers are more like positive affirmations.",
+      "confidence": 0.993363
+    },
+    {
+      "id": 26,
+      "t0": 77.84,
+      "t1": 80.24,
+      "text": "“Your driver is three minutes away.”",
+      "confidence": 0.98947
+    },
+    {
+      "id": 27,
+      "t0": 80.48,
+      "t1": 83.44,
+      "text": "Twenty minutes later, he’s still three minutes away—",
+      "confidence": 0.966296
+    },
+    {
+      "id": 28,
+      "t0": 83.6,
+      "t1": 85.84,
+      "text": "but now we’ve both grown as people.",
+      "confidence": 0.99748
+    },
+    {
+      "id": 29,
+      "t0": 87.92,
+      "t1": 90.24,
+      "text": "Great mileage, no progress.",
+      "confidence": 0.965823
+    },
+    {
+      "id": 30,
+      "t0": 91.36,
+      "t1": 97.04,
+      "text": "Then LAX made me walk with all my luggage to a separate rideshare lot.",
+      "confidence": 0.989702
+    },
+    {
+      "id": 31,
+      "t0": 97.6,
+      "t1": 100.4,
+      "text": "I crossed two terminals, a parking garage,",
+      "confidence": 0.989275
+    },
+    {
+      "id": 32,
+      "t0": 100.48,
+      "t1": 103.28,
+      "text": "and what I believe was part of Arizona.",
+      "confidence": 0.997584
+    },
+    {
+      "id": 33,
+      "t0": 104.88,
+      "t1": 107.84,
+      "text": "When I finally got there, the driver canceled.",
+      "confidence": 0.980722
+    },
+    {
+      "t0": 108.24,
+      "t1": 110.16,
+      "confidence": 1.0,
+      "id": 34,
+      "text": "“Your driver could not locate you.”"
+    },
+    {
+      "t0": 111.12,
+      "t1": 112.48,
+      "confidence": 1.0,
+      "id": 35,
+      "text": "I couldn’t locate me either!"
+    },
+    {
+      "id": 36,
+      "t0": 115.12,
+      "t1": 115.68,
+      "text": "Right!",
+      "confidence": 0.73853
+    },
+    {
+      "id": 37,
+      "t0": 115.84,
+      "t1": 117.6,
+      "text": "That should be written over the entrance:",
+      "confidence": 0.998903
+    },
+    {
+      "id": 38,
+      "t0": 117.76,
+      "t1": 119.04,
+      "text": "“Welcome to Los Angeles—",
+      "confidence": 0.986935
+    },
+    {
+      "id": 39,
+      "t0": 119.2,
+      "t1": 120.32,
+      "text": "figure it out.”",
+      "confidence": 0.977249
+    },
+    {
+      "id": 40,
+      "t0": 122.56,
+      "t1": 125.84,
+      "text": "Honestly, LAX doesn’t need a rideshare lot.",
+      "confidence": 0.954633
+    },
+    {
+      "id": 41,
+      "t0": 126.08,
+      "t1": 127.92,
+      "text": "It needs emergency housing,",
+      "confidence": 0.95395
+    },
+    {
+      "id": 42,
+      "t0": 128.16,
+      "t1": 131.04,
+      "text": "because once you land there, you live there now.",
+      "confidence": 0.995841
+    },
+    {
+      "id": 43,
+      "t0": 134.32,
+      "t1": 135.28,
+      "text": "Exactly.",
+      "confidence": 0.986369
+    },
+    {
+      "id": 44,
+      "t0": 135.6,
+      "t1": 138.8,
+      "text": "I landed three days ago, and I came directly here.",
+      "confidence": 0.997969
+    }
+  ],
+  "s1": [
+    {
+      "id": 0,
+      "t0": 0.16,
+      "t1": 2.96,
+      "text": "By the way, how was your flight from Hong Kong?",
+      "confidence": 0.995689
+    },
+    {
+      "id": 1,
+      "t0": 5.04,
+      "t1": 5.68,
+      "text": "You are.",
+      "confidence": 0.883923
+    },
+    {
+      "id": 2,
+      "t0": 9.68,
+      "t1": 10.48,
+      "text": "Oh, right.",
+      "confidence": 0.922692
+    },
+    {
+      "id": 3,
+      "t0": 16.4,
+      "t1": 16.96,
+      "text": "Oh, really?",
+      "confidence": 0.929179
+    },
+    {
+      "id": 4,
+      "t0": 17.2,
+      "t1": 18.32,
+      "text": "PreCheck is gone?",
+      "confidence": 0.935669
+    },
+    {
+      "id": 5,
+      "t0": 27.52,
+      "t1": 28.24,
+      "text": "Oh, good.",
+      "confidence": 0.849331
+    },
+    {
+      "id": 6,
+      "t0": 28.4,
+      "t1": 30.88,
+      "text": "You kept the status and lost the benefit.",
+      "confidence": 0.991386
+    },
+    {
+      "id": 7,
+      "t0": 43.92,
+      "t1": 44.88,
+      "text": "Oh, no.",
+      "confidence": 0.882254
+    },
+    {
+      "id": 8,
+      "t0": 54.0,
+      "t1": 55.92,
+      "text": "Did the baby have PreCheck?",
+      "confidence": 0.983166
+    },
+    {
+      "id": 9,
+      "t0": 58.56,
+      "t1": 60.0,
+      "text": "Of course it was.",
+      "confidence": 0.978004
+    },
+    {
+      "id": 10,
+      "t0": 71.84,
+      "t1": 73.6,
+      "text": "The numbers are accurate?",
+      "confidence": 0.962671
+    },
+    {
+      "id": 11,
+      "t0": 85.76,
+      "t1": 88.08,
+      "text": "Maybe he was driving on a treadmill.",
+      "confidence": 0.996785
+    },
+    {
+      "id": 12,
+      "t0": 90.0,
+      "t1": 91.44,
+      "text": "Yeah, exactly.",
+      "confidence": 0.979218
+    },
+    {
+      "id": 13,
+      "t0": 102.88,
+      "t1": 104.96,
+      "text": "It’s farther than Arizona.",
+      "confidence": 0.997056
+    },
+    {
+      "id": 14,
+      "t0": 112.56,
+      "t1": 115.12,
+      "text": "Nobody can locate anybody at LAX.",
+      "confidence": 0.996888
+    },
+    {
+      "id": 15,
+      "t0": 120.32,
+      "t1": 122.8,
+      "text": "That is pretty much our city motto.",
+      "confidence": 0.996746
+    },
+    {
+      "id": 16,
+      "t0": 131.04,
+      "t1": 133.28,
+      "text": "Coffee, Wi-Fi, bathrooms—",
+      "confidence": 0.918796
+    },
+    {
+      "id": 17,
+      "t0": 133.36,
+      "t1": 134.4,
+      "text": "you’re all set.",
+      "confidence": 0.997926
+    },
+    {
+      "id": 18,
+      "t0": 138.72,
+      "t1": 140.24,
+      "text": "Well, we appreciate the effort.",
+      "confidence": 0.978156
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+config_version = "parakeet-v1"
+
+[model]
+repo_id = "nvidia/parakeet-tdt-0.6b-v3"
+revision = "541d1f99c6b0c3cd0b11a95167540bb8edefd82b"
+filename = "parakeet-tdt-0.6b-v3.nemo"
+size_bytes = 2509332480
+sha256 = "3cbdc85877e668ca7b82d0d56770eb1fac76691f55d6b97545e8d61ca588d10d"
+device = "auto"
+
+[decoder]
+attention_left = 256
+attention_right = 256
+
+[slices]
+merge_gap_ms = 2000
+pad_ms = 500
+
+[utterance]
+huge_gap_ms = 2000
+clause_min_ms = 2000
+medium_min_ms = 10000
+medium_gap_ms = 600
+emergency_min_ms = 20000
+emergency_gap_ms = 80
+word_max_duration_ms = 2000
+word_capped_duration_ms = 300
+
+[task]
+workspace_prefix = "voice-pipeline-transcribe-chunk-"
+error_max_length = 512

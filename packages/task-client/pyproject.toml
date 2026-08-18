@@ -1,0 +1,30 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "voice-pipeline-task-client"
+version = "0.1.0"
+description = "Shared Celery publisher for UUID-based Voice Pipeline tasks"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "celery[redis]>=5.4.0,<6.0.0",
+    "voice-pipeline-task-contracts",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0,<10.0.0",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.uv.build-backend]
+module-name = "voice_pipeline_task_client"
+module-root = "src"
+
+[tool.uv.sources]
+voice-pipeline-task-contracts = { path = "../task-contracts" }

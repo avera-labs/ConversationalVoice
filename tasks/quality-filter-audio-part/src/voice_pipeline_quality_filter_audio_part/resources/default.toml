@@ -1,0 +1,39 @@
+config_version = 1
+
+[quality]
+min_snr_db = 10.0
+music_probability_threshold = 0.2
+min_music_interval_ms = 2000
+music_gap_fill_ms = 600
+max_music_overlap_ratio = 0.3
+max_absorbable_bad_group_ms = 3000
+min_good_region_ms = 20000
+
+[planner]
+min_planning_window_ms = 20000
+max_planning_window_ms = 60000
+min_speaker_turn_ms = 4000
+min_speaker_total_ms = 8000
+backchannel_threshold_ms = 1500
+max_monologue_ms = 40000
+max_inner_iterations = 200
+
+[music]
+model_name = "speech-music-detection-blstm"
+model_filename = "weights.28-0.13exp1_blstm.hdf5"
+mean_filename = "mean_gtzan_esc-50_muspeak_musan.npy"
+std_filename = "std_gtzan_esc-50_muspeak_musan.npy"
+model_sha256 = "e835a1407ba835fd49066475053b6258fb6a2be4055d87aecd9fc6f18eba770a"
+mean_sha256 = "f7d1d1f5b1a61e51c9139e72cdc7a686d0d8f7cc78836129d640b2d6d2a05af4"
+std_sha256 = "b0e10c8c4c5938476267bcfd62954605dac30ba2664cb6f5f72a9f9204609cfe"
+sample_rate = 22050
+fft_size = 1024
+hop_length = 512
+mel_bins = 80
+min_frequency_hz = 27.5
+max_frequency_hz = 8000.0
+
+[task]
+error_max_length = 512
+workspace_prefix = "voice-pipeline-quality-filter-audio-part-"
+max_diarization_bytes = 16777216

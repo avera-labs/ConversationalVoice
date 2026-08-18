@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Conversational Voice — static project page.
+  ConversationalVoice — static project page.
   Usage: open index.html directly in a modern browser. No build step is required.
   Audio assets live under assets/. CSS and JavaScript live under assets. Word alignment is embedded
   so the custom players work reliably from file:// URLs.
@@ -9,8 +9,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Conversational Voice curates speaker-separated and expanded full-duplex speech data from real conversations." />
-    <title>Conversational Voice</title>
+    <meta name="description" content="ConversationalVoice curates speaker-separated and expanded full-duplex speech data from real conversations." />
+    <title>ConversationalVoice</title>
     <link rel="stylesheet" href="assets/css/main.css?v=20260819k" />
   </head>
   <body>
@@ -20,7 +20,7 @@
     </div>
 
     <header class="container project-header">
-      <h1><span class="title-line">Conversational Voice</span></h1>
+      <h1><span class="title-line">ConversationalVoice</span></h1>
       <p class="tagline"><span class="en">Full-Duplex Speech Data from Real Conversations</span><span class="zh">源自真实对话的全双工语音数据</span></p>
       <p class="meta">Richard Yucheng He, Baodong Cao, Chen Xu, Yihang Liu, Tairan Chen · Aug 20, 2026</p>
       <nav class="project-nav" aria-label="Project sections">
@@ -32,8 +32,8 @@
     <main class="container">
       <section id="introduction">
         <h2><span class="en">Introduction</span><span class="zh">项目介绍</span></h2>
-        <p class="lead en">Conversational Voice converts a broad range of real-world recordings into curated training data for full-duplex speech models. The pipeline identifies two-speaker exchanges, separates the speakers into individual tracks, validates speaker consistency, annotates timing and speaker attributes, and uses each exchange as the basis for new dialogue while preserving its turn-taking, pauses, overlap, and paralinguistic cues.</p>
-        <p class="lead zh">Conversational Voice 将多种类型的真实录音转化为经过筛选整理的全双工语音模型训练数据。该管线识别双人对话，将两位说话人分离到独立声轨，验证说话人身份一致性，标注时序和说话人属性，并以每段真实对话为基础扩展新对话，同时保留其中的话轮、停顿、重叠和副语言线索。</p>
+        <p class="lead en">ConversationalVoice converts a broad range of real-world recordings into curated training data for full-duplex speech models. The pipeline identifies two-speaker exchanges, separates the speakers into individual tracks, validates speaker consistency, annotates timing and speaker attributes, and uses each exchange as the basis for new dialogue while preserving its turn-taking, pauses, overlap, and paralinguistic cues.</p>
+        <p class="lead zh">ConversationalVoice 将多种类型的真实录音转化为经过筛选整理的全双工语音模型训练数据。该管线识别双人对话，将两位说话人分离到独立声轨，验证说话人身份一致性，标注时序和说话人属性，并以每段真实对话为基础扩展新对话，同时保留其中的话轮、停顿、重叠和副语言线索。</p>
       </section>
 
       <section id="pipeline">
@@ -76,7 +76,7 @@
           </div>
           <div class="strategy-note">
             <div><strong><span class="en">Baseline</span><span class="zh">基线</span></strong><p><span class="en"><a class="model-link" href="https://arxiv.org/abs/2010.13154" target="_blank" rel="noopener noreferrer">SepFormer</a> operates directly on each selected chunk, with no downstream check for speaker-identity consistency.</span><span class="zh"><a class="model-link" href="https://arxiv.org/abs/2010.13154" target="_blank" rel="noopener noreferrer">SepFormer</a> 直接处理每个选定片段，后续不检查说话人身份一致性。</span></p></div>
-            <div><strong><span class="en">Conversational Voice</span><span class="zh">Conversational Voice</span></strong><p><span class="en">Conversational Voice couples dynamic two-speaker windowing with <a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> separation, speaker-consistency checks, selective retries, and light background-noise suppression.</span><span class="zh">Conversational Voice 将动态双人窗口、<a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> 分离、说话人一致性检查、选择性重试和轻量背景噪声抑制整合到同一流程中。</span></p></div>
+            <div><strong><span class="en">ConversationalVoice</span><span class="zh">ConversationalVoice</span></strong><p><span class="en">ConversationalVoice couples dynamic two-speaker windowing with <a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> separation, speaker-consistency checks, selective retries, and light background-noise suppression.</span><span class="zh">ConversationalVoice 将动态双人窗口、<a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> 分离、说话人一致性检查、选择性重试和轻量背景噪声抑制整合到同一流程中。</span></p></div>
           </div>
 
           <div class="comparison-grid">
@@ -107,14 +107,14 @@
               </div>
             </section>
 
-            <section class="method-panel our" aria-label="Conversational Voice separation result">
+            <section class="method-panel our" aria-label="ConversationalVoice separation result">
               <header class="method-header">
-                <div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh">本方法</span></span><span>Conversational Voice</span></div>
-                <h4>Conversational Voice</h4>
+                <div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh">本方法</span></span><span>ConversationalVoice</span></div>
+                <h4>ConversationalVoice</h4>
                 <div class="source-path">assets/separation/separation-sidon-our/</div>
               </header>
               <div class="audio-list">
-                <div class="audio-case"><div class="audio-case-head"><h5><span class="en">1 · Original recording</span><span class="zh">1 · 原始录音</span></h5><span class="audio-format">16 kHz</span></div><div class="wave-player"><audio preload="metadata" src="assets/chunk.wav" data-en-label="Conversational Voice input: original recording" data-zh-label="Conversational Voice 输入：原始录音"></audio><div class="wave-controls"><button class="wave-play" type="button">▶</button><div class="waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><span class="wave-time">0:00 / 0:15</span></div></div><div class="source-path">assets/chunk.wav</div></div>
+                <div class="audio-case"><div class="audio-case-head"><h5><span class="en">1 · Original recording</span><span class="zh">1 · 原始录音</span></h5><span class="audio-format">16 kHz</span></div><div class="wave-player"><audio preload="metadata" src="assets/chunk.wav" data-en-label="ConversationalVoice input: original recording" data-zh-label="ConversationalVoice 输入：原始录音"></audio><div class="wave-controls"><button class="wave-play" type="button">▶</button><div class="waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><span class="wave-time">0:00 / 0:15</span></div></div><div class="source-path">assets/chunk.wav</div></div>
                 <div class="audio-case dual-track-case">
                   <div class="audio-case-head"><h5><span class="en">2 · Speaker tracks</span><span class="zh">2 · 说话人声轨</span></h5><span class="audio-format">16 kHz</span></div>
                   <div class="dual-track-player" data-caption-source="separation">
@@ -147,8 +147,8 @@
           <div class="step-intro">
             <p class="en">Scripts generated from prompts alone can be fluent but often lack the intent, cadence, and context of a real exchange. Template-based dialogue TTS compounds the problem by imposing regular pauses and mechanically scheduled overlap.</p>
             <p class="zh">仅由提示词生成的对话脚本可以很流畅，但往往缺少真实对话中的意图、节奏和上下文。基于模板的对话 TTS 会进一步放大这一问题，形成规律化的停顿和机械设定的语音重叠。</p>
-            <p class="en">Conversational Voice uses a real exchange as its structural and contextual reference. The observed content, speaker profiles, pauses, and overlap serve as reference points, while up to five minutes of preceding dialogue provides broader context. The expansion stage can increase the volume and diversity of training data or target specific interaction patterns, including turn-taking, pause structure, overlap, and paralinguistic cues.</p>
-            <p class="zh">Conversational Voice 以真实对话作为结构和上下文参考。扩展过程会参考当前对话的内容、说话人特征、停顿和重叠，并结合此前最多 5 分钟的对话，以获得更完整的上下文。对话扩展阶段既可增加训练数据的规模和多样性，也可针对具体互动模式进行控制，包括话轮转换、停顿结构、语音重叠和副语言线索。</p>
+            <p class="en">ConversationalVoice uses a real exchange as its structural and contextual reference. The observed content, speaker profiles, pauses, and overlap serve as reference points, while up to five minutes of preceding dialogue provides broader context. The expansion stage can increase the volume and diversity of training data or target specific interaction patterns, including turn-taking, pause structure, overlap, and paralinguistic cues.</p>
+            <p class="zh">ConversationalVoice 以真实对话作为结构和上下文参考。扩展过程会参考当前对话的内容、说话人特征、停顿和重叠，并结合此前最多 5 分钟的对话，以获得更完整的上下文。对话扩展阶段既可增加训练数据的规模和多样性，也可针对具体互动模式进行控制，包括话轮转换、停顿结构、语音重叠和副语言线索。</p>
           </div>
           <div class="comparison-grid">
             <section class="method-panel video-panel" aria-label="Source film clip">
@@ -161,8 +161,8 @@
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="Conversational Voice dialogue expansion for the film clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh">本方法</span></span><span>Conversational Voice</span></div><h4><span class="en">Dialogue Expansion</span><span class="zh">对话扩展</span></h4></header>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue expansion for the film clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh">本方法</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Expansion</span><span class="zh">对话扩展</span></h4></header>
               <p class="sample-context"><span class="en">This example reconstructs the source voices and extends the scene while preserving vocal identity, character relationships, and narrative continuity.</span><span class="zh">该示例重建源录音中的人物声音并扩展场景，同时保持说话人身份、角色关系与叙事连续性。</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
@@ -196,8 +196,8 @@
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="Conversational Voice dialogue expansion for the TV talk show clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh">本方法</span></span><span>Conversational Voice</span></div><h4><span class="en">Dialogue Expansion</span><span class="zh">对话扩展</span></h4></header>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue expansion for the TV talk show clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh">本方法</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Expansion</span><span class="zh">对话扩展</span></h4></header>
               <p class="sample-context"><span class="en">After removing background music, the pipeline expands a brief source exchange into a longer conversation with natural pacing while preserving speaker identity and context.</span><span class="zh">移除背景音乐后，该管线将一段简短的源对话扩展为节奏自然的更长对话，同时保持说话人身份和上下文。</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
@@ -231,8 +231,8 @@
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="Conversational Voice dialogue expansion for the in-car clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh">本方法</span></span><span>Conversational Voice</span></div><h4><span class="en">Dialogue Expansion</span><span class="zh">对话扩展</span></h4></header>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue expansion for the in-car clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh">本方法</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Expansion</span><span class="zh">对话扩展</span></h4></header>
               <p class="sample-context"><span class="en">This example reconstructs a two-speaker in-car exchange as separate, time-aligned speaker tracks.</span><span class="zh">该示例将一段车内双人对话重建为相互独立且时间对齐的说话人声轨。</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
@@ -295,7 +295,7 @@
 
 
 
-    <footer class="container">Conversational Voice · Technical Report</footer>
+    <footer class="container">ConversationalVoice · Technical Report</footer>
 
     <script id="alignment-data" type="application/json">{"0":[{"w":"It's","s":0.0,"e":0.24},{"w":"my","s":0.24,"e":0.4},{"w":"first","s":0.4,"e":0.56},{"w":"language","s":0.56,"e":0.96},{"w":"and","s":0.96,"e":1.12},{"w":"I","s":1.12,"e":1.2},{"w":"couldn't","s":1.2,"e":1.44},{"w":"read","s":1.44,"e":1.6},{"w":"it.","s":1.6,"e":1.76},{"w":"That's","s":1.84,"e":2.08},{"w":"when","s":2.08,"e":2.16},{"w":"I","s":2.16,"e":2.24},{"w":"was","s":2.24,"e":2.4},{"w":"like,","s":2.4,"e":2.48},{"w":"I","s":2.64,"e":2.8},{"w":"need","s":2.8,"e":2.88},{"w":"to","s":2.88,"e":3.04},{"w":"go","s":3.04,"e":3.2},{"w":"back","s":3.2,"e":3.36},{"w":"in","s":3.36,"e":3.68},{"w":"touch.","s":3.68,"e":4.32},{"w":"Yeah,","s":5.12,"e":5.44},{"w":"I,","s":5.52,"e":5.6},{"w":"I","s":6.08,"e":6.16},{"w":"have","s":6.24,"e":6.32},{"w":"to","s":6.48,"e":6.64},{"w":"give","s":6.64,"e":6.8},{"w":"it","s":6.8,"e":6.88},{"w":"to","s":6.88,"e":7.04},{"w":"my","s":7.04,"e":7.2},{"w":"dad","s":7.2,"e":7.52},{"w":"to","s":7.52,"e":7.76},{"w":"translate","s":7.76,"e":8.24},{"w":"it","s":8.24,"e":8.4},{"w":"for","s":8.4,"e":8.64},{"w":"me.","s":8.64,"e":8.8},{"w":"And","s":9.04,"e":9.28},{"w":"my","s":9.28,"e":9.44},{"w":"dad's","s":9.44,"e":9.84},{"w":"reading","s":9.84,"e":10.16},{"w":"my","s":10.16,"e":10.32},{"w":"childhood","s":10.32,"e":10.8},{"w":"diary","s":10.8,"e":11.2},{"w":"just","s":11.28,"e":11.44},{"w":"laughing.","s":11.44,"e":11.76},{"w":"Like","s":11.84,"e":12.0},{"w":"haha,","s":12.0,"e":12.5},{"w":"haha","s":12.5,"e":14}],"1":[{"w":"Okay.","s":0.16,"e":0.24},{"w":"and","s":3.685,"e":3.845},{"w":"get","s":4.005,"e":4.245},{"w":"somebody","s":4.245,"e":4.565},{"w":"to","s":4.565,"e":4.645},{"w":"read","s":4.645,"e":4.965},{"w":"it","s":4.965,"e":5.125},{"w":"to","s":5.125,"e":5.285},{"w":"you.","s":5.285,"e":5.445},{"w":"Yeah.","s":5.685,"e":5.925},{"w":"It's","s":8.689,"e":9.169},{"w":"you.","s":9.169,"e":9.409}]}</script>
 

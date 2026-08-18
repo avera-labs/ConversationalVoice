@@ -1,10 +1,10 @@
 <img src="assets/averalabs-logo.png" alt="AveraLabs" height="28" />
 
-# Conversational Voice
+# ConversationalVoice
 
 **Full-Duplex Speech Data from Real Conversations**
 
-Conversational Voice converts a broad range of real-world recordings into
+ConversationalVoice converts a broad range of real-world recordings into
 curated training data for full-duplex speech models. The pipeline identifies
 two-speaker exchanges, separates the speakers into individual tracks, validates
 speaker consistency, annotates timing and speaker attributes, and uses each
@@ -31,7 +31,7 @@ accepted chunk.
 
 ## Architecture
 
-[![Conversational Voice Pipeline architecture](assets/pipeline-architecture.png)][project-page]
+[![ConversationalVoice Pipeline architecture](assets/pipeline-architecture.png)][project-page]
 
 Every stage is an independently installable worker with its own locked
 dependencies and dedicated queue. A worker claims eligible database state,

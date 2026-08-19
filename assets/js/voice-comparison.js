@@ -31,6 +31,7 @@
   ]);
   const EXPANSION_EXPLANATION = EXPANSION_EXPLANATION_PARTS.map(({ text }) => text).join('');
   const MEDIA_SYNC_TOLERANCE_SECONDS = .12;
+  const TIMELINE_EXPANSION_TRANSITION_MS = 900;
   const WAVEFORM_CENTER_Y = 15;
   const WAVEFORM_MAXIMUM_HEIGHT = 13;
   const WAVEFORM_TIME_LABEL_INTERVAL_SECONDS = 30;
@@ -87,6 +88,7 @@
   );
   const video = /** @type {HTMLVideoElement} */ (requireElement(player, 'video'));
   const playButton = /** @type {HTMLButtonElement} */ (requireElement(player, '.big-play'));
+  const brandOutro = /** @type {HTMLButtonElement | null} */ (player.querySelector('.brand-outro'));
   const waveformDock = /** @type {HTMLElement} */ (requireElement(player, '.waveform-dock'));
   const referenceWaveform = /** @type {SVGSVGElement} */ (requireElement(waveformDock, '.dock-wave'));
   const waveformTimeTrack = /** @type {HTMLElement | null} */ (waveformDock.querySelector('.waveform-time-track'));
@@ -121,6 +123,8 @@
   let automaticSwitchTimer = null;
   /** @type {number | null} */
   let originalCutoffTimer = null;
+  /** @type {number | null} */
+  let timelineTransitionTimer = null;
   let automaticSwitchingEnabled = true;
   /** @type {boolean} */
   let speakerContinuationActive = false;
@@ -174,6 +178,12 @@
     speaker0: waveformPeaks.speaker0,
     speaker1: waveformPeaks.speaker1,
   });
+  if (originalEndSeconds !== null) {
+    const originalPhaseRatio = originalEndSeconds / waveformPeaks.duration;
+    player.style.setProperty('--original-phase-ratio', originalPhaseRatio.toFixed(6));
+    player.style.setProperty('--timeline-condensed-scale', (1 / originalPhaseRatio).toFixed(6));
+    player.style.setProperty('--timeline-condensed-clip', `${((1 - originalPhaseRatio) * 100).toFixed(3)}%`);
+  }
   const captionTranscript = /** @type {Record<'s0' | 's1', Utterance[]> | undefined} */ (
     window.DIALOGUE_TRANSCRIPT
   );
@@ -200,6 +210,14 @@
     }
     if (Number.isFinite(video.duration) && video.duration > 0) return video.duration;
     return waveformPeaks.duration;
+  }
+
+  /** Returns the duration currently represented across the full waveform width. */
+  function getVisibleTimelineDuration() {
+    if (originalEndSeconds !== null && !player.classList.contains('is-timeline-expanded')) {
+      return originalEndSeconds;
+    }
+    return getPlaybackDuration();
   }
 
   /** Returns the media position that currently owns the shared playhead. @returns {number} */
@@ -272,7 +290,17 @@
     ) {
       const tick = document.createElement('span');
       tick.className = 'waveform-time-tick';
-      tick.style.left = `${((seconds / waveformPeaks.duration) * 100).toFixed(3)}%`;
+      tick.style.setProperty(
+        '--time-position-full',
+        `${((seconds / waveformPeaks.duration) * 100).toFixed(3)}%`,
+      );
+      if (originalEndSeconds !== null) {
+        tick.style.setProperty(
+          '--time-position-condensed',
+          `${(clampRatio(seconds / originalEndSeconds) * 100).toFixed(3)}%`,
+        );
+        tick.classList.toggle('is-after-original', seconds > originalEndSeconds);
+      }
       if (seconds === 0) tick.classList.add('is-start');
       if (seconds % WAVEFORM_TIME_LABEL_INTERVAL_SECONDS === 0) {
         tick.classList.add('is-labeled');
@@ -606,10 +634,12 @@
    */
   async function playMedia() {
     if (resourceState !== 'ready') return false;
+    clearBrandOutro();
     if (getPlaybackTime() >= getPlaybackDuration()) {
       speakerContinuationActive = false;
       video.currentTime = 0;
       speakerAudioElements.forEach((audio) => { audio.currentTime = 0; });
+      if (continueSpeakerAudioAfterVideo) setMode('original', 'automatic');
     }
     synchronizeEnhancedAudio();
     renderMode();
@@ -638,6 +668,30 @@
     clearOriginalCutoffTimer();
     video.pause();
     speakerAudioElements.forEach((audio) => audio.pause());
+  }
+
+  /** Cancels the active branded ending before replay or seeking. */
+  function clearBrandOutro() {
+    if (!brandOutro) return;
+    player.classList.remove('is-outro-running');
+    brandOutro.setAttribute('aria-hidden', 'true');
+  }
+
+  /** Uses the final-frame hold as the first phase of a continuous branded crossfade. */
+  function beginBrandOutro() {
+    if (!brandOutro) {
+      completePlaybackWindow();
+      return;
+    }
+    if (player.classList.contains('is-outro-running')) return;
+
+    stopAutomaticSwitching();
+    pauseMedia();
+    player.classList.remove('is-playing');
+    // The CSS delay preserves the one-second final-frame beat without a second
+    // state change that could cancel the background crossfade.
+    player.classList.add('is-outro-running');
+    brandOutro.setAttribute('aria-hidden', 'false');
   }
 
   /** Toggles all synchronized sources through the video playback state. */
@@ -690,14 +744,31 @@
   /** Keeps the playhead aligned to the plotted area rather than its label column. */
   function updateWaveformProgress(ratio) {
     const dockBounds = waveformDock.getBoundingClientRect();
-    const waveBounds = referenceWaveform.getBoundingClientRect();
+    const waveBounds = (waveformTimeTrack ?? referenceWaveform).getBoundingClientRect();
     const left = waveBounds.left - dockBounds.left + clampRatio(ratio) * waveBounds.width;
     waveformDock.style.setProperty('--waveform-progress', `${left.toFixed(2)}px`);
   }
 
+  /** Animates between the focused original window and the complete generated timeline. */
+  function renderTimelineWindow(playbackTime) {
+    if (originalEndSeconds === null) return;
+    const shouldExpandTimeline = playbackTime >= originalEndSeconds;
+    if (player.classList.contains('is-timeline-expanded') === shouldExpandTimeline) return;
+
+    player.classList.add('is-timeline-transitioning');
+    player.classList.toggle('is-timeline-expanded', shouldExpandTimeline);
+    if (timelineTransitionTimer !== null) window.clearTimeout(timelineTransitionTimer);
+    timelineTransitionTimer = window.setTimeout(() => {
+      player.classList.remove('is-timeline-transitioning');
+      timelineTransitionTimer = null;
+    }, TIMELINE_EXPANSION_TRANSITION_MS);
+  }
+
   /** Updates the visual playhead and corrects meaningful media drift. */
   function updateProgress() {
-    updateWaveformProgress(getPlaybackTime() / getPlaybackDuration());
+    const playbackTime = getPlaybackTime();
+    renderTimelineWindow(playbackTime);
+    updateWaveformProgress(playbackTime / getVisibleTimelineDuration());
     synchronizeEnhancedAudio();
     renderCaptions();
     renderStatusCopy();
@@ -707,6 +778,7 @@
   function completePlaybackWindow() {
     stopAutomaticSwitching();
     pauseMedia();
+    clearBrandOutro();
     speakerContinuationActive = false;
     video.currentTime = 0;
     speakerAudioElements.forEach((audio) => { audio.currentTime = 0; });
@@ -747,9 +819,10 @@
    */
   function seekFromWaveform(event) {
     if (!Number.isFinite(video.duration)) return;
-    const bounds = referenceWaveform.getBoundingClientRect();
+    clearBrandOutro();
+    const bounds = (waveformTimeTrack ?? referenceWaveform).getBoundingClientRect();
     const ratio = clampRatio((event.clientX - bounds.left) / bounds.width);
-    const targetTime = ratio * getPlaybackDuration();
+    const targetTime = ratio * getVisibleTimelineDuration();
     const wasPlaying = !isPlaybackPaused();
     const originalEndTime = getOriginalEndTime();
     const targetsSpeakerContinuation = continueSpeakerAudioAfterVideo && targetTime >= originalEndTime;
@@ -842,10 +915,12 @@
       });
       audio.addEventListener('ended', () => {
         if (speakerContinuationActive && speakerAudioElements.every((speakerAudio) => speakerAudio.ended)) {
-          completePlaybackWindow();
+          if (brandOutro) beginBrandOutro();
+          else completePlaybackWindow();
         }
       });
     });
+    brandOutro?.addEventListener('click', togglePlayback);
     waveformDock.addEventListener('pointerdown', (event) => {
       if (event.target instanceof Element && event.target.closest('.track-mute')) return;
       waveformDock.setPointerCapture(event.pointerId);

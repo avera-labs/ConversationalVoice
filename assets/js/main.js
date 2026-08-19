@@ -463,6 +463,11 @@
       this.captionPanel = element.querySelector('.dual-caption');
       this.captionSource = element.dataset.captionSource || null;
       this.captionPrefix = element.dataset.captionPrefix || null;
+      this.phaseLegend = element.querySelector('.phase-legend');
+      this.phaseLegendItems = {
+        reconstruction: element.querySelector('.phase-legend-item.phase-reconstruction'),
+        expansion: element.querySelector('.phase-legend-item.phase-expansion'),
+      };
       const reconstructionEnd = element.dataset.reconstructionEnd;
       /** @type {number | null} */
       this.reconstructionEndSeconds = reconstructionEnd === undefined ? null : Number(reconstructionEnd);
@@ -475,6 +480,17 @@
       if (this.reconstructionEndSeconds !== null
         && (!Number.isFinite(this.reconstructionEndSeconds) || this.reconstructionEndSeconds <= 0)) {
         throw new Error('Reconstruction boundary must be a positive number of seconds');
+      }
+      const hasCompletePhaseLegend = this.phaseLegend !== null
+        && this.phaseLegendItems.reconstruction !== null
+        && this.phaseLegendItems.expansion !== null;
+      if (this.reconstructionEndSeconds !== null && !hasCompletePhaseLegend) {
+        throw new Error('Expansion player requires a complete phase legend');
+      }
+      if (this.reconstructionEndSeconds === null && (this.phaseLegend !== null
+        || this.phaseLegendItems.reconstruction !== null
+        || this.phaseLegendItems.expansion !== null)) {
+        throw new Error('Phase legend requires a reconstruction boundary');
       }
       if (this.waveforms.length !== 2 || this.muteControls.length !== 2) {
         throw new Error('Dual-track player requires exactly two waveforms and two mute controls');
@@ -513,6 +529,8 @@
         return loadWaveform(this.audios[trackMode], waveform, 52);
       });
       await Promise.all(waveformLoads);
+      // Waveform bars are created asynchronously, so phase colors must be applied after rendering.
+      this.update();
     }
 
     bindEvents() {
@@ -667,6 +685,9 @@
     update() {
       const duration = this.getDuration();
       const ratio = duration > 0 ? this.masterAudio.currentTime / duration : 0;
+      const phaseBoundaryRatio = this.reconstructionEndSeconds === null || duration <= 0
+        ? null
+        : Math.min(1, this.reconstructionEndSeconds / duration);
       const isChinese = document.documentElement.lang === 'zh-CN';
       const isPlaying = this.isPlaying;
       const phaseLabel = this.reconstructionEndSeconds === null
@@ -675,23 +696,50 @@
           ? (isChinese ? '当前阶段 · 原始声音重建' : 'Current phase · Original voice reconstruction')
           : (isChinese ? '当前阶段 · 对话扩展' : 'Current phase · Dialogue expansion'));
       this.timeElement.textContent = `${formatTime(this.masterAudio.currentTime)} / ${formatTime(duration)}`;
+      this.element.classList.toggle('has-phases', phaseBoundaryRatio !== null);
+      if (phaseBoundaryRatio === null) this.element.style.removeProperty('--phase-boundary-ratio');
+      else this.element.style.setProperty('--phase-boundary-ratio', `${phaseBoundaryRatio * 100}%`);
+
+      if (this.phaseLegendItems.reconstruction && this.phaseLegendItems.expansion) {
+        const isReconstructionPhase = this.masterAudio.currentTime < this.reconstructionEndSeconds;
+        this.phaseLegendItems.reconstruction.classList.toggle('is-current', isReconstructionPhase);
+        this.phaseLegendItems.expansion.classList.toggle('is-current', !isReconstructionPhase);
+        if (isReconstructionPhase) {
+          this.phaseLegendItems.reconstruction.setAttribute('aria-current', 'step');
+          this.phaseLegendItems.expansion.removeAttribute('aria-current');
+        } else {
+          this.phaseLegendItems.reconstruction.removeAttribute('aria-current');
+          this.phaseLegendItems.expansion.setAttribute('aria-current', 'step');
+        }
+      }
 
       this.waveforms.forEach((waveform) => {
+        if (phaseBoundaryRatio === null) waveform.style.removeProperty('--phase-boundary-position');
+        else {
+          const phaseContentBox = getWaveformContentBox(waveform);
+          waveform.style.setProperty(
+            '--phase-boundary-position',
+            `${phaseContentBox.left + phaseContentBox.width * phaseBoundaryRatio}px`,
+          );
+        }
         const bars = waveform.querySelectorAll('span');
-        bars.forEach((bar, index) => bar.classList.toggle('played', (index + 0.5) / bars.length <= ratio));
+        bars.forEach((bar, index) => {
+          const barRatio = (index + 0.5) / bars.length;
+          bar.classList.toggle('played', barRatio <= ratio);
+          bar.classList.toggle('phase-reconstruction', phaseBoundaryRatio !== null && barRatio <= phaseBoundaryRatio);
+          bar.classList.toggle('phase-expansion', phaseBoundaryRatio !== null && barRatio > phaseBoundaryRatio);
+        });
         waveform.setAttribute('aria-valuenow', String(Math.round(ratio * 100)));
         waveform.setAttribute('aria-valuetext', `${formatTime(this.masterAudio.currentTime)} / ${formatTime(duration)}`);
         const seekLabel = isChinese ? '音频波形，可点击跳转' : 'Audio waveform; click to seek';
         waveform.setAttribute('aria-label', phaseLabel ? `${seekLabel}${isChinese ? '。' : '. '}${phaseLabel}` : seekLabel);
-        if (phaseLabel) waveform.dataset.phaseLabel = phaseLabel;
-        else delete waveform.dataset.phaseLabel;
         updateWaveformPlayhead(waveform, ratio);
         waveform.classList.toggle('is-playing', isPlaying);
       });
 
       const bothLabel = isPlaying
         ? (isChinese ? '暂停双轨' : 'Pause both')
-        : (isChinese ? '播放双轨' : 'Play both');
+        : (isChinese ? '播放' : 'Play');
       this.bothButton.classList.toggle('is-active', isPlaying);
       this.bothIcon.textContent = isPlaying ? 'Ⅱ' : '▶';
       this.bothLabel.textContent = bothLabel;
@@ -708,7 +756,7 @@
         button.setAttribute('aria-pressed', String(isMuted));
         button.title = actionLabel;
         label.textContent = isMuted
-          ? (isChinese ? '已静音' : 'Muted')
+          ? (isChinese ? '取消静音' : 'Unmute')
           : (isChinese ? '静音' : 'Mute');
         row.classList.toggle('is-muted', isMuted);
       });
@@ -807,6 +855,7 @@
       waveformResizeTimer = window.setTimeout(() => requestAnimationFrame(() => {
         alignComparisonRows();
         refreshResponsiveWaveforms();
+        dualPlayerControllers.forEach((controller) => controller.update());
       }), RESIZE_DEBOUNCE_MS);
     });
     applyLanguage(readLanguage());

@@ -1,0 +1,103 @@
+<!doctype html>
+<!--
+  Interactive dialogue expansion demo.
+  Usage: serve the repository over HTTP (for example `python3 -m http.server`)
+  and open /assets/regeneration/tv-talk-show/expansion/ in a modern browser.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Use the audio mode controls to compare the original dialogue with reconstructed speaker tracks." />
+    <title>ConversationalVoice: Full-Duplex Speech Data from Real Conversations</title>
+    <link rel="stylesheet" href="../../../css/voice-comparison.css" />
+    <link rel="stylesheet" href="expansion.css" />
+  </head>
+  <body>
+    <main class="demo">
+      <header class="demo-header">
+        <a class="demo-header-link" href="https://avera-labs.github.io/ConversationalVoice/">
+          <img class="company-logo" src="../../../averalabs-logo.png" alt="AveraLabs" width="174" height="42" />
+          <div class="title-copy">
+            <h1>Full-Duplex Speech Data from Real Conversations</h1>
+          </div>
+        </a>
+      </header>
+
+      <section class="player" data-continue-speaker-audio-after-video data-original-end="18.3" data-reconstruction-end="18.3" style="--video-aspect-ratio: 16 / 9;" aria-label="Interactive dialogue expansion demo">
+        <div class="stage">
+          <video preload="auto" playsinline aria-label="Two-speaker television talk-show clip">
+            <source src="../source.mp4" type="video/mp4" />
+          </video>
+
+          <div class="mode-status" data-mode="original" aria-live="polite">
+            <span class="mode-dot"></span>
+            <span class="mode-copy">Original audio</span>
+          </div>
+          <div class="stage-captions" aria-live="off" aria-hidden="true"></div>
+          <button class="big-play" type="button" aria-label="Play demo" aria-keyshortcuts="Space">▶</button>
+        </div>
+
+        <div class="waveform-dock" aria-label="Dialogue waveforms">
+          <span class="waveform-progress" aria-hidden="true"></span>
+          <div class="waveform-time-scale" aria-hidden="true">
+            <span></span>
+            <div class="waveform-time-track"></div>
+          </div>
+          <div class="waveform-set">
+            <div class="waveform-row original">
+              <span class="waveform-label">Original</span>
+              <svg class="dock-wave" viewBox="0 0 1000 30" preserveAspectRatio="none" aria-hidden="true">
+                <line class="wave-baseline" x1="0" y1="15" x2="1000" y2="15"></line>
+                <path class="wave-shape" data-wave-track="original"></path>
+              </svg>
+            </div>
+            <div class="waveform-row speaker0">
+              <span class="waveform-track-control">
+                <span class="waveform-label">Speaker 0</span>
+                <button class="track-mute" type="button" data-mute-track="speaker0" aria-label="Mute Speaker 0" aria-pressed="false">Mute</button>
+              </span>
+              <svg class="dock-wave" viewBox="0 0 1000 30" preserveAspectRatio="none" aria-hidden="true">
+                <line class="wave-baseline" x1="0" y1="15" x2="1000" y2="15"></line>
+                <path class="wave-shape" data-wave-track="speaker0"></path>
+              </svg>
+            </div>
+            <div class="waveform-row speaker1">
+              <span class="waveform-track-control">
+                <span class="waveform-label">Speaker 1</span>
+                <button class="track-mute" type="button" data-mute-track="speaker1" aria-label="Mute Speaker 1" aria-pressed="false">Mute</button>
+              </span>
+              <svg class="dock-wave" viewBox="0 0 1000 30" preserveAspectRatio="none" aria-hidden="true">
+                <line class="wave-baseline" x1="0" y1="15" x2="1000" y2="15"></line>
+                <path class="wave-shape" data-wave-track="speaker1"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="mode-controls" role="group" aria-label="Audio mode">
+          <button class="mode-button is-active" type="button" data-audio-mode="original" aria-pressed="true" aria-keyshortcuts="ArrowLeft">Original</button>
+          <button class="mode-button" type="button" data-audio-mode="enhanced" aria-pressed="false" aria-keyshortcuts="ArrowRight">Reconstructed</button>
+        </div>
+
+        <button class="brand-outro" type="button" aria-label="Replay demo" aria-hidden="true">
+          <span class="brand-outro-content">
+            <img class="brand-outro-logo" src="../../../averalabs-logo.png" alt="AveraLabs" width="174" height="42" />
+            <span class="brand-outro-rule" aria-hidden="true"></span>
+            <span class="brand-outro-product">ConversationalVoice</span>
+            <span class="brand-outro-slogan">Full-Duplex Speech Data from Real Conversations</span>
+          </span>
+        </button>
+
+        <div class="audio-bank" aria-hidden="true">
+          <audio data-speaker-track="speaker0" preload="auto" src="../speaker-0.wav"></audio>
+          <audio data-speaker-track="speaker1" preload="auto" src="../speaker-1.wav"></audio>
+        </div>
+      </section>
+    </main>
+
+    <script src="caption-data.js"></script>
+    <script src="waveform-peaks.js"></script>
+    <script src="../../../js/voice-comparison.js"></script>
+  </body>
+</html>

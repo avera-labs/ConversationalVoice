@@ -9,16 +9,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Use the audio mode controls to compare the original dialogue with reconstructed speaker tracks." />
-    <title>Voice Comparison — Interactive Demo</title>
+    <title>ConversationalVoice: Full-Duplex Speech Data from Real Conversations</title>
     <link rel="stylesheet" href="../../../css/voice-comparison.css" />
   </head>
   <body>
     <main class="demo">
       <header class="demo-header">
-        <div>
-          <p class="eyebrow">AveraLabs Voice Pipeline</p>
-          <h1>Full-Duplex Speech Data from Real Conversations</h1>
-        </div>
+        <a class="demo-header-link" href="https://avera-labs.github.io/ConversationalVoice/">
+          <img class="company-logo" src="../../../averalabs-logo.png" alt="AveraLabs" width="174" height="42" />
+          <div class="title-copy">
+            <p class="product-name">ConversationalVoice</p>
+            <h1>Full-Duplex Speech Data from Real Conversations</h1>
+          </div>
+        </a>
       </header>
 
       <section class="player" data-playback-duration="35.5" aria-label="Interactive dialogue reconstruction demo">
@@ -31,12 +34,12 @@
             <span class="mode-dot"></span>
             <span class="mode-copy">Original audio</span>
           </div>
-          <button class="big-play" type="button" aria-label="Play demo">▶</button>
+          <button class="big-play" type="button" aria-label="Play demo" aria-keyshortcuts="Space">▶</button>
         </div>
 
         <div class="mode-controls" role="group" aria-label="Audio mode">
-          <button class="mode-button is-active" type="button" data-audio-mode="original" aria-pressed="true">Original</button>
-          <button class="mode-button" type="button" data-audio-mode="enhanced" aria-pressed="false">Reconstructed</button>
+          <button class="mode-button is-active" type="button" data-audio-mode="original" aria-pressed="true" aria-keyshortcuts="ArrowLeft">Original</button>
+          <button class="mode-button" type="button" data-audio-mode="enhanced" aria-pressed="false" aria-keyshortcuts="ArrowRight">Reconstructed</button>
         </div>
 
         <div class="waveform-dock" aria-label="Dialogue waveforms">

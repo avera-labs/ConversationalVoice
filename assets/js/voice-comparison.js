@@ -258,6 +258,7 @@
       await Promise.all(readiness);
       resourceState = 'ready';
       renderResourceState();
+      await playMedia();
     } catch (error) {
       resourceState = 'error';
       renderResourceState();
@@ -312,9 +313,13 @@
     }, AUTOMATIC_SWITCH_INTERVAL_MS);
   }
 
-  /** Starts the video and both speaker sources so mode changes remain immediate. */
+  /**
+   * Starts the video and both speaker sources so mode changes remain immediate.
+   * Returns false when browser autoplay policy or a media error prevents a synchronized start.
+   * @returns {Promise<boolean>}
+   */
   async function playMedia() {
-    if (resourceState !== 'ready') return;
+    if (resourceState !== 'ready') return false;
     if (video.currentTime >= getPlaybackDuration()) {
       video.currentTime = 0;
       speakerAudioElements.forEach((audio) => { audio.currentTime = 0; });
@@ -327,8 +332,13 @@
         if (!Number.isFinite(audio.duration) || getEnhancedSyncTime(audio) < audio.duration) playPromises.push(audio.play());
       });
       await Promise.all(playPromises);
+      return true;
     } catch (error) {
+      // Some browsers may start muted sources while rejecting audible autoplay.
+      // Pause every source so the shared playhead never enters a partial-playing state.
+      pauseMedia();
       console.error('Media playback could not start.', error);
+      return false;
     }
   }
 
@@ -343,6 +353,44 @@
     if (resourceState !== 'ready') return;
     if (video.paused) void playMedia();
     else pauseMedia();
+  }
+
+  /**
+   * Preserves native Space behavior for interactive or editable controls.
+   * @param {EventTarget | null} target
+   * @returns {boolean}
+   */
+  function isKeyboardInteractiveTarget(target) {
+    return target instanceof Element
+      && Boolean(target.closest('button, a[href], input, select, textarea, [contenteditable="true"]'));
+  }
+
+  /**
+   * Uses Space as a page-level playback shortcut without triggering scroll or key-repeat toggles.
+   * @param {KeyboardEvent} event
+   */
+  function togglePlaybackFromKeyboard(event) {
+    const isSpaceKey = event.code === 'Space' || event.key === ' ';
+    if (!isSpaceKey
+      || event.repeat
+      || event.defaultPrevented
+      || resourceState !== 'ready'
+      || isKeyboardInteractiveTarget(event.target)) return;
+    event.preventDefault();
+    togglePlayback();
+  }
+
+  /**
+   * Maps horizontal arrow keys to the two comparison modes.
+   * @param {KeyboardEvent} event
+   */
+  function switchModeFromKeyboard(event) {
+    if ((event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+      || event.repeat
+      || event.defaultPrevented
+      || isKeyboardInteractiveTarget(event.target)) return;
+    event.preventDefault();
+    setMode(event.key === 'ArrowLeft' ? 'original' : 'enhanced', 'user');
   }
 
   // Progress and seeking
@@ -401,6 +449,8 @@
   function bindMediaEvents() {
     playButton.addEventListener('click', togglePlayback);
     video.addEventListener('click', togglePlayback);
+    document.addEventListener('keydown', togglePlaybackFromKeyboard);
+    document.addEventListener('keydown', switchModeFromKeyboard);
     video.addEventListener('loadedmetadata', updateProgress);
     speakerAudioElements.forEach((audio) => audio.addEventListener('loadedmetadata', synchronizeEnhancedAudio));
     video.addEventListener('timeupdate', () => {

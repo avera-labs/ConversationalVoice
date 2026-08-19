@@ -1,4 +1,4 @@
-/* Dialogue expansion phase colors for the dark comparison player. */
+/* Dialogue expansion layout and presentation for the dark comparison player. */
 
 .player[data-reconstruction-end] {
   --phase-reconstruction-color: var(--red);
@@ -6,6 +6,9 @@
   --cinematic-matte-size: clamp(5.75rem, 12vw, 6.75rem);
   --cinematic-matte-center: clamp(2.875rem, 6vw, 3.375rem);
   --caption-picture-offset: 14px;
+  --waveform-label-width: 126px;
+  --waveform-row-gap: 4px;
+  --waveform-row-padding: 3px;
   position: relative;
 }
 
@@ -25,17 +28,12 @@
   bottom: var(--cinematic-matte-size);
 }
 
-.player[data-reconstruction-end] .waveform-row.speaker0,
-.player[data-reconstruction-end] .waveform-row.speaker1 {
-  --wave-color: #e7ebf2;
-}
-
 .player[data-reconstruction-end] .waveform-row {
   position: relative;
-  grid-template-columns: 126px minmax(0, 1fr);
-  gap: 4px;
+  grid-template-columns: var(--waveform-label-width) minmax(0, 1fr);
+  gap: var(--waveform-row-gap);
   min-height: 28px;
-  padding: 0 3px;
+  padding: 0 var(--waveform-row-padding);
 }
 
 .player[data-reconstruction-end]:not(.is-enhanced) .waveform-row.original,
@@ -84,11 +82,11 @@
 
 .player[data-reconstruction-end] .waveform-time-scale {
   display: grid;
-  grid-template-columns: 126px minmax(0, 1fr);
-  gap: 4px;
+  grid-template-columns: var(--waveform-label-width) minmax(0, 1fr);
+  gap: var(--waveform-row-gap);
   height: 16px;
   margin-bottom: 4px;
-  padding-inline: 3px;
+  padding-inline: var(--waveform-row-padding);
 }
 
 .player[data-reconstruction-end] .waveform-time-track {
@@ -100,12 +98,22 @@
 .player[data-reconstruction-end] .waveform-time-tick {
   position: absolute;
   top: 4px;
+  left: var(--time-position-full);
   color: rgba(203, 211, 223, .54);
   font-size: 0;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   white-space: nowrap;
   transform: translateX(-50%);
+  transition: left 900ms cubic-bezier(.22, 1, .36, 1), opacity 360ms ease;
+}
+
+.player[data-original-end]:not(.is-timeline-expanded) .waveform-time-tick {
+  left: var(--time-position-condensed);
+}
+
+.player[data-original-end]:not(.is-timeline-expanded) .waveform-time-tick.is-after-original {
+  opacity: 0;
 }
 
 .player[data-reconstruction-end] .waveform-time-tick.is-labeled {
@@ -136,6 +144,48 @@
 
 .player[data-reconstruction-end] .dock-wave {
   height: 28px;
+}
+
+.player[data-original-end] .dock-wave {
+  clip-path: inset(0);
+  transform: scaleX(1);
+  transform-origin: left center;
+  transition:
+    clip-path 900ms cubic-bezier(.22, 1, .36, 1),
+    transform 900ms cubic-bezier(.22, 1, .36, 1),
+    opacity 160ms ease,
+    filter 160ms ease;
+}
+
+.player[data-original-end]:not(.is-timeline-expanded) .dock-wave {
+  clip-path: inset(0 var(--timeline-condensed-clip) 0 0);
+  transform: scaleX(var(--timeline-condensed-scale));
+}
+
+.player[data-original-end] .waveform-row.speaker0::after,
+.player[data-original-end] .waveform-row.speaker1::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: var(--waveform-row-padding);
+  bottom: 0;
+  left: calc(var(--waveform-row-padding) + var(--waveform-label-width) + var(--waveform-row-gap));
+  background: rgba(4, 7, 12, .72);
+  opacity: 0;
+  pointer-events: none;
+  transform: scaleX(var(--original-phase-ratio));
+  transform-origin: left center;
+  transition: opacity 360ms ease 360ms;
+}
+
+.player[data-original-end].is-timeline-expanded .waveform-row.speaker0::after,
+.player[data-original-end].is-timeline-expanded .waveform-row.speaker1::after {
+  opacity: 1;
+}
+
+.player[data-original-end].is-timeline-transitioning .waveform-progress {
+  transition: left 900ms cubic-bezier(.22, 1, .36, 1);
 }
 
 .player[data-reconstruction-end] .mode-status {
@@ -215,7 +265,9 @@
 }
 
 .mode-explanation-emphasis {
-  color: var(--phase-expansion-color);
+  color: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 @keyframes status-card-copy-in {
@@ -227,41 +279,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.player[data-reconstruction-end].is-enhanced .waveform-row.speaker0,
-.player[data-reconstruction-end].is-enhanced .waveform-row.speaker1 {
-  background: rgba(255, 255, 255, .055);
-  box-shadow: 0 0 14px rgba(255, 255, 255, .06);
-}
-
-.phase-reconstruction-stop {
-  stop-color: var(--phase-reconstruction-color);
-}
-
-.phase-expansion-stop {
-  stop-color: var(--phase-expansion-color);
-}
-
-.waveform-row.speaker0 .wave-baseline {
-  stroke: url("#speaker0-phase-colors");
-}
-
-.waveform-row.speaker0 .wave-shape {
-  fill: url("#speaker0-phase-colors");
-}
-
-.waveform-row.speaker1 .wave-baseline {
-  stroke: url("#speaker1-phase-colors");
-}
-
-.waveform-row.speaker1 .wave-shape {
-  fill: url("#speaker1-phase-colors");
-}
-
-.waveform-row.speaker0 .wave-baseline,
-.waveform-row.speaker1 .wave-baseline {
-  fill: none;
 }
 
 .stage-captions {
@@ -319,14 +336,9 @@
 }
 
 @media (max-width: 680px) {
-  .player[data-reconstruction-end] .waveform-time-scale {
-    grid-template-columns: 124px minmax(0, 1fr);
-    gap: 3px;
-  }
-
-  .player[data-reconstruction-end] .waveform-row {
-    grid-template-columns: 124px minmax(0, 1fr);
-    gap: 3px;
+  .player[data-reconstruction-end] {
+    --waveform-label-width: 124px;
+    --waveform-row-gap: 3px;
   }
 
   .player[data-reconstruction-end] .waveform-track-control {

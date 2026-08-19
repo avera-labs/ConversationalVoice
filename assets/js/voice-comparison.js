@@ -31,6 +31,7 @@
   ]);
   const EXPANSION_EXPLANATION = EXPANSION_EXPLANATION_PARTS.map(({ text }) => text).join('');
   const MEDIA_SYNC_TOLERANCE_SECONDS = .12;
+  const TIMELINE_EXPANSION_TRANSITION_MS = 900;
   const WAVEFORM_CENTER_Y = 15;
   const WAVEFORM_MAXIMUM_HEIGHT = 13;
   const WAVEFORM_TIME_LABEL_INTERVAL_SECONDS = 30;
@@ -121,6 +122,8 @@
   let automaticSwitchTimer = null;
   /** @type {number | null} */
   let originalCutoffTimer = null;
+  /** @type {number | null} */
+  let timelineTransitionTimer = null;
   let automaticSwitchingEnabled = true;
   /** @type {boolean} */
   let speakerContinuationActive = false;
@@ -174,6 +177,12 @@
     speaker0: waveformPeaks.speaker0,
     speaker1: waveformPeaks.speaker1,
   });
+  if (originalEndSeconds !== null) {
+    const originalPhaseRatio = originalEndSeconds / waveformPeaks.duration;
+    player.style.setProperty('--original-phase-ratio', originalPhaseRatio.toFixed(6));
+    player.style.setProperty('--timeline-condensed-scale', (1 / originalPhaseRatio).toFixed(6));
+    player.style.setProperty('--timeline-condensed-clip', `${((1 - originalPhaseRatio) * 100).toFixed(3)}%`);
+  }
   const captionTranscript = /** @type {Record<'s0' | 's1', Utterance[]> | undefined} */ (
     window.DIALOGUE_TRANSCRIPT
   );
@@ -200,6 +209,14 @@
     }
     if (Number.isFinite(video.duration) && video.duration > 0) return video.duration;
     return waveformPeaks.duration;
+  }
+
+  /** Returns the duration currently represented across the full waveform width. */
+  function getVisibleTimelineDuration() {
+    if (originalEndSeconds !== null && !player.classList.contains('is-timeline-expanded')) {
+      return originalEndSeconds;
+    }
+    return getPlaybackDuration();
   }
 
   /** Returns the media position that currently owns the shared playhead. @returns {number} */
@@ -272,7 +289,17 @@
     ) {
       const tick = document.createElement('span');
       tick.className = 'waveform-time-tick';
-      tick.style.left = `${((seconds / waveformPeaks.duration) * 100).toFixed(3)}%`;
+      tick.style.setProperty(
+        '--time-position-full',
+        `${((seconds / waveformPeaks.duration) * 100).toFixed(3)}%`,
+      );
+      if (originalEndSeconds !== null) {
+        tick.style.setProperty(
+          '--time-position-condensed',
+          `${(clampRatio(seconds / originalEndSeconds) * 100).toFixed(3)}%`,
+        );
+        tick.classList.toggle('is-after-original', seconds > originalEndSeconds);
+      }
       if (seconds === 0) tick.classList.add('is-start');
       if (seconds % WAVEFORM_TIME_LABEL_INTERVAL_SECONDS === 0) {
         tick.classList.add('is-labeled');
@@ -690,14 +717,31 @@
   /** Keeps the playhead aligned to the plotted area rather than its label column. */
   function updateWaveformProgress(ratio) {
     const dockBounds = waveformDock.getBoundingClientRect();
-    const waveBounds = referenceWaveform.getBoundingClientRect();
+    const waveBounds = (waveformTimeTrack ?? referenceWaveform).getBoundingClientRect();
     const left = waveBounds.left - dockBounds.left + clampRatio(ratio) * waveBounds.width;
     waveformDock.style.setProperty('--waveform-progress', `${left.toFixed(2)}px`);
   }
 
+  /** Animates between the focused original window and the complete generated timeline. */
+  function renderTimelineWindow(playbackTime) {
+    if (originalEndSeconds === null) return;
+    const shouldExpandTimeline = playbackTime >= originalEndSeconds;
+    if (player.classList.contains('is-timeline-expanded') === shouldExpandTimeline) return;
+
+    player.classList.add('is-timeline-transitioning');
+    player.classList.toggle('is-timeline-expanded', shouldExpandTimeline);
+    if (timelineTransitionTimer !== null) window.clearTimeout(timelineTransitionTimer);
+    timelineTransitionTimer = window.setTimeout(() => {
+      player.classList.remove('is-timeline-transitioning');
+      timelineTransitionTimer = null;
+    }, TIMELINE_EXPANSION_TRANSITION_MS);
+  }
+
   /** Updates the visual playhead and corrects meaningful media drift. */
   function updateProgress() {
-    updateWaveformProgress(getPlaybackTime() / getPlaybackDuration());
+    const playbackTime = getPlaybackTime();
+    renderTimelineWindow(playbackTime);
+    updateWaveformProgress(playbackTime / getVisibleTimelineDuration());
     synchronizeEnhancedAudio();
     renderCaptions();
     renderStatusCopy();
@@ -747,9 +791,9 @@
    */
   function seekFromWaveform(event) {
     if (!Number.isFinite(video.duration)) return;
-    const bounds = referenceWaveform.getBoundingClientRect();
+    const bounds = (waveformTimeTrack ?? referenceWaveform).getBoundingClientRect();
     const ratio = clampRatio((event.clientX - bounds.left) / bounds.width);
-    const targetTime = ratio * getPlaybackDuration();
+    const targetTime = ratio * getVisibleTimelineDuration();
     const wasPlaying = !isPlaybackPaused();
     const originalEndTime = getOriginalEndTime();
     const targetsSpeakerContinuation = continueSpeakerAudioAfterVideo && targetTime >= originalEndTime;

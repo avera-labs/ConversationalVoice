@@ -6,6 +6,10 @@
  * take over the playback clock after the source video freezes on its last frame.
  * Set data-original-end to silence an irrelevant original tail, freeze the video,
  * and hand the shared clock to the longer speaker tracks at that timestamp.
+ * Set data-static-full-timeline to render the complete waveform without the
+ * original-to-expansion timeline transition.
+ * Set data-speaker-offset to prepend player-managed silence to both speaker
+ * tracks without modifying their source audio files.
  */
 (() => {
   'use strict';
@@ -20,6 +24,7 @@
   /** @typedef {{word: string, t0: number, t1: number}} AlignedWord */
   /** @typedef {{text: string, t0: number, t1: number}} Utterance */
   /** @typedef {{text: string, isHighlighted?: boolean}} ExplanationPart */
+  /** @typedef {{duration: number, original: number[], speaker0: number[], speaker1: number[]}} WaveformPeakData */
 
   const AUTOMATIC_SWITCH_INTERVAL_MS = 3000;
   const CAPTION_CHUNK_MAXIMUM_WORDS = 8;
@@ -78,6 +83,7 @@
     'data-playback-duration',
   );
   const continueSpeakerAudioAfterVideo = player.hasAttribute('data-continue-speaker-audio-after-video');
+  const staticFullTimeline = player.hasAttribute('data-static-full-timeline');
   const originalEndSeconds = parseOptionalPositiveNumber(
     player.dataset.originalEnd,
     'data-original-end',
@@ -86,6 +92,10 @@
     player.dataset.reconstructionEnd,
     'data-reconstruction-end',
   );
+  const speakerOffsetSeconds = parseOptionalPositiveNumber(
+    player.dataset.speakerOffset,
+    'data-speaker-offset',
+  ) || 0;
   const video = /** @type {HTMLVideoElement} */ (requireElement(player, 'video'));
   const playButton = /** @type {HTMLButtonElement} */ (requireElement(player, '.big-play'));
   const brandOutro = /** @type {HTMLButtonElement | null} */ (player.querySelector('.brand-outro'));
@@ -124,21 +134,82 @@
   /** @type {number | null} */
   let originalCutoffTimer = null;
   /** @type {number | null} */
+  let speakerStartTimer = null;
+  /** @type {number | null} */
   let timelineTransitionTimer = null;
   let automaticSwitchingEnabled = true;
   /** @type {boolean} */
   let speakerContinuationActive = false;
 
-  const waveformPeaks = /** @type {{duration: number, original: number[], speaker0: number[], speaker1: number[]}} */ (
+  const rawWaveformPeaks = /** @type {WaveformPeakData} */ (
     window.DIALOGUE_WAVEFORM_PEAKS
   );
-  if (!waveformPeaks
-    || !Number.isFinite(waveformPeaks.duration)
-    || waveformPeaks.duration <= 0
-    || !SPEAKER_TRACKS.every((track) => Array.isArray(waveformPeaks[track]))
-    || !Array.isArray(waveformPeaks.original)) {
+  if (!rawWaveformPeaks
+    || !Number.isFinite(rawWaveformPeaks.duration)
+    || rawWaveformPeaks.duration <= 0
+    || !SPEAKER_TRACKS.every((track) => Array.isArray(rawWaveformPeaks[track]))
+    || !Array.isArray(rawWaveformPeaks.original)) {
     throw new TypeError('Waveform peak data is missing or invalid.');
   }
+  const rawWaveformLength = rawWaveformPeaks.original.length;
+  if (rawWaveformLength === 0
+    || ![rawWaveformPeaks.original, rawWaveformPeaks.speaker0, rawWaveformPeaks.speaker1]
+      .every((peaks) => peaks.length === rawWaveformLength
+        && peaks.every((peak) => Number.isFinite(peak) && peak >= 0 && peak <= 1))) {
+    throw new TypeError('Waveform tracks must contain equally sized, normalized peak arrays.');
+  }
+
+  /**
+   * Samples a precomputed peak track at an absolute source timestamp.
+   * Out-of-range timestamps deliberately resolve to silence so waveform data
+   * follows the same contract as the player-managed speaker offset.
+   * @param {number[]} peaks
+   * @param {number} sourceTime
+   * @param {number} sourceDuration
+   * @returns {number}
+   */
+  function sampleWaveformPeak(peaks, sourceTime, sourceDuration) {
+    if (sourceTime < 0 || sourceTime >= sourceDuration) return 0;
+    const sampleIndex = Math.min(
+      peaks.length - 1,
+      Math.floor((sourceTime / sourceDuration) * peaks.length),
+    );
+    return peaks[sampleIndex];
+  }
+
+  /**
+   * Extends the visual timeline and shifts only speaker content to the right.
+   * Resampling preserves absolute timing for the original track while adding
+   * an exact-duration silent prefix to both unmodified speaker files.
+   * @param {WaveformPeakData} source
+   * @param {number} offsetSeconds
+   * @returns {WaveformPeakData}
+   */
+  function applySpeakerWaveformOffset(source, offsetSeconds) {
+    if (offsetSeconds === 0) return source;
+    const duration = source.duration + offsetSeconds;
+    const sampleCount = Math.ceil((source.original.length * duration) / source.duration);
+    const sampleTimes = Array.from(
+      { length: sampleCount },
+      (_, index) => ((index + .5) / sampleCount) * duration,
+    );
+    return {
+      duration,
+      original: sampleTimes.map((time) => sampleWaveformPeak(source.original, time, source.duration)),
+      speaker0: sampleTimes.map((time) => sampleWaveformPeak(
+        source.speaker0,
+        time - offsetSeconds,
+        source.duration,
+      )),
+      speaker1: sampleTimes.map((time) => sampleWaveformPeak(
+        source.speaker1,
+        time - offsetSeconds,
+        source.duration,
+      )),
+    };
+  }
+
+  const waveformPeaks = applySpeakerWaveformOffset(rawWaveformPeaks, speakerOffsetSeconds);
   if (configuredPlaybackDuration !== null && waveformPeaks.duration !== configuredPlaybackDuration) {
     throw new Error(`Waveform duration must be ${configuredPlaybackDuration}s.`);
   }
@@ -152,12 +223,6 @@
     throw new Error('data-reconstruction-end must be earlier than the waveform duration.');
   }
   const waveformLength = waveformPeaks.original.length;
-  if (waveformLength === 0
-    || ![waveformPeaks.original, waveformPeaks.speaker0, waveformPeaks.speaker1]
-      .every((peaks) => peaks.length === waveformLength
-        && peaks.every((peak) => Number.isFinite(peak) && peak >= 0 && peak <= 1))) {
-    throw new TypeError('Waveform tracks must contain equally sized, normalized peak arrays.');
-  }
   if (originalEndSeconds !== null) {
     // data-original-end is both an audio cutoff and a visual-data contract. A
     // non-zero original tail could otherwise imply that unavailable audio exists.
@@ -206,7 +271,9 @@
       const speakerDurations = speakerAudioElements
         .map((audio) => audio.duration)
         .filter((duration) => Number.isFinite(duration) && duration > 0);
-      if (speakerDurations.length === speakerAudioElements.length) return Math.max(...speakerDurations);
+      if (speakerDurations.length === speakerAudioElements.length) {
+        return Math.max(...speakerDurations) + speakerOffsetSeconds;
+      }
     }
     if (Number.isFinite(video.duration) && video.duration > 0) return video.duration;
     return waveformPeaks.duration;
@@ -223,7 +290,7 @@
   /** Returns the media position that currently owns the shared playhead. @returns {number} */
   function getPlaybackTime() {
     return speakerContinuationActive
-      ? Math.max(...speakerAudioElements.map((audio) => audio.currentTime))
+      ? Math.max(...speakerAudioElements.map((audio) => audio.currentTime)) + speakerOffsetSeconds
       : video.currentTime;
   }
 
@@ -318,7 +385,7 @@
    */
   function getEnhancedSyncTime(audio) {
     if (!Number.isFinite(audio.duration)) return 0;
-    return Math.min(video.currentTime, audio.duration);
+    return Math.min(Math.max(0, video.currentTime - speakerOffsetSeconds), audio.duration);
   }
 
   /** Synchronizes enhanced audio while treating its missing tail as silence. */
@@ -329,6 +396,7 @@
     speakerAudioElements.forEach((audio) => {
       if (audio.readyState === HTMLMediaElement.HAVE_NOTHING) return;
       const targetTime = getEnhancedSyncTime(audio);
+      if (video.currentTime < speakerOffsetSeconds) audio.pause();
       if (Math.abs(audio.currentTime - targetTime) > MEDIA_SYNC_TOLERANCE_SECONDS) audio.currentTime = targetTime;
     });
   }
@@ -368,7 +436,7 @@
   /** Renders homepage-derived speaker captions at the current shared playhead. */
   function renderCaptions() {
     if (!captionPanel || !captionTranscript || !captionAlignment) return;
-    const captionTime = getPlaybackTime();
+    const captionTime = getPlaybackTime() - speakerOffsetSeconds;
     const fragment = document.createDocumentFragment();
 
     if (activeMode === 'enhanced') {
@@ -433,7 +501,7 @@
   /** Updates status copy for resource, mode, and dialogue-expansion phases. */
   function renderStatusCopy() {
     const explanationStartSeconds = Math.max(
-      expansionStartSeconds || 0,
+      expansionStartSeconds === null ? 0 : expansionStartSeconds + speakerOffsetSeconds,
       originalEndSeconds || 0,
     );
     const isExplainingExpansion = resourceState === 'ready'
@@ -572,6 +640,55 @@
     originalCutoffTimer = null;
   }
 
+  /** Clears the delayed speaker start whenever the video pauses or seeks. */
+  function clearSpeakerStartTimer() {
+    if (speakerStartTimer === null) return;
+    window.clearTimeout(speakerStartTimer);
+    speakerStartTimer = null;
+  }
+
+  /** Starts both speaker files at their offset-adjusted position. */
+  async function startSynchronizedSpeakerAudio() {
+    if (speakerContinuationActive
+      || video.paused
+      || video.currentTime < speakerOffsetSeconds) return;
+    synchronizeEnhancedAudio();
+    try {
+      await Promise.all(speakerAudioElements
+        .filter((audio) => !audio.ended)
+        .map((audio) => audio.play()));
+    } catch (error) {
+      pauseMedia();
+      console.error('Offset speaker playback could not start.', error);
+    }
+  }
+
+  /**
+   * Schedules speaker time zero at the configured shared-timeline offset.
+   * A timeupdate fallback also invokes the same idempotent start path when
+   * browsers throttle background timers.
+   */
+  function scheduleSpeakerStart() {
+    clearSpeakerStartTimer();
+    if (speakerOffsetSeconds === 0 || speakerContinuationActive || video.paused) return;
+    const remainingMediaSeconds = speakerOffsetSeconds - video.currentTime;
+    if (remainingMediaSeconds <= 0) {
+      void startSynchronizedSpeakerAudio();
+      return;
+    }
+    const playbackRate = Number.isFinite(video.playbackRate) && video.playbackRate > 0
+      ? video.playbackRate
+      : 1;
+    speakerStartTimer = window.setTimeout(() => {
+      speakerStartTimer = null;
+      if (video.currentTime < speakerOffsetSeconds) {
+        scheduleSpeakerStart();
+        return;
+      }
+      void startSynchronizedSpeakerAudio();
+    }, (remainingMediaSeconds / playbackRate) * 1000);
+  }
+
   /**
    * Schedules the original-to-speaker handoff from data-original-end. The
    * timeupdate listener remains a fallback for throttled background timers.
@@ -646,12 +763,14 @@
     try {
       const playPromises = [];
       if (!speakerContinuationActive) playPromises.push(video.play());
-      speakerAudioElements.forEach((audio) => {
-        const audioTime = speakerContinuationActive ? audio.currentTime : getEnhancedSyncTime(audio);
-        if (!audio.ended && (!Number.isFinite(audio.duration) || audioTime < audio.duration)) {
-          playPromises.push(audio.play());
-        }
-      });
+      if (speakerContinuationActive || video.currentTime >= speakerOffsetSeconds) {
+        speakerAudioElements.forEach((audio) => {
+          const audioTime = speakerContinuationActive ? audio.currentTime : getEnhancedSyncTime(audio);
+          if (!audio.ended && (!Number.isFinite(audio.duration) || audioTime < audio.duration)) {
+            playPromises.push(audio.play());
+          }
+        });
+      }
       await Promise.all(playPromises);
       return true;
     } catch (error) {
@@ -666,6 +785,7 @@
   /** Pauses the video and both reconstructed speaker sources. */
   function pauseMedia() {
     clearOriginalCutoffTimer();
+    clearSpeakerStartTimer();
     video.pause();
     speakerAudioElements.forEach((audio) => audio.pause());
   }
@@ -752,6 +872,11 @@
   /** Animates between the focused original window and the complete generated timeline. */
   function renderTimelineWindow(playbackTime) {
     if (originalEndSeconds === null) return;
+    if (staticFullTimeline) {
+      player.classList.add('is-timeline-expanded');
+      player.classList.remove('is-timeline-transitioning');
+      return;
+    }
     const shouldExpandTimeline = playbackTime >= originalEndSeconds;
     if (player.classList.contains('is-timeline-expanded') === shouldExpandTimeline) return;
 
@@ -794,9 +919,11 @@
     if (!continueSpeakerAudioAfterVideo || speakerContinuationActive) return;
     stopAutomaticSwitching();
     clearOriginalCutoffTimer();
+    clearSpeakerStartTimer();
     // Mute before seeking or changing modes so no event handler can expose the
     // irrelevant source tail during the ownership handoff.
     video.muted = true;
+    synchronizeEnhancedAudio();
     speakerContinuationActive = true;
     if (originalEndSeconds !== null) video.currentTime = originalEndSeconds;
     video.pause();
@@ -833,7 +960,12 @@
     }
     video.currentTime = Math.min(targetTime, originalEndTime);
     speakerAudioElements.forEach((audio) => {
-      if (Number.isFinite(audio.duration)) audio.currentTime = Math.min(targetTime, audio.duration);
+      if (Number.isFinite(audio.duration)) {
+        audio.currentTime = Math.min(
+          Math.max(0, targetTime - speakerOffsetSeconds),
+          audio.duration,
+        );
+      }
     });
     if (targetsSpeakerContinuation) setMode('enhanced', 'automatic');
     else synchronizeEnhancedAudio();
@@ -864,6 +996,12 @@
     video.addEventListener('loadedmetadata', updateProgress);
     speakerAudioElements.forEach((audio) => audio.addEventListener('loadedmetadata', synchronizeEnhancedAudio));
     video.addEventListener('timeupdate', () => {
+      if (speakerOffsetSeconds > 0
+        && !speakerContinuationActive
+        && video.currentTime >= speakerOffsetSeconds
+        && speakerAudioElements.some((audio) => audio.paused && !audio.ended)) {
+        void startSynchronizedSpeakerAudio();
+      }
       if (originalEndSeconds !== null
         && !speakerContinuationActive
         && video.currentTime >= originalEndSeconds) {
@@ -877,19 +1015,25 @@
       }
       updateProgress();
     });
-    video.addEventListener('seeking', clearOriginalCutoffTimer);
+    video.addEventListener('seeking', () => {
+      clearOriginalCutoffTimer();
+      clearSpeakerStartTimer();
+    });
     video.addEventListener('seeked', () => {
       synchronizeEnhancedAudio();
       renderMode();
       scheduleOriginalCutoff();
+      scheduleSpeakerStart();
     });
     video.addEventListener('play', () => {
       player.classList.add('is-playing');
       startAutomaticSwitching();
       scheduleOriginalCutoff();
+      scheduleSpeakerStart();
     });
     video.addEventListener('pause', () => {
       clearOriginalCutoffTimer();
+      clearSpeakerStartTimer();
       if (continueSpeakerAudioAfterVideo && (video.ended || speakerContinuationActive)) return;
       player.classList.remove('is-playing');
       clearAutomaticSwitchTimer();
@@ -899,7 +1043,10 @@
       if (continueSpeakerAudioAfterVideo) void beginSpeakerContinuation();
       else completePlaybackWindow();
     });
-    video.addEventListener('ratechange', scheduleOriginalCutoff);
+    video.addEventListener('ratechange', () => {
+      scheduleOriginalCutoff();
+      scheduleSpeakerStart();
+    });
     video.addEventListener('volumechange', () => {
       if (hasOriginalExpired() && !video.muted) video.muted = true;
     });

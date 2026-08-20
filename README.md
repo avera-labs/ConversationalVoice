@@ -1,4 +1,4 @@
-<img src="assets/averalabs-logo.png" alt="AveraLabs" height="28" />
+<a href="https://averalabs.com/"><img src="assets/averalabs-logo.png" alt="AveraLabs" height="56" /></a>
 
 # ConversationalVoice
 

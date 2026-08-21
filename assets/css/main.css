@@ -189,6 +189,7 @@ p {
 
 .pipeline-figure {
   --pipeline-node-size: calc((100% - 104px) / 5);
+  --pipeline-node-height: 162px;
   margin: 0;
   padding: 24px;
   background: var(--surface-subtle);
@@ -239,8 +240,7 @@ p {
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: 0;
-  aspect-ratio: 1;
+  height: var(--pipeline-node-height);
   padding: 13px 12px;
   background: var(--surface);
   border: 1px solid #bfc5cc;

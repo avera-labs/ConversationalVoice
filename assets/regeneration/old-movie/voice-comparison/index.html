@@ -26,7 +26,7 @@
 
       <section class="player" aria-label="Interactive dialogue reconstruction demo">
         <div class="stage">
-          <video preload="auto" playsinline aria-label="Two-speaker dialogue clip from His Girl Friday">
+          <video preload="metadata" playsinline poster="../poster.jpg?v=20260822a" aria-label="Two-speaker dialogue clip from His Girl Friday">
             <source src="../source.mp4" type="video/mp4" />
           </video>
 
@@ -76,13 +76,13 @@
         </div>
 
         <div class="audio-bank" aria-hidden="true">
-          <audio data-speaker-track="speaker0" preload="auto" src="../reconstruction-0.wav"></audio>
-          <audio data-speaker-track="speaker1" preload="auto" src="../reconstruction-1.wav"></audio>
+          <audio data-speaker-track="speaker0" preload="metadata" src="../reconstruction-0.wav"></audio>
+          <audio data-speaker-track="speaker1" preload="metadata" src="../reconstruction-1.wav"></audio>
         </div>
       </section>
     </main>
 
     <script src="waveform-peaks.js"></script>
-    <script src="../../../js/voice-comparison.js"></script>
+    <script src="../../../js/voice-comparison.js?v=20260821b"></script>
   </body>
 </html>

@@ -574,44 +574,48 @@
   // Resource loading
 
   /**
-   * Resolves once a required media element has enough buffered data to start.
+   * Resolves once a required media element exposes its timeline metadata. iOS may decline
+   * to buffer future media data before a user gesture, so preload must not gate the controls.
    * @param {HTMLMediaElement} media
    * @returns {Promise<void>}
    */
-  function waitUntilPlayable(media) {
+  function waitUntilMetadataLoaded(media) {
     if (media.error) return Promise.reject(media.error);
-    if (media.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) return Promise.resolve();
+    if (media.readyState >= HTMLMediaElement.HAVE_METADATA) return Promise.resolve();
     return new Promise((resolve, reject) => {
       const cleanup = () => {
-        media.removeEventListener('canplay', handleCanPlay);
+        media.removeEventListener('loadedmetadata', handleLoadedMetadata);
         media.removeEventListener('error', handleError);
       };
-      const handleCanPlay = () => { cleanup(); resolve(); };
+      const handleLoadedMetadata = () => { cleanup(); resolve(); };
       const handleError = () => { cleanup(); reject(media.error || new Error('Media preload failed.')); };
-      media.addEventListener('canplay', handleCanPlay, { once: true });
+      media.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
       media.addEventListener('error', handleError, { once: true });
     });
   }
 
-  /** Preloads every source needed for seamless original/reconstructed switching. */
+  /**
+   * Starts lightweight metadata loading without making iOS wait for speculative buffering.
+   * Actual playback remains synchronized and begins from a direct user gesture when required.
+   */
   async function preloadMedia() {
     const requiredMedia = [video, ...speakerAudioElements];
     requiredMedia.forEach((media) => media.load());
-    const readiness = requiredMedia.map(waitUntilPlayable);
+    const metadataReadiness = requiredMedia.map(waitUntilMetadataLoaded);
+    resourceState = 'ready';
+    renderResourceState();
+    void playMedia();
     try {
-      await Promise.all(readiness);
+      await Promise.all(metadataReadiness);
       if (originalEndSeconds !== null
         && Number.isFinite(video.duration)
         && originalEndSeconds >= video.duration) {
         throw new RangeError('data-original-end must be earlier than the source video duration.');
       }
-      resourceState = 'ready';
-      renderResourceState();
-      await playMedia();
     } catch (error) {
       resourceState = 'error';
       renderResourceState();
-      console.error('Required demo media could not be preloaded.', error);
+      console.error('Required demo media metadata could not be loaded.', error);
     }
   }
 
@@ -777,7 +781,9 @@
       // Some browsers may start muted sources while rejecting audible autoplay.
       // Pause every source so the shared playhead never enters a partial-playing state.
       pauseMedia();
-      console.error('Media playback could not start.', error);
+      if (!(error instanceof DOMException && error.name === 'NotAllowedError')) {
+        console.error('Media playback could not start.', error);
+      }
       return false;
     }
   }

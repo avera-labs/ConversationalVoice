@@ -14,10 +14,15 @@
   --baseline-soft: #f4f7fa;
   --our: #237a50;
   --our-soft: #f2f9f5;
+  --phase-separation: #55789b;
+  --phase-separation-soft: #eef4fa;
+  --phase-separation-border: #b9cce0;
   --phase-reconstruction: #2f7b55;
   --phase-reconstruction-soft: #edf6f1;
-  --phase-expansion: #4f75a3;
-  --phase-expansion-soft: #eef3f9;
+  --phase-reconstruction-border: #b6cdbf;
+  --phase-expansion: #8a702f;
+  --phase-expansion-soft: #fbf7e8;
+  --phase-expansion-border: #dfd09e;
   --active: #f5d76e;
   --content-max-width: 1120px;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
@@ -183,6 +188,8 @@ p {
 /* Pipeline overview */
 
 .pipeline-figure {
+  --pipeline-node-size: calc((100% - 104px) / 5);
+  --pipeline-node-height: 162px;
   margin: 0;
   padding: 24px;
   background: var(--surface-subtle);
@@ -190,7 +197,7 @@ p {
 }
 .pipeline-results {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin: 0 0 18px;
 }
@@ -202,11 +209,16 @@ p {
   border: 1px solid var(--border);
 }
 .pipeline-result:first-child {
-  background: var(--baseline-soft);
+  background: var(--phase-separation-soft);
+  border-color: var(--phase-separation-border);
+}
+.pipeline-result.reconstruction-result {
+  background: var(--phase-reconstruction-soft);
+  border-color: var(--phase-reconstruction-border);
 }
 .pipeline-result:last-child {
-  background: var(--our-soft);
-  border-color: #a7c3b2;
+  background: var(--phase-expansion-soft);
+  border-color: var(--phase-expansion-border);
 }
 .pipeline-result strong {
   display: block;
@@ -219,18 +231,16 @@ p {
 }
 .pipeline-lane {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, var(--pipeline-node-size));
   gap: 26px;
   align-items: stretch;
-}
-.pipeline-lane + .pipeline-lane {
-  margin-top: 34px;
 }
 .pipeline-node {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 106px;
+  width: 100%;
+  height: var(--pipeline-node-height);
   padding: 13px 12px;
   background: var(--surface);
   border: 1px solid #bfc5cc;
@@ -299,11 +309,42 @@ p {
   margin: -6px -7px;
   padding: 6px 7px;
 }
-.pipeline-node.our-node {
-  background: var(--our-soft);
-  border-color: #7eac91;
+.separation-stage .pipeline-node {
+  background: var(--phase-separation-soft);
+  border-color: var(--phase-separation-border);
 }
-.lane-label {
+.reconstruction-stage .pipeline-node {
+  background: var(--phase-reconstruction-soft);
+  border-color: var(--phase-reconstruction-border);
+}
+.expansion-stage .pipeline-node {
+  background: var(--phase-expansion-soft);
+  border-color: var(--phase-expansion-border);
+}
+.separation-stage .pipeline-node:not(:last-child)::after {
+  color: var(--phase-separation);
+}
+.reconstruction-stage .pipeline-node:not(:last-child)::after {
+  color: var(--phase-reconstruction);
+}
+.expansion-stage .pipeline-node:not(:last-child)::after {
+  color: var(--phase-expansion);
+}
+.separation-stage .model-name {
+  background: #e8edf2;
+  border-color: var(--phase-separation-border);
+}
+.pipeline-stages {
+  display: grid;
+  gap: 34px;
+}
+.pipeline-stage {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  scroll-margin-top: 0;
+}
+.pipeline-stage-label {
   margin: 0 0 8px;
   color: var(--muted);
   font-size: var(--font-size-caption);
@@ -311,16 +352,15 @@ p {
   letter-spacing: .06em;
   text-transform: uppercase;
 }
-.pipeline-lane + .lane-label {
-  margin-top: 34px;
+.separation-stage .pipeline-stage-label {
+  color: var(--phase-separation);
 }
-figcaption {
-  margin-top: 13px;
-  color: var(--muted);
-  font-size: var(--font-size-caption);
-  text-align: center;
+.reconstruction-stage .pipeline-stage-label {
+  color: var(--phase-reconstruction);
 }
-
+.expansion-stage .pipeline-stage-label {
+  color: var(--phase-expansion);
+}
 /* Process steps and comparison panels */
 
 .step {
@@ -977,13 +1017,16 @@ footer {
     white-space: nowrap;
   }
 }
-@media (max-width: 820px) {
+@media (max-width: 1020px) {
   .pipeline-lane {
     grid-template-columns: 1fr;
     gap: 20px;
+    justify-content: stretch;
   }
   .pipeline-node {
-    min-height: 0;
+    width: 100%;
+    height: 156px;
+    aspect-ratio: auto;
   }
   .pipeline-node:not(:last-child)::after {
     content: "↓";

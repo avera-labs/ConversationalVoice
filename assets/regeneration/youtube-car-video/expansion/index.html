@@ -26,8 +26,8 @@
 
       <section class="player" data-continue-speaker-audio-after-video data-original-end="33" data-reconstruction-end="32.725" aria-label="Interactive dialogue reconstruction demo">
         <div class="stage">
-          <video preload="auto" playsinline aria-label="Two-speaker car dialogue clip">
-            <source src="../source.mp4" type="video/mp4" />
+          <video preload="metadata" playsinline poster="../poster.jpg?v=20260822a" aria-label="Two-speaker car dialogue clip">
+            <source src="../source.mp4?v=20260821a" type="video/mp4" />
           </video>
 
           <div class="mode-status" data-mode="original" aria-live="polite">
@@ -90,14 +90,14 @@
         </button>
 
         <div class="audio-bank" aria-hidden="true">
-          <audio data-speaker-track="speaker0" preload="auto" src="../speaker-0.wav"></audio>
-          <audio data-speaker-track="speaker1" preload="auto" src="../speaker-1.wav"></audio>
+          <audio data-speaker-track="speaker0" preload="metadata" src="../speaker-0.wav"></audio>
+          <audio data-speaker-track="speaker1" preload="metadata" src="../speaker-1.wav"></audio>
         </div>
       </section>
     </main>
 
     <script src="caption-data.js"></script>
     <script src="waveform-peaks.js"></script>
-    <script src="../../../js/voice-comparison.js"></script>
+    <script src="../../../js/voice-comparison.js?v=20260821b"></script>
   </body>
 </html>

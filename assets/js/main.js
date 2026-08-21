@@ -63,6 +63,9 @@
   let waveformResizeTimer = null;
   /** @type {AudioContext | null} */
   let waveformAudioContext = null;
+  const precomputedWaveformPeaks = isRecord(window.PAGE_WAVEFORM_PEAKS)
+    ? window.PAGE_WAVEFORM_PEAKS
+    : {};
 
   // Caption data
 
@@ -177,6 +180,24 @@
   }
 
   /**
+   * Uses the source attribute rather than currentSrc so cache-busting query strings and
+   * deployment base paths do not change the generated waveform-data key.
+   * @param {HTMLAudioElement} audio
+   * @returns {number[] | null}
+   */
+  function readPrecomputedWaveform(audio) {
+    const source = audio.getAttribute('src');
+    if (!source) return null;
+    const sourceKey = source.split(/[?#]/, 1)[0];
+    const peaks = precomputedWaveformPeaks[sourceKey];
+    return Array.isArray(peaks)
+      && peaks.length > 0
+      && peaks.every((peak) => Number.isFinite(peak) && peak >= 0 && peak <= 1)
+      ? peaks
+      : null;
+  }
+
+  /**
    * Combines peak amplitude with RMS energy so transients remain visible without overstating silence.
    * @param {AudioBuffer} audioBuffer
    * @param {number} barCount
@@ -262,9 +283,12 @@
   async function loadWaveform(audio, waveform, maximumHeight) {
     waveform.setAttribute('aria-busy', 'true');
     try {
-      const audioBuffer = await decodeAudio(audio);
+      const precomputedPeaks = readPrecomputedWaveform(audio);
+      const detailedPeaks = precomputedPeaks
+        || calculateWaveformPeaks(await decodeAudio(audio), WAVEFORM_DETAILED_PEAK_COUNT);
+      waveform.dataset.renderSource = precomputedPeaks ? 'precomputed' : 'decoded';
       waveformRenderState.set(waveform, {
-        detailedPeaks: calculateWaveformPeaks(audioBuffer, WAVEFORM_DETAILED_PEAK_COUNT),
+        detailedPeaks,
         maximumHeight,
         barCount: 0,
       });

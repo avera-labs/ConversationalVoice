@@ -159,8 +159,9 @@
         </article>
 
         <article class="step" id="regeneration">
-          <h3><span class="en">Dialogue Expansion from Real-World Audio</span></h3>
+          <h3><span class="en">Dialogue Reconstruction and Expansion</span></h3>
           <div class="step-intro">
+            <p class="en">Reconstruction synthesizes clean, high-fidelity dialogue from separated speaker tracks while preserving the expressive character of the original performance. A multimodal model analyzes each utterance and generates audio tags that describe its prosody, emotional tone, and other vocal cues. For TTS, the reference audio is formed by concatenating two complementary sources: a fixed, clean speaker sample that anchors speaker identity and the corresponding utterance from the separated track, which provides utterance-specific guidance for delivery and paralinguistic expression. The reconstructed utterances are then reassembled to preserve the source conversation’s turn order, pauses, and overlap, with timing adjusted to accommodate their synthesized durations while maintaining natural conversational pacing.</p>
             <p class="en">Scripts generated from prompts alone can be fluent but often lack the intent, cadence, and context of a real exchange. Template-based dialogue TTS compounds the problem by imposing regular pauses and mechanically scheduled overlap.</p>
             <p class="en">ConversationalVoice uses a real exchange as its structural and contextual reference. The observed content, speaker profiles, pauses, and overlap serve as reference points, while up to five minutes of preceding dialogue provides broader context. The expansion stage can increase the volume and diversity of training data or target specific interaction patterns, including turn-taking, pause structure, overlap, and paralinguistic cues.</p>
           </div>

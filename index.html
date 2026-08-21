@@ -12,7 +12,7 @@
     <meta name="description" content="ConversationalVoice curates speaker-separated and expanded full-duplex speech data from real conversations." />
     <title>ConversationalVoice: Full-Duplex Speech Data from Real Conversations</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="assets/css/main.css?v=20260821ag" />
+    <link rel="stylesheet" href="assets/css/main.css?v=20260821aj" />
   </head>
   <body>
     <div class="container utility">
@@ -49,10 +49,10 @@
             <section class="pipeline-stage separation-stage" aria-label="Quality-Verified Separation pipeline">
               <p class="pipeline-stage-label"><span class="en">Quality-Verified Separation</span></p>
               <div class="pipeline-lane">
-                <div class="pipeline-node"><strong><span class="en">Source Screening</span></strong><span><span class="en">Use VAD to segment recordings; filter music and low-SNR audio.</span></span><code class="model-name"><a class="model-link" href="https://huggingface.co/pyannote/segmentation-3.0" target="_blank" rel="noopener noreferrer">pyannote/segmentation-3.0</a></code></div>
+                <div class="pipeline-node"><strong><span class="en">Source Screening</span></strong><span><span class="en">Segment recordings with VAD; filter music and low-SNR regions.</span></span><code class="model-name"><a class="model-link" href="https://huggingface.co/pyannote/segmentation-3.0" target="_blank" rel="noopener noreferrer">pyannote/segmentation-3.0</a></code></div>
                 <div class="pipeline-node"><strong><span class="en">Diarization</span></strong><span><span class="en">Diarize segments; select high-quality two-speaker exchanges and sample audio per speaker.</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2506.18623" target="_blank" rel="noopener noreferrer">BUT-FIT/diarizen</a></code></div>
                 <div class="pipeline-node"><strong><span class="en">Dialogue Separation</span></strong><span><span class="en">Run DialogueSidon on dynamically selected windows for more reliable separation.</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a></code></div>
-                <div class="pipeline-node"><strong><span class="en">Quality Verification</span></strong><span><span class="en">Use RMS and speaker similarity to reject identity splits, merges, and leakage.</span></span><code class="model-name"><a class="model-link" href="https://huggingface.co/microsoft/wavlm-base-plus-sv" target="_blank" rel="noopener noreferrer">microsoft/wavlm-base-plus-sv</a></code></div>
+                <div class="pipeline-node"><strong><span class="en">Quality Verification</span></strong><span><span class="en">Use RMS and speaker similarity to reject leakage, identity splits, and merges.</span></span><code class="model-name"><a class="model-link" href="https://huggingface.co/microsoft/wavlm-base-plus-sv" target="_blank" rel="noopener noreferrer">microsoft/wavlm-base-plus-sv</a></code></div>
                 <div class="pipeline-node"><strong><span class="en">ASR</span></strong><span><span class="en">Produce word-level transcriptions with timestamps.</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2509.14128" target="_blank" rel="noopener noreferrer">nvidia/parakeet-tdt-0.6b-v3</a></code></div>
               </div>
             </section>
@@ -60,19 +60,19 @@
               <p class="pipeline-stage-label"><span class="en">Source-Faithful Reconstruction</span></p>
               <div class="pipeline-lane">
                 <div class="pipeline-node"><strong><span class="en">Utterance Segmentation</span></strong><span><span class="en">Cut speaker tracks into utterances using ASR timestamps.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Audio-Tag Analysis</span></strong><span><span class="en">Extract expressive cues as audio tags; embed them in text for source-faithful TTS.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Reference Building</span></strong><span><span class="en">Combine a fixed speaker sample for stable timbre with each utterance for source-matched delivery.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Audio-Tag Analysis</span></strong><span><span class="en">Use multimodal listening to extract expressive audio tags; embed them in text for faithful TTS.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Reference Building</span></strong><span><span class="en">Combine each utterance with a fixed speaker sample to preserve delivery and stabilize timbre.</span></span></div>
                 <div class="pipeline-node"><strong><span class="en">Voice Cloning</span></strong><span><span class="en">Generate high-fidelity utterances from reference audio and audio-tagged text.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Reconstruction</span></strong><span><span class="en">Adapt source-relative timing to new TTS durations; assemble two speaker tracks.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Reconstruction</span></strong><span><span class="en">Adapt source-relative turns, pauses, and overlap to new TTS durations; assemble two speaker tracks.</span></span></div>
               </div>
             </section>
             <section class="pipeline-stage expansion-stage" aria-label="Source-Grounded Expansion pipeline">
               <p class="pipeline-stage-label"><span class="en">Source-Grounded Expansion</span></p>
               <div class="pipeline-lane">
                 <div class="pipeline-node"><strong><span class="en">Persona Extraction</span></strong><span><span class="en">Use multimodal analysis to profile the scene and both speakers.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Script Generation</span></strong><span><span class="en">Generate source-grounded dialogue text; plan turns, pauses, overlap, and paralinguistic audio tags.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Script Generation</span></strong><span><span class="en">Generate dialogue from source audio, transcript, and prior context; plan turns, pauses, overlap, and audio tags.</span></span></div>
                 <div class="pipeline-node"><strong><span class="en">Voice Cloning</span></strong><span><span class="en">Synthesize each utterance from speaker reference audio and audio-tagged text.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Assembly</span></strong><span><span class="en">Assemble synthesized utterances into two speaker tracks using scripted timing.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Assembly</span></strong><span><span class="en">Assemble synthesized utterances into two tracks using planned turns, pauses, and overlap.</span></span></div>
                 <div class="pipeline-node"><strong><span class="en">Forced Alignment</span></strong><span><span class="en">Align synthesized audio with dialogue text to produce word-level timestamps.</span></span></div>
               </div>
             </section>

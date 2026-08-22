@@ -6,7 +6,7 @@ This single-process Celery worker generates and synthesizes an English dialogue 
 
 - Task and queue: `extend_chunk`
 - Argument: one canonical chunk UUID string
-- Claim transition: `persona_generated`, or an extension-owned `failed` row, to `extending`
+- Claim transition: `reconstructed`, or an extension-owned `failed` row with a durable reconstruction result, to `extending`
 - Completion transition: `extending` to `completed`
 - Known quality rejection: `extending` to `rejected` when a mapped speaker has neither a DiariZen reference nor a usable non-overlapped interval in the current chunk
 - Technical failure: `extending` to `failed`, followed by re-raising

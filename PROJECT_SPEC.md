@@ -45,6 +45,7 @@ POST audio + metadata
        two-speaker source separation and speaker-mapping audit
        -> speech transcription
        -> LLM persona extraction
+       -> source-faithful utterance reconstruction
        -> LLM dialogue continuation
        -> voice-cloning speech synthesis into two speaker tracks
        -> upload artifacts and write chunks.final_results
@@ -67,7 +68,8 @@ current queue has the same name as its task.
 | `quality_filter_audio_part` | `audio_part_id` | `separate_chunk` per chunk |
 | `separate_chunk` | `chunk_id` | `transcribe_chunk` |
 | `transcribe_chunk` | `chunk_id` | `persona_chunk` |
-| `persona_chunk` | `chunk_id` | `extend_chunk` |
+| `persona_chunk` | `chunk_id` | `reconstruct_chunk` |
+| `reconstruct_chunk` | `chunk_id` | `extend_chunk` |
 | `extend_chunk` | `chunk_id` | terminal |
 
 ## Persistence ownership
@@ -81,10 +83,11 @@ current queue has the same name as its task.
 | separation | `chunks` | Persist the chunk diarization snapshot, fixed speaker mapping, and `final_results.separation`. |
 | transcription | `chunks` | Persist transcript artifact identities in `final_results.transcription`. |
 | persona | `chunks` | Persist the persona document and `final_results.persona`. |
+| reconstruction | `chunks` | Persist `final_results.reconstruction` and publish extension. |
 | extension | `chunks` | Persist `final_results.dialogue_extension` and complete the chunk. |
 
 Workers claim eligible rows transactionally before expensive work. Technical
-errors use `failed`; separation and extension may instead use terminal
+errors use `failed`; separation, reconstruction, and extension may instead use terminal
 `rejected` quality outcomes. Stale in-progress rows require explicit operator
 recovery.
 
@@ -92,7 +95,14 @@ Tasks must be idempotent and retry-safe. Database uniqueness constraints,
 content identities, and deterministic object keys should make repeated
 delivery converge on the same state.
 
-## Dialogue extension stage
+## Reconstruction and dialogue extension stages
+
+`RECONSTRUCT_CHUNK` rebuilds each source utterance from the separated speaker
+track. Its default audio-tag model is `xiaomi/mimo-v2.5`, and its default TTS
+model is `fish-audio/s2.1-pro`. It conditions TTS on a fixed speaker sample,
+one second of silence, and the matching separated utterance without using ASR.
+It then adapts source-relative pauses and overlap to generated durations and
+writes two equal-duration reconstructed speaker tracks.
 
 `EXTEND_CHUNK` is the final per-chunk task. It uses the completed transcript,
 persona, and speaker references to generate a dialogue continuation and
@@ -166,7 +176,8 @@ than a database check constraint:
 pending/failed           -> separating          -> separated/rejected/failed
 separated/failed         -> transcribing        -> transcribed/failed
 transcribed/failed       -> persona_generating  -> persona_generated/failed
-persona_generated/failed -> extending           -> completed/rejected/failed
+persona_generated/failed -> reconstructing      -> reconstructed/rejected/failed
+reconstructed/failed     -> extending            -> completed/rejected/failed
 ```
 
 For a failed chunk, durable `final_results` namespaces determine the retrying
@@ -174,7 +185,7 @@ stage. `completed` and `rejected` are terminal, while stale in-progress states
 require operator recovery. Successor publication occurs after durable stage
 completion; publication failures do not remove committed artifacts. Depending
 on the producing stage, they may transition `pending`, `split_completed`,
-`diarized`, or `persona_generated` to `failed`.
+`diarized`, `persona_generated`, or `reconstructed` to `failed`.
 
 The dependency-free `packages/task-contracts` package owns routing contracts.
 `packages/task-client` owns producer-side UUID serialization, bounded retry,

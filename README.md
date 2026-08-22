@@ -171,7 +171,8 @@ under deterministic keys in the configured bucket.
 | Separation | Chunk UUID | Two fixed speaker tracks and audited speaker mapping |
 | Transcription | Separated English chunk | Transcript and word-alignment artifacts |
 | Speaker profile (`persona_chunk`) | Transcribed chunk | Structured scene and speaker-profile document |
-| Dialogue expansion (`extend_chunk`) | Profile-complete chunk | New dialogue script, transcript, and two synthesized tracks |
+| Source reconstruction (`reconstruct_chunk`) | Profile-complete chunk | Reconstructed transcript and two source-faithful speaker tracks |
+| Dialogue expansion (`extend_chunk`) | Reconstruction-complete chunk | New dialogue script, transcript, and two synthesized tracks |
 
 Task names, queue names, UUID arguments, and successor relationships are
 defined centrally in
@@ -223,5 +224,10 @@ Business Source License 1.1.
 
 See [Third-Party Notices](THIRD_PARTY_NOTICES.md) for third-party licenses and
 attributions. The project license does not replace or override those terms.
+
+## Changelog
+
+- **2026-08-20** — Initial release with the project demo and pipeline source code, including a single script that starts the full pipeline for speaker separation and dialogue expansion.
+- **2026-08-21** — Added an explanation of the dialogue reconstruction task's underlying approach and its source-code implementation.
 
 [project-page]: //avera-labs.github.io/ConversationalVoice/

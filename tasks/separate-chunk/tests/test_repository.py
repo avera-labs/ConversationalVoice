@@ -55,6 +55,8 @@ def row(status, separation):
     [
         "persona_generating",
         "persona_generated",
+        "reconstructing",
+        "reconstructed",
         "extending",
         "completed",
         "rejected",
@@ -69,7 +71,15 @@ def test_claim_treats_downstream_persona_states_as_already_separated(status):
 
 
 @pytest.mark.parametrize(
-    "status", ["persona_generating", "persona_generated", "extending", "completed"]
+    "status",
+    [
+        "persona_generating",
+        "persona_generated",
+        "reconstructing",
+        "reconstructed",
+        "extending",
+        "completed",
+    ],
 )
 def test_claim_rejects_downstream_persona_states_without_separation(status):
     with pytest.raises(RuntimeError, match="invalid_chunk_state"):
@@ -81,6 +91,8 @@ def test_claim_rejects_downstream_persona_states_without_separation(status):
     [
         "persona_generating",
         "persona_generated",
+        "reconstructing",
+        "reconstructed",
         "extending",
         "completed",
         "rejected",

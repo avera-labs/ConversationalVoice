@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from .celery_app import create_app
 from .openrouter import OpenRouterClient
-from .publisher import ExtendChunkPublisher
+from .publisher import ReconstructChunkPublisher
 from .repository import Repository
 from .storage import ObjectStorage
 from .task import Handler, register
@@ -14,7 +14,7 @@ class Runtime:
     repository: Repository
     storage: ObjectStorage
     client: OpenRouterClient
-    publisher: ExtendChunkPublisher
+    publisher: ReconstructChunkPublisher
     task: object
 
     @classmethod
@@ -26,7 +26,7 @@ class Runtime:
             settings.policy.openrouter,
             settings.environment.openrouter_api_key.get_secret_value(),
         )
-        publisher = ExtendChunkPublisher.create(settings.environment)
+        publisher = ReconstructChunkPublisher.create(settings.environment)
         task = register(
             app, Handler(repository, storage, client, publisher, settings.policy)
         )

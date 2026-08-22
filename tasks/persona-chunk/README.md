@@ -7,12 +7,12 @@ This single-process Celery worker generates a structured vocal-persona document 
 - Task and queue: `persona_chunk`
 - Argument: one canonical chunk UUID string
 - Claim transition: `transcribed`, or a persona-owned `failed` row, to `persona_generating`
-- Completion transition: `persona_generating` to `persona_generated`, followed by publishing `extend_chunk`
+- Completion transition: `persona_generating` to `persona_generated`, followed by publishing `reconstruct_chunk`
 - Failure transition: `persona_generating` to `failed`, followed by re-raising
 - A successor-publication failure transitions `persona_generated` to `failed` while retaining the durable persona
 - `persona_generating` is an in-progress no-op; `extending`, `completed`, and an extension-owned `rejected` state validate the durable persona and return without republishing
 
-Stale in-progress rows require explicit operator recovery. A retry with an already durable persona validates it and republishes `extend_chunk` without rerunning OpenRouter.
+Stale in-progress rows require explicit operator recovery. A retry with an already durable persona validates it and republishes `reconstruct_chunk` without rerunning OpenRouter.
 
 ## Inputs
 

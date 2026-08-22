@@ -20,7 +20,7 @@
 --   diarization    → speaker labels per part (JSON on S3), writes
 --                    audio_parts.diarization_uri, advances status
 --   quality-filter → keeps clean two-speaker spans, creates one chunks row each
---   processing     → per chunk: separate → transcribe → persona → extend; fills
+--   processing     → per chunk: separate → transcribe → persona → reconstruct → extend; fills
 --                    diarizations / persona / final_results
 -- ============================================================================
 
@@ -98,16 +98,18 @@ CREATE TRIGGER trg_audio_parts_updated_at
     BEFORE UPDATE ON audio_parts
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- chunks.status transitions owned by separation, transcription, persona, and extension:
+-- chunks.status transitions owned by separation, transcription, persona, reconstruction, and extension:
 --   pending      -> separating
---   failed       -> separating, transcribing, persona_generating, or extending, selected
+--   failed       -> separating, transcribing, persona_generating, reconstructing, or extending, selected
 --                   by the retrying task from durable result namespaces
 --   separating   -> separated, rejected, or failed
 --   separated    -> transcribing
 --   transcribing -> transcribed or failed
 --   transcribed  -> persona_generating
 --   persona_generating -> persona_generated or failed
---   persona_generated -> extending
+--   persona_generated -> reconstructing
+--   reconstructing -> reconstructed, rejected, or failed
+--   reconstructed -> extending
 --   extending    -> completed, rejected, or failed
 --   rejected and completed are terminal
 CREATE TABLE chunks (

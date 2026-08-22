@@ -1,0 +1,40 @@
+config_version = "source-reconstruction-v1"
+
+[audio_tags]
+model = "xiaomi/mimo-v2.5"
+reasoning_effort = "none"
+max_tokens = 256
+timeout_seconds = 90
+max_attempts = 2
+retry_backoff_seconds = 1.0
+require_parameters = true
+allow_fallbacks = true
+
+[tts]
+model = "fish-audio/s2.1-pro"
+timeout_seconds = 180
+max_attempts = 3
+retry_backoff_seconds = 2.0
+temperature = 0.7
+top_p = 0.7
+chunk_length = 300
+min_chunk_length = 50
+max_new_tokens = 2048
+repetition_penalty = 1.2
+sample_rate_hz = 44100
+latency = "normal"
+normalize_text = true
+normalize_loudness = true
+
+[audio]
+input_sample_rate_hz = 16000
+reference_silence_ms = 1000
+output_sample_rate_hz = 44100
+
+[reference]
+fallback_maximum_duration_ms = 30000
+fallback_edge_trim_ms = 500
+
+[task]
+workspace_prefix = "voice-pipeline-reconstruct-chunk-"
+error_max_length = 512

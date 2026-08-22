@@ -161,18 +161,20 @@ def test_authoritative_schema_contains_status_contracts() -> None:
     ):
         assert transition in normalized_schema
     assert (
-        "chunks.status transitions owned by separation, transcription, persona, and extension:"
+        "chunks.status transitions owned by separation, transcription, persona, reconstruction, and extension:"
         in normalized_schema
     )
     for transition in (
         "pending -> separating",
-        "failed -> separating, transcribing, persona_generating, or extending, selected",
+        "failed -> separating, transcribing, persona_generating, reconstructing, or extending, selected",
         "separating -> separated, rejected, or failed",
         "separated -> transcribing",
         "transcribing -> transcribed or failed",
         "transcribed -> persona_generating",
         "persona_generating -> persona_generated or failed",
-        "persona_generated -> extending",
+        "persona_generated -> reconstructing",
+        "reconstructing -> reconstructed, rejected, or failed",
+        "reconstructed -> extending",
         "extending -> completed, rejected, or failed",
         "rejected and completed are terminal",
     ):

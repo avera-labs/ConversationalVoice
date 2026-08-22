@@ -22,7 +22,8 @@ separation result.
 An invocation that finds an existing separation result validates the complete
 diarization snapshot, exact result schema, canonical output URIs, and persisted
 slot-to-speaker mapping before returning `already_separated`, including when the
-chunk has advanced to `persona_generating`, `persona_generated`, `extending`,
+chunk has advanced to `persona_generating`, `persona_generated`,
+`reconstructing`, `reconstructed`, `extending`,
 `completed`, or an extension-owned `rejected` state. This validation does
 not download audio or load either model. A missing or partial result under a
 downstream status is a contract failure, not a successful no-op.

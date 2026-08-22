@@ -31,6 +31,7 @@ class Claim:
     transcription: dict | None = None
     persona: dict | None = None
     persona_result: dict | None = None
+    reconstruction: dict | None = None
     extension_result: dict | None = None
 
 
@@ -69,6 +70,7 @@ class Repository:
             separation = results.get("separation")
             transcription = results.get("transcription")
             persona_result = results.get("persona")
+            reconstruction = results.get("reconstruction")
             extension_result = results.get("dialogue_extension")
             if row.status == "extending":
                 return Claim(identifier, Disposition.ALREADY_PROCESSING, row.status)
@@ -84,16 +86,18 @@ class Repository:
                     separation,
                     transcription,
                     persona_result,
+                    reconstruction,
                     extension_result,
                 )
             if extension_result is not None:
                 raise RuntimeError("invalid_partial_extension_state")
             if (
-                row.status not in {"persona_generated", "failed"}
+                row.status not in {"reconstructed", "failed"}
                 or not isinstance(separation, dict)
                 or not isinstance(transcription, dict)
                 or not isinstance(row.persona, dict)
                 or not isinstance(persona_result, dict)
+                or not isinstance(reconstruction, dict)
             ):
                 raise RuntimeError("invalid_chunk_state")
             row.status = "extending"
@@ -105,6 +109,7 @@ class Repository:
                 separation,
                 transcription,
                 persona_result,
+                reconstruction,
                 None,
             )
 
@@ -116,6 +121,7 @@ class Repository:
         separation,
         transcription,
         persona_result,
+        reconstruction,
         extension_result,
     ):
         return Claim(
@@ -132,6 +138,7 @@ class Repository:
             transcription if isinstance(transcription, dict) else None,
             dict(row.persona) if isinstance(row.persona, dict) else None,
             persona_result if isinstance(persona_result, dict) else None,
+            reconstruction if isinstance(reconstruction, dict) else None,
             extension_result if isinstance(extension_result, dict) else None,
         )
 
@@ -158,6 +165,7 @@ class Repository:
                 or current.get("transcription") != claim.transcription
                 or row.persona != claim.persona
                 or current.get("persona") != claim.persona_result
+                or current.get("reconstruction") != claim.reconstruction
             ):
                 raise RuntimeError("completion_conflict")
             existing = current.get("dialogue_extension")

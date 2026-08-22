@@ -58,6 +58,8 @@ def row(status):
     [
         "persona_generating",
         "persona_generated",
+        "reconstructing",
+        "reconstructed",
         "extending",
         "completed",
         "rejected",

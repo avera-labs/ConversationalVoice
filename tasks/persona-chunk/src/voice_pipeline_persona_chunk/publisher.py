@@ -1,10 +1,10 @@
 from uuid import UUID
 
 from voice_pipeline_task_client import TaskPublisher
-from voice_pipeline_task_contracts import EXTEND_CHUNK
+from voice_pipeline_task_contracts import RECONSTRUCT_CHUNK
 
 
-class ExtendChunkPublisher:
+class ReconstructChunkPublisher:
     def __init__(self, publisher):
         self._publisher = publisher
 
@@ -18,7 +18,7 @@ class ExtendChunkPublisher:
         )
 
     def publish(self, chunk_id: UUID) -> str:
-        return self._publisher.publish(EXTEND_CHUNK, chunk_id)
+        return self._publisher.publish(RECONSTRUCT_CHUNK, chunk_id)
 
     def close(self):
         self._publisher.close()

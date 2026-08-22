@@ -202,6 +202,7 @@ class Handler:
             or not isinstance(claim.transcription, dict)
             or not isinstance(claim.persona, dict)
             or not isinstance(claim.persona_result, dict)
+            or not isinstance(claim.reconstruction, dict)
         ):
             raise RuntimeError("invalid_extension_input")
         snapshot = parse_chunk_diarization(

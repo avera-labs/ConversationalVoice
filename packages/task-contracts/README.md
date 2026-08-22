@@ -14,6 +14,7 @@ workers. It has no Celery dependency and does not import task implementations.
 | `SEPARATE_CHUNK` | `separate_chunk` | `separate_chunk` | `chunk_id`: UUID string |
 | `TRANSCRIBE_CHUNK` | `transcribe_chunk` | `transcribe_chunk` | `chunk_id`: UUID string |
 | `PERSONA_CHUNK` | `persona_chunk` | `persona_chunk` | `chunk_id`: UUID string |
+| `RECONSTRUCT_CHUNK` | `reconstruct_chunk` | `reconstruct_chunk` | `chunk_id`: UUID string |
 | `EXTEND_CHUNK` | `extend_chunk` | `extend_chunk` | `chunk_id`: UUID string |
 
 The diarization task publishes `QUALITY_FILTER_AUDIO_PART` only after its
@@ -22,7 +23,8 @@ The quality-filter task publishes `SEPARATE_CHUNK` after committing accepted
 chunks. Separation publishes `TRANSCRIBE_CHUNK` for English chunks after its
 durable completion commit.
 Transcription publishes `PERSONA_CHUNK` after its durable completion commit.
-Persona publishes `EXTEND_CHUNK` after its durable completion commit.
+Persona publishes `RECONSTRUCT_CHUNK` after its durable completion commit.
+Reconstruction publishes `EXTEND_CHUNK` after its durable completion commit.
 
 Publishers use `voice-pipeline-task-client`, which applies the registered
 queue, UUID serialization, bounded retry policy, publish confirmation, and safe

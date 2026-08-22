@@ -15,6 +15,7 @@ def row(status, extension=None):
         "separation": {"separation": "valid"},
         "transcription": {"transcription": "valid"},
         "persona": {"persona": "valid"},
+        "reconstruction": {"reconstruction": "valid"},
     }
     if extension is not None:
         results["dialogue_extension"] = extension
@@ -73,7 +74,7 @@ class Factory:
         return Transaction(self.record)
 
 
-@pytest.mark.parametrize("status", ["persona_generated", "failed"])
+@pytest.mark.parametrize("status", ["reconstructed", "failed"])
 def test_claim_advances_eligible_extension_state(status):
     record = row(status)
     claim = Repository(Factory(record)).claim(IDENTIFIER)
@@ -110,7 +111,7 @@ def test_terminal_or_in_progress_invocation_is_a_no_op(status, disposition):
 
 
 def test_completion_preserves_other_result_namespaces():
-    record = row("persona_generated")
+    record = row("reconstructed")
     repository = Repository(Factory(record))
     claim = repository.claim(IDENTIFIER)
     result = {"result": "extension"}

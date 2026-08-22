@@ -14,6 +14,7 @@ from .extension import (
     parse_dialogue_extension_transcript,
 )
 from .persona import parse_persona_document, parse_persona_result
+from .reconstruction import parse_reconstruction_transcript
 from .transcription import (
     parse_transcription_artifact,
     parse_transcription_result,
@@ -33,6 +34,7 @@ __all__ = [
     "parse_dialogue_extension_transcript",
     "parse_persona_document",
     "parse_persona_result",
+    "parse_reconstruction_transcript",
     "parse_separation_result",
     "parse_transcription_artifact",
     "parse_transcription_result",

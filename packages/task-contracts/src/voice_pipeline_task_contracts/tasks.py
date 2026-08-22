@@ -49,6 +49,12 @@ PERSONA_CHUNK = TaskContract(
     uuid_argument="chunk_id",
 )
 
+RECONSTRUCT_CHUNK = TaskContract(
+    name="reconstruct_chunk",
+    queue="reconstruct_chunk",
+    uuid_argument="chunk_id",
+)
+
 EXTEND_CHUNK = TaskContract(
     name="extend_chunk",
     queue="extend_chunk",
@@ -62,6 +68,7 @@ ALL_TASKS = (
     SEPARATE_CHUNK,
     TRANSCRIBE_CHUNK,
     PERSONA_CHUNK,
+    RECONSTRUCT_CHUNK,
     EXTEND_CHUNK,
 )
 

@@ -92,13 +92,16 @@ determine the retry branch. A diarization retry claims `failed`, clears any old
 URI, and reruns the full deterministic operation.
 
 Chunks use `pending`, `separating`, `separated`, `transcribing`, `transcribed`,
-`persona_generating`, `persona_generated`, `extending`, `completed`, `rejected`,
-and `failed`. A known separation or extension quality rejection is terminal. A
+`persona_generating`, `persona_generated`, `reconstructing`, `reconstructed`,
+`extending`, `completed`, `rejected`,
+and `failed`. A known separation, reconstruction, or extension quality rejection is terminal. A
 failed chunk without a separation namespace may retry separation; a failed
 chunk with valid separation and no transcription namespace may retry
 transcription; a failed chunk with valid separation and transcription
 namespaces but no persona may retry persona; a failed chunk with a valid
-persona and no dialogue-extension namespace may retry extension. Stale
+persona and no reconstruction namespace may retry reconstruction; a failed
+chunk with valid reconstruction and no dialogue-extension namespace may retry
+extension. Stale
 in-progress rows require explicit operator recovery. The database intentionally
 does not constrain chunk status values; task repositories own transition
 validation, while `schema/schema.sql` documents the shared vocabulary.

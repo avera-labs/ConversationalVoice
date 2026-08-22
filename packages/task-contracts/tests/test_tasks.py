@@ -7,6 +7,7 @@ from voice_pipeline_task_contracts import (
     EXTEND_CHUNK,
     PERSONA_CHUNK,
     QUALITY_FILTER_AUDIO_PART,
+    RECONSTRUCT_CHUNK,
     SEPARATE_CHUNK,
     SPLIT_RAW_AUDIO_INTO_PARTS,
     TASKS_BY_NAME,
@@ -55,6 +56,12 @@ def test_extend_chunk_contract() -> None:
     assert EXTEND_CHUNK.name == "extend_chunk"
     assert EXTEND_CHUNK.queue == "extend_chunk"
     assert EXTEND_CHUNK.uuid_argument == "chunk_id"
+
+
+def test_reconstruct_chunk_contract() -> None:
+    assert RECONSTRUCT_CHUNK.name == "reconstruct_chunk"
+    assert RECONSTRUCT_CHUNK.queue == "reconstruct_chunk"
+    assert RECONSTRUCT_CHUNK.uuid_argument == "chunk_id"
 
 
 def test_registered_names_and_queues_are_unique() -> None:

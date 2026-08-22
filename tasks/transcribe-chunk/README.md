@@ -41,7 +41,8 @@ After the first successful database commit, the worker publishes one
 not roll the committed `transcribed` state back. An `already_transcribed`
 redelivery does not automatically republish the downstream task. A valid
 transcription remains `already_transcribed` after the chunk advances to
-`persona_generating`, `persona_generated`, `extending`, `completed`, or an
+`persona_generating`, `persona_generated`, `reconstructing`, `reconstructed`,
+`extending`, `completed`, or an
 extension-owned `rejected` state.
 
 ## Configuration

@@ -64,7 +64,10 @@ def test_durable_persona_is_ready_to_dispatch(status):
     assert claim.disposition is Disposition.READY_TO_DISPATCH
 
 
-@pytest.mark.parametrize("status", ["extending", "completed", "rejected"])
+@pytest.mark.parametrize(
+    "status",
+    ["reconstructing", "reconstructed", "extending", "completed", "rejected"],
+)
 def test_downstream_state_with_persona_is_already_completed(status):
     claim = Repository(Factory(row(status, durable_persona=True))).claim(IDENTIFIER)
     assert claim.disposition is Disposition.ALREADY_COMPLETED

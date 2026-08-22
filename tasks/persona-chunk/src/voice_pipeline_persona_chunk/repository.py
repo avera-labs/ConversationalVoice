@@ -69,7 +69,12 @@ class Repository:
             persona = row.persona
             if row.status == "persona_generating":
                 return Claim(identifier, Disposition.ALREADY_PROCESSING, row.status)
-            if row.status in {"extending", "completed"}:
+            if row.status in {
+                "reconstructing",
+                "reconstructed",
+                "extending",
+                "completed",
+            }:
                 if not isinstance(persona, dict) or not isinstance(
                     persona_result, dict
                 ):

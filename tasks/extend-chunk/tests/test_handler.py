@@ -280,6 +280,7 @@ class Repo:
             transcription_result(sep, transcript_payload),
             document,
             persona_result(document, transcript_payload),
+            {"reconstruction": "valid"},
         )
 
     def claim(self, _identifier):

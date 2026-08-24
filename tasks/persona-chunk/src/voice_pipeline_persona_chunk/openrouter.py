@@ -24,8 +24,14 @@ class OpenRouterClient:
         self._owns_transport = transport is None
         self.sleeper = sleeper
 
-    def analyze(self, mp3: bytes, srt: str, speaker_mapping: tuple[int, int]):
-        payload = self._payload(mp3, srt, speaker_mapping)
+    def analyze(
+        self,
+        mp3: bytes,
+        srt: str,
+        speaker_mapping: tuple[int, int],
+        language: str = "en",
+    ):
+        payload = self._payload(mp3, srt, speaker_mapping, language)
         last_error: Exception | None = None
         for attempt in range(1, self.policy.max_attempts + 1):
             try:
@@ -57,14 +63,18 @@ class OpenRouterClient:
                 self.sleeper(self.policy.retry_backoff_seconds)
         raise last_error or OpenRouterError("openrouter_request_failed")
 
-    def _payload(self, mp3: bytes, srt: str, speaker_mapping: tuple[int, int]):
+    def _payload(
+        self, mp3: bytes, srt: str, speaker_mapping: tuple[int, int], language: str
+    ):
         schema = build_response_schema(speaker_mapping)
         return {
             "model": self.policy.model,
             "messages": [
                 {
                     "role": "system",
-                    "content": build_system_prompt(speaker_mapping, schema),
+                    "content": build_system_prompt(
+                        speaker_mapping, schema, language=language
+                    ),
                 },
                 {
                     "role": "user",

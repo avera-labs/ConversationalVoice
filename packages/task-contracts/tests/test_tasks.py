@@ -12,6 +12,7 @@ from voice_pipeline_task_contracts import (
     SPLIT_RAW_AUDIO_INTO_PARTS,
     TASKS_BY_NAME,
     TRANSCRIBE_CHUNK,
+    TRANSCRIBE_CHUNK_ZH,
     get_task_contract,
 )
 
@@ -44,6 +45,12 @@ def test_transcribe_chunk_contract() -> None:
     assert TRANSCRIBE_CHUNK.name == "transcribe_chunk"
     assert TRANSCRIBE_CHUNK.queue == "transcribe_chunk"
     assert TRANSCRIBE_CHUNK.uuid_argument == "chunk_id"
+
+
+def test_transcribe_chunk_zh_contract() -> None:
+    assert TRANSCRIBE_CHUNK_ZH.name == "transcribe_chunk_zh"
+    assert TRANSCRIBE_CHUNK_ZH.queue == "transcribe_chunk_zh"
+    assert TRANSCRIBE_CHUNK_ZH.uuid_argument == "chunk_id"
 
 
 def test_persona_chunk_contract() -> None:

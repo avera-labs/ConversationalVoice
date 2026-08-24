@@ -9,6 +9,7 @@ from .tasks import (
     SPLIT_RAW_AUDIO_INTO_PARTS,
     TASKS_BY_NAME,
     TRANSCRIBE_CHUNK,
+    TRANSCRIBE_CHUNK_ZH,
     TaskContract,
     get_task_contract,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "SPLIT_RAW_AUDIO_INTO_PARTS",
     "TASKS_BY_NAME",
     "TRANSCRIBE_CHUNK",
+    "TRANSCRIBE_CHUNK_ZH",
     "TaskContract",
     "get_task_contract",
 ]

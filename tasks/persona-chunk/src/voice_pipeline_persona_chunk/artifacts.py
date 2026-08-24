@@ -12,7 +12,7 @@ class ArtifactMetadata:
     sha256: str
 
 
-def build_persona_document(wire, usage, speaker_mapping, policy):
+def build_persona_document(wire, usage, speaker_mapping, policy, language="en"):
     return {
         "scene": wire["scene"],
         "speakers": [
@@ -23,7 +23,7 @@ def build_persona_document(wire, usage, speaker_mapping, policy):
         "schema_version": 1,
         "backend": "openrouter",
         "config_version": policy.config_version,
-        "language": "en",
+        "language": language,
         "speaker_mapping": [
             {"output_slot": slot, "diarization_speaker_id": speaker_id}
             for slot, speaker_id in enumerate(speaker_mapping)

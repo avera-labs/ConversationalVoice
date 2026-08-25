@@ -30,6 +30,32 @@ def test_empty_artifact_is_valid() -> None:
     assert parsed.turns == ()
 
 
+def test_writer_clamps_model_boundary_overrun_to_audio_duration() -> None:
+    artifact = build_artifact(
+        [RawTurn(682.5725, 686.6725, "a")],
+        model="model-name",
+        duration_ms=686_617,
+    )
+
+    segment = artifact.segments[0]
+    assert segment.start == 682.573
+    assert segment.end == 686.617
+    assert segment.duration == 4.044
+
+
+def test_writer_rejects_model_boundary_overrun_larger_than_100_milliseconds() -> None:
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"exceeds audio duration by 100\.100 ms; "
+            r"maximum allowed model boundary overrun is 100 ms"
+        ),
+    ):
+        build_artifact(
+            [RawTurn(0.5, 1.1001, "a")], model="model-name", duration_ms=1000
+        )
+
+
 @pytest.mark.parametrize("mutation", ["extra", "duration", "precision", "speaker"])
 def test_reader_rejects_contract_drift(mutation: str) -> None:
     document = build_artifact(

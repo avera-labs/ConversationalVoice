@@ -38,7 +38,7 @@ The bundled defaults are:
 ```toml
 [vad]
 model = "pyannote/segmentation-3.0"
-device = "cpu"
+device = "auto"
 
 [windowing]
 gap_threshold_ms = 15000
@@ -80,11 +80,10 @@ VAD output still produces an artifact with an empty `segments` array.
 
 The `vad` adapter imports PyTorch and pyannote only when inference is first
 requested, then reuses the pipeline from a process-local cache. The bundled
-policy uses `device = "cpu"` as the portable default. With an explicitly
-reviewed `device = "auto"` override, selection order is CUDA, MPS, then CPU.
+policy uses `device = "auto"`, selecting CUDA first, then MPS, and finally CPU.
 An explicit `cuda` or `mps` setting fails instead of silently falling back
 when that device is unavailable. Run the real-model smoke test inside every
-GPU deployment image before selecting `auto` or `cuda`.
+GPU deployment image before relying on GPU inference.
 
 The adapter reads the normalized 16 kHz mono 16-bit PCM frames into an
 in-memory waveform payload, so pyannote does not invoke a separate media

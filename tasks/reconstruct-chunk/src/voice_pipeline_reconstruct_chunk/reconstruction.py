@@ -32,6 +32,7 @@ class Reconstructor:
         *,
         speaker_mapping,
         source_duration_ms,
+        language="en",
     ) -> Reconstruction:
         source_utterances = flatten_utterances(transcript, speaker_mapping)
         generated_payloads = []
@@ -94,7 +95,7 @@ class Reconstructor:
         scheduled = schedule(source_utterances, generated_durations)
         transcript_output = {
             "schema_version": 1,
-            "language": "en",
+            "language": language,
             "timebase": "reconstruction",
             "source_duration_ms": source_duration_ms,
             "duration_ms": max(item["end_ms"] for item in scheduled),
@@ -108,6 +109,7 @@ class Reconstructor:
             transcript_output,
             speaker_mapping=speaker_mapping,
             source_duration_ms=source_duration_ms,
+            expected_language=language,
         )
         return Reconstruction(
             transcript=transcript_output,

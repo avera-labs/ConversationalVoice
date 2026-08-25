@@ -29,7 +29,9 @@ def identity(payload):
 
 
 def canonical(value):
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode()
 
 
 class Repo:
@@ -101,7 +103,8 @@ class Publisher:
         return "task-id"
 
 
-def build_claim_and_objects():
+def build_claim_and_objects(language="en"):
+    chinese = language == "zh"
     separated = (wav(16000, 3000), wav(16000, 3000, b"\x02\x00"))
     speaker_audio = []
     for slot, (speaker, payload) in enumerate(zip((4, 7), separated, strict=True)):
@@ -141,13 +144,17 @@ def build_claim_and_objects():
     }
     transcript = {
         "schema_version": 1,
-        "backend": "parakeet_tdt",
+        "backend": "paraformer_zh" if chinese else "parakeet_tdt",
         "model": {
-            "repo_id": "nvidia/parakeet-tdt-0.6b-v3",
-            "revision": "c" * 40,
-            "config_version": "parakeet-v1",
+            "repo_id": (
+                "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
+                if chinese
+                else "nvidia/parakeet-tdt-0.6b-v3"
+            ),
+            "revision": "v2.0.4" if chinese else "c" * 40,
+            "config_version": "paraformer-zh-v1" if chinese else "parakeet-v1",
         },
-        "language": "en",
+        "language": language,
         "timebase": "chunk",
         "speakers": [
             {
@@ -158,7 +165,7 @@ def build_claim_and_objects():
                         "utterance_index": 0,
                         "start_ms": 100,
                         "end_ms": 600,
-                        "text": "Hello.",
+                        "text": "你好。" if chinese else "Hello.",
                         "confidence": 0.9,
                     }
                 ],
@@ -171,7 +178,7 @@ def build_claim_and_objects():
                         "utterance_index": 0,
                         "start_ms": 1600,
                         "end_ms": 2200,
-                        "text": "Hi.",
+                        "text": "好的。" if chinese else "Hi.",
                         "confidence": 0.8,
                     }
                 ],
@@ -182,9 +189,9 @@ def build_claim_and_objects():
     transcript_size, transcript_sha = identity(transcript_payload)
     transcription = {
         "schema_version": 1,
-        "backend": "parakeet_tdt",
+        "backend": transcript["backend"],
         "model": transcript["model"],
-        "language": "en",
+        "language": language,
         "input_speaker_audio": [
             {
                 "output_slot": item["output_slot"],
@@ -244,7 +251,7 @@ def build_claim_and_objects():
         audio_part_id=PART,
         chunk_audio_uri=f"{CHUNK_BASE}/audio.wav",
         audio_part_audio_uri=f"{PART_BASE}/audio.wav",
-        lang="en",
+        lang=language,
         duration_ms=3000,
         diarizations={
             "schema_version": 1,
@@ -294,4 +301,30 @@ def test_handler_reconstructs_without_asr_and_publishes_extension(tmp_path, poli
         "speaker-0.wav",
         "speaker-1.wav",
     }
+    assert not hasattr(repo, "failed")
+
+
+def test_handler_reconstructs_chinese_without_publishing_english_extension(
+    tmp_path, policy
+):
+    claim, objects = build_claim_and_objects("zh")
+    repo = Repo(claim)
+    storage = Storage(objects)
+    tags = Tags()
+    tts = Tts()
+    publisher = Publisher()
+
+    outcome = Handler(repo, storage, tags, tts, publisher, policy, tmp_path)(
+        str(IDENTIFIER)
+    )
+
+    assert outcome["outcome"] == "reconstructed"
+    assert not hasattr(publisher, "identifier")
+    assert [text for _audio, text in tags.calls] == ["你好。", "好的。"]
+    assert repo.completed[1]["language"] == "zh"
+    uploaded = dict(storage.uploads)
+    transcript_uri = f"{CHUNK_BASE}/results/reconstruction/transcript.json"
+    manifest_uri = f"{CHUNK_BASE}/results/reconstruction/manifest.json"
+    assert json.loads(uploaded[transcript_uri])["language"] == "zh"
+    assert json.loads(uploaded[manifest_uri])["language"] == "zh"
     assert not hasattr(repo, "failed")

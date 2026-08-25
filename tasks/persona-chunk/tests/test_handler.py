@@ -5,6 +5,8 @@ import wave
 from dataclasses import replace
 from uuid import UUID
 
+import pytest
+
 from voice_pipeline_persona_chunk import task as task_module
 from voice_pipeline_persona_chunk.repository import Claim, Disposition
 from voice_pipeline_persona_chunk.task import Handler
@@ -325,7 +327,7 @@ def test_handler_completes_without_downloading_word_alignment(
     assert not hasattr(repo, "failed")
 
 
-def test_chinese_transcript_completes_persona_without_english_reconstruction(
+def test_chinese_transcript_completes_persona_and_publishes_reconstruction(
     tmp_path, policy, monkeypatch
 ):
     audio = tmp_path / "source.wav"
@@ -348,7 +350,7 @@ def test_chinese_transcript_completes_persona_without_english_reconstruction(
     assert repo.completed[1]["language"] == "zh"
     assert client.calls[0][3] == "zh"
     assert "[Speaker 4]: 你好。" in client.calls[0][1]
-    assert publisher.calls == []
+    assert publisher.calls == [IDENTIFIER]
     assert not hasattr(repo, "failed")
 
 
@@ -385,13 +387,16 @@ def test_completed_claim_is_validated_without_storage_or_provider_io(
     assert client.calls == []
 
 
+@pytest.mark.parametrize(
+    ("language", "status"), [("en", "failed"), ("zh", "persona_generated")]
+)
 def test_durable_persona_retry_only_republishes_successor(
-    tmp_path, policy, monkeypatch
+    tmp_path, policy, monkeypatch, language, status
 ):
     audio = tmp_path / "source.wav"
     size, sha = make_wav(audio)
-    transcript_bytes = canonical(transcript())
-    repo = Repo(size, sha, transcript_bytes)
+    transcript_bytes = canonical(transcript(language))
+    repo = Repo(size, sha, transcript_bytes, language)
     storage = Storage(audio, transcript_bytes)
     monkeypatch.setattr(
         task_module, "encode_mp3", lambda _s, d, _p: d.write_bytes(b"mp3")
@@ -401,7 +406,7 @@ def test_durable_persona_retry_only_republishes_successor(
     repo.claim_value = replace(
         repo.claim_value,
         disposition=Disposition.READY_TO_DISPATCH,
-        status="failed",
+        status=status,
         persona=persona,
         persona_result=result,
     )

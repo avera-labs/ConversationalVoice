@@ -56,7 +56,7 @@ class Handler:
             self._validate_completed_claim(claim)
         if claim.disposition is Disposition.READY_TO_DISPATCH:
             self._validate_completed_claim(claim)
-            return self._publish(identifier, claim.lang)
+            return self._publish(identifier)
         if claim.disposition is not Disposition.CLAIMED:
             self._finished(identifier, claim.disposition.value)
             return {"chunk_id": str(identifier), "outcome": claim.disposition.value}
@@ -124,7 +124,7 @@ class Handler:
                 expected_language=claim.lang,
             )
             self.repository.complete(claim, persona, result)
-            return self._publish(identifier, claim.lang, speaker_count=2)
+            return self._publish(identifier, speaker_count=2)
         except Exception:
             try:
                 self.repository.fail(
@@ -261,13 +261,7 @@ class Handler:
             "artifact": {"uri": uri, "size_bytes": size, "sha256": sha},
         }
 
-    def _publish(self, identifier, language, speaker_count=None):
-        if language == "zh":
-            self._finished(identifier, "persona_generated")
-            result = {"chunk_id": str(identifier), "outcome": "persona_generated"}
-            if speaker_count is not None:
-                result["speaker_count"] = speaker_count
-            return result
+    def _publish(self, identifier, speaker_count=None):
         try:
             self.publisher.publish(identifier)
         except Exception:

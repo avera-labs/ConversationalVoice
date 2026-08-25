@@ -9,7 +9,8 @@ utterance artifacts, word-alignment artifacts, and minimal durable
 transcription results. Empty per-speaker word and utterance arrays are valid,
 while present items require canonical chunk-relative timestamps, finite
 confidence, and the persisted speaker mapping. Language parsers accept only
-the canonical `en` and `zh` codes.
+the canonical `en` and `zh` codes. Reconstruction transcript validation
+preserves and verifies the same language identity.
 
 `speaker-0.wav` and `speaker-1.wav` identify fixed, chunk-local output slots.
 The `diarization_speaker_id` stored with each slot is the only canonical

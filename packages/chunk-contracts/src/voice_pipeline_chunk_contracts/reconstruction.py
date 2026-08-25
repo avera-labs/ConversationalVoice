@@ -8,6 +8,7 @@ from typing import Any
 
 from .contract import ChunkContractError
 from .extension import AUDIO_TAGS
+from .language import ChunkLanguage, parse_chunk_language
 
 _ROOT_FIELDS = {
     "schema_version",
@@ -55,14 +56,16 @@ def parse_reconstruction_transcript(
     *,
     speaker_mapping: Sequence[int],
     source_duration_ms: int,
+    expected_language: ChunkLanguage = "en",
 ) -> dict[str, Any]:
     """Validate reconstructed timings while preserving source utterance identity."""
 
     root = _mapping(value, _ROOT_FIELDS, "reconstruction transcript")
+    language = parse_chunk_language(expected_language)
     duration_ms = _integer(root["duration_ms"], "duration_ms", 1)
     if (
         _integer(root["schema_version"], "schema_version") != 1
-        or root["language"] != "en"
+        or root["language"] != language
         or root["timebase"] != "reconstruction"
         or _integer(root["source_duration_ms"], "source_duration_ms", 1)
         != source_duration_ms

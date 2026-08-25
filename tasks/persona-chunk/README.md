@@ -11,16 +11,15 @@ speaker-labelled UTF-8 SRT transcript to OpenRouter.
 - Task and queue: `persona_chunk`
 - Argument: one canonical chunk UUID string
 - Claim transition: `transcribed`, or a persona-owned `failed` row, to `persona_generating`
-- Completion transition: `persona_generating` to `persona_generated`; `en`
-  publishes `reconstruct_chunk`, while `zh` ends after persona because the
-  reconstruction and extension workers are currently English-only
+- Completion transition: `persona_generating` to `persona_generated`, then
+  publish `reconstruct_chunk` for both `en` and `zh`
 - Failure transition: `persona_generating` to `failed`, followed by re-raising
 - A successor-publication failure transitions `persona_generated` to `failed` while retaining the durable persona
 - `persona_generating` is an in-progress no-op; `extending`, `completed`, and an extension-owned `rejected` state validate the durable persona and return without republishing
 
 Stale in-progress rows require explicit operator recovery. A retry with an
 already durable persona validates it without rerunning OpenRouter, then
-republishes `reconstruct_chunk` only for `en`.
+republishes `reconstruct_chunk`.
 
 ## Inputs
 

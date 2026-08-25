@@ -49,7 +49,7 @@ class Handler:
         if claim.disposition is Disposition.READY_TO_DISPATCH:
             self._validate_completed(claim)
             if claim.status in {"reconstructed", "failed"}:
-                return self._publish(identifier)
+                return self._publish(identifier, claim.lang)
             outcome = "already_completed"
             self._finished(identifier, outcome)
             return {"chunk_id": str(identifier), "outcome": outcome}
@@ -79,6 +79,7 @@ class Handler:
                 loaded.references,
                 speaker_mapping=mapping,
                 source_duration_ms=claim.duration_ms,
+                language=claim.lang,
             )
             transcript_meta = write_canonical_json(
                 reconstruction.transcript, workspace.output_transcript
@@ -113,6 +114,7 @@ class Handler:
             self.repository.complete(claim, result)
             return self._publish(
                 identifier,
+                claim.lang,
                 utterance_count=len(reconstruction.transcript["utterances"]),
                 duration_ms=reconstruction.transcript["duration_ms"],
             )
@@ -162,18 +164,20 @@ class Handler:
         except Exception:
             logger.error("reconstruct_chunk.workspace_cleanup_failed")
 
-    def _publish(self, identifier, **result):
-        try:
-            self.publisher.publish(identifier)
-        except Exception:
-            self.repository.fail_publication(
-                identifier,
-                safe_error(
-                    "extend_chunk_publication_failed", self.policy.task.error_max_length
-                ),
-            )
-            self._finished(identifier, "publication_failed")
-            raise
+    def _publish(self, identifier, language, **result):
+        if language == "en":
+            try:
+                self.publisher.publish(identifier)
+            except Exception:
+                self.repository.fail_publication(
+                    identifier,
+                    safe_error(
+                        "extend_chunk_publication_failed",
+                        self.policy.task.error_max_length,
+                    ),
+                )
+                self._finished(identifier, "publication_failed")
+                raise
         self._finished(identifier, "reconstructed")
         return {"chunk_id": str(identifier), "outcome": "reconstructed", **result}
 

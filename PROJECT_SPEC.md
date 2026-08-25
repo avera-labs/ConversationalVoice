@@ -47,8 +47,8 @@ POST audio + metadata
           en -> Parakeet speech transcription
           zh -> Paraformer per-character transcription + CT-PUNC
        -> LLM persona extraction
-       -> en only: source-faithful utterance reconstruction
-                   -> LLM dialogue continuation
+       -> source-faithful utterance reconstruction for en and zh
+       -> en only: LLM dialogue continuation
                    -> voice-cloning speech synthesis into two speaker tracks
        -> upload artifacts and write chunks.final_results
 ```
@@ -71,8 +71,8 @@ current queue has the same name as its task.
 | `separate_chunk` | `chunk_id` | `transcribe_chunk` for `en`; `transcribe_chunk_zh` for `zh` |
 | `transcribe_chunk` | `chunk_id` | `persona_chunk` |
 | `transcribe_chunk_zh` | `chunk_id` | `persona_chunk` |
-| `persona_chunk` | `chunk_id` | `reconstruct_chunk` for `en`; terminal for `zh` |
-| `reconstruct_chunk` | `chunk_id` | `extend_chunk` |
+| `persona_chunk` | `chunk_id` | `reconstruct_chunk` for `en` and `zh` |
+| `reconstruct_chunk` | `chunk_id` | `extend_chunk` for `en`; terminal for `zh` |
 | `extend_chunk` | `chunk_id` | terminal |
 
 ## Persistence ownership

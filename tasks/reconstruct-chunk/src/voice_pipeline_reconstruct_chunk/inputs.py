@@ -40,7 +40,7 @@ class InputLoader:
 
     def validate(self, claim) -> UpstreamInputs:
         if (
-            claim.lang != "en"
+            claim.lang not in {"en", "zh"}
             or not claim.chunk_audio_uri
             or not claim.audio_part_audio_uri
             or not claim.duration_ms
@@ -80,6 +80,7 @@ class InputLoader:
             speaker_audio=separation.speaker_audio,
             artifact_uris=self.storage.transcription_uris(claim.chunk_audio_uri),
             artifact_metadata=metadata,
+            expected_language=claim.lang,
         )
         transcript = transcription["artifacts"]["transcript"]
         return UpstreamInputs(
@@ -131,6 +132,7 @@ class InputLoader:
             kind="transcript",
             duration_ms=claim.duration_ms,
             speaker_mapping=mapping,
+            expected_language=claim.lang,
         )
         if canonical_json_bytes(document) != payload:
             raise RuntimeError("input_transcript_is_not_canonical")

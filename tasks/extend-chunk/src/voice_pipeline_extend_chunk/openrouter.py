@@ -23,8 +23,10 @@ class OpenRouterClient:
         self._owns_transport = transport is None
         self.sleeper = sleeper
 
-    def extend(self, persona: dict, transcript: dict, dialogue_policy):
-        payload = self._payload(persona, transcript, dialogue_policy)
+    def extend(
+        self, persona: dict, transcript: dict, dialogue_policy, language: str = "en"
+    ):
+        payload = self._payload(persona, transcript, dialogue_policy, language)
         last_error: Exception | None = None
         for attempt in range(1, self.policy.max_attempts + 1):
             try:
@@ -60,18 +62,24 @@ class OpenRouterClient:
                 self.sleeper(self.policy.retry_backoff_seconds)
         raise last_error or OpenRouterError("openrouter_request_failed")
 
-    def _payload(self, persona: dict, transcript: dict, dialogue_policy):
+    def _payload(
+        self, persona: dict, transcript: dict, dialogue_policy, language: str
+    ):
         schema = build_response_schema(dialogue_policy.min_utterances)
         return {
             "model": self.policy.model,
             "messages": [
                 {
                     "role": "system",
-                    "content": build_system_prompt(dialogue_policy, schema),
+                    "content": build_system_prompt(
+                        dialogue_policy, schema, language=language
+                    ),
                 },
                 {
                     "role": "user",
-                    "content": build_user_prompt(persona, transcript),
+                    "content": build_user_prompt(
+                        persona, transcript, language=language
+                    ),
                 },
             ],
             "response_format": {

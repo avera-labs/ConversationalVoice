@@ -304,9 +304,7 @@ def test_handler_reconstructs_without_asr_and_publishes_extension(tmp_path, poli
     assert not hasattr(repo, "failed")
 
 
-def test_handler_reconstructs_chinese_without_publishing_english_extension(
-    tmp_path, policy
-):
+def test_handler_reconstructs_chinese_and_publishes_extension(tmp_path, policy):
     claim, objects = build_claim_and_objects("zh")
     repo = Repo(claim)
     storage = Storage(objects)
@@ -319,7 +317,7 @@ def test_handler_reconstructs_chinese_without_publishing_english_extension(
     )
 
     assert outcome["outcome"] == "reconstructed"
-    assert not hasattr(publisher, "identifier")
+    assert publisher.identifier == IDENTIFIER
     assert [text for _audio, text in tags.calls] == ["你好。", "好的。"]
     assert repo.completed[1]["language"] == "zh"
     uploaded = dict(storage.uploads)

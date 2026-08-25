@@ -1,6 +1,9 @@
 # Extend Chunk Worker
 
-This single-process Celery worker generates and synthesizes an English dialogue continuation for a completed chunk persona. It creates extension-only artifacts; it does not copy or concatenate the original chunk audio.
+This single-process Celery worker generates and synthesizes an English (`en`) or
+Chinese (`zh`) dialogue continuation for a completed chunk persona. It creates
+extension-only artifacts; it does not copy or concatenate the original chunk
+audio.
 
 ## Task contract
 

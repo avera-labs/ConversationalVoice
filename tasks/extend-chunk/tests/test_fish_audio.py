@@ -79,6 +79,17 @@ def test_reference_asr_and_voice_clone_use_openrouter_json_apis(policy):
         assert reader.getnframes() == 44100
 
 
+def test_reference_asr_uses_chinese_language(policy):
+    transport = Transport()
+    client = OpenRouterFishAudioClient(
+        policy.fish_audio, "openrouter-key", transport=transport
+    )
+
+    client.transcribe_reference(b"wav", language="zh")
+
+    assert transport.calls[0][1]["json"]["language"] == "zh"
+
+
 def test_tts_text_keeps_portable_square_bracket_tags_separate_from_words():
     assert (
         tts_text({"audio_tags": ["[laughs]", "[excited]"], "text": "We did it!"})

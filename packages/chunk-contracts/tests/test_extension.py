@@ -8,7 +8,8 @@ from voice_pipeline_chunk_contracts import (
 )
 
 
-def script():
+def script(language="en"):
+    chinese = language == "zh"
     return {
         "schema_version": 1,
         "backend": "openrouter",
@@ -16,7 +17,7 @@ def script():
             "id": "xiaomi/mimo-v2.5",
             "config_version": "dialogue-extension-v1",
         },
-        "language": "en",
+        "language": language,
         "target_duration_ms": 120000,
         "speaker_mapping": [
             {"speaker_id": 0, "diarization_speaker_id": 4},
@@ -26,8 +27,8 @@ def script():
             {
                 "utterance_index": 0,
                 "speaker_id": 0,
-                "text": "That is exactly what I meant.",
-                "tone": "warm and reflective",
+                "text": "这正是我的意思。" if chinese else "That is exactly what I meant.",
+                "tone": "温和而沉思" if chinese else "warm and reflective",
                 "type": "dialogue",
                 "placement": "sequential",
                 "audio_tags": ["[thoughtful]"],
@@ -35,8 +36,8 @@ def script():
             {
                 "utterance_index": 1,
                 "speaker_id": 1,
-                "text": "Yeah.",
-                "tone": "quick agreement",
+                "text": "对。" if chinese else "Yeah.",
+                "tone": "快速赞同" if chinese else "quick agreement",
                 "type": "backchannel",
                 "placement": "overlap_previous",
                 "audio_tags": [],
@@ -77,6 +78,41 @@ def test_script_and_timed_transcript_accept_canonical_documents():
         )["duration_ms"]
         == 2200
     )
+
+
+def test_chinese_script_and_timed_transcript_accept_canonical_documents():
+    value = script("zh")
+    with pytest.raises(ChunkContractError, match="identity"):
+        parse_dialogue_extension_document(
+            value,
+            speaker_mapping=(4, 7),
+            model_id="xiaomi/mimo-v2.5",
+            target_duration_ms=120000,
+        )
+    parsed = parse_dialogue_extension_document(
+        value,
+        speaker_mapping=(4, 7),
+        model_id="xiaomi/mimo-v2.5",
+        target_duration_ms=120000,
+        expected_language="zh",
+    )
+    transcript = {
+        "schema_version": 1,
+        "language": "zh",
+        "timebase": "dialogue_extension",
+        "duration_ms": 2200,
+        "speaker_mapping": value["speaker_mapping"],
+        "utterances": [
+            {**value["utterances"][0], "start_ms": 0, "end_ms": 1800},
+            {**value["utterances"][1], "start_ms": 1400, "end_ms": 2200},
+        ],
+    }
+    assert parse_dialogue_extension_transcript(
+        transcript,
+        script=parsed,
+        speaker_mapping=(4, 7),
+        expected_language="zh",
+    )["language"] == "zh"
 
 
 @pytest.mark.parametrize(

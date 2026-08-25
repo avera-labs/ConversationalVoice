@@ -19,7 +19,9 @@ CHUNK_BASE = f"{PART_BASE}/chunks/0"
 
 
 def canonical(value):
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode()
 
 
 def wav_bytes(sample_rate_hz, duration_ms):
@@ -87,16 +89,21 @@ def separation():
     }
 
 
-def transcript():
+def transcript(language="en"):
+    chinese = language == "zh"
     return {
         "schema_version": 1,
-        "backend": "parakeet_tdt",
+        "backend": "paraformer_zh" if chinese else "parakeet_tdt",
         "model": {
-            "repo_id": "nvidia/parakeet-tdt-0.6b-v3",
-            "revision": "c" * 40,
-            "config_version": "parakeet-v1",
+            "repo_id": (
+                "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
+                if chinese
+                else "nvidia/parakeet-tdt-0.6b-v3"
+            ),
+            "revision": "v2.0.4" if chinese else "c" * 40,
+            "config_version": "paraformer-zh-v1" if chinese else "parakeet-v1",
         },
-        "language": "en",
+        "language": language,
         "timebase": "chunk",
         "speakers": [
             {
@@ -107,7 +114,7 @@ def transcript():
                         "utterance_index": 0,
                         "start_ms": 0,
                         "end_ms": 400,
-                        "text": "I finally tried it.",
+                        "text": "我终于试过了。" if chinese else "I finally tried it.",
                         "confidence": 0.9,
                     }
                 ],
@@ -120,7 +127,7 @@ def transcript():
                         "utterance_index": 0,
                         "start_ms": 500,
                         "end_ms": 900,
-                        "text": "How was it?",
+                        "text": "感觉怎么样？" if chinese else "How was it?",
                         "confidence": 0.8,
                     }
                 ],
@@ -129,17 +136,22 @@ def transcript():
     }
 
 
-def transcription_result(sep, transcript_payload):
+def transcription_result(sep, transcript_payload, language="en"):
+    chinese = language == "zh"
     size, sha256 = identity(transcript_payload)
     return {
         "schema_version": 1,
-        "backend": "parakeet_tdt",
+        "backend": "paraformer_zh" if chinese else "parakeet_tdt",
         "model": {
-            "repo_id": "nvidia/parakeet-tdt-0.6b-v3",
-            "revision": "c" * 40,
-            "config_version": "parakeet-v1",
+            "repo_id": (
+                "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
+                if chinese
+                else "nvidia/parakeet-tdt-0.6b-v3"
+            ),
+            "revision": "v2.0.4" if chinese else "c" * 40,
+            "config_version": "paraformer-zh-v1" if chinese else "parakeet-v1",
         },
-        "language": "en",
+        "language": language,
         "input_speaker_audio": [
             {
                 "output_slot": item["output_slot"],
@@ -165,7 +177,8 @@ def transcription_result(sep, transcript_payload):
     }
 
 
-def persona():
+def persona(language="en"):
+    chinese = language == "zh"
     base = {
         "name": None,
         "age": None,
@@ -188,9 +201,13 @@ def persona():
         "schema_version": 1,
         "backend": "openrouter",
         "config_version": "persona-v1",
-        "language": "en",
+        "language": language,
         "scene": {
-            "description": "Two people compare an experience.",
+            "description": (
+                "两个人在交流一次体验。"
+                if chinese
+                else "Two people compare an experience."
+            ),
             "overall_tone": "calm",
             "emotion_intensity": "low",
         },
@@ -212,7 +229,7 @@ def persona():
     }
 
 
-def persona_result(document, transcript_payload):
+def persona_result(document, transcript_payload, language="en"):
     persona_payload = canonical(document)
     transcript_size, transcript_sha = identity(transcript_payload)
     persona_size, persona_sha = identity(persona_payload)
@@ -220,7 +237,7 @@ def persona_result(document, transcript_payload):
         "schema_version": 1,
         "backend": "openrouter",
         "model": {"id": "xiaomi/mimo-v2.5", "config_version": "persona-v1"},
-        "language": "en",
+        "language": language,
         "input_audio": {
             "uri": f"{CHUNK_BASE}/audio.wav",
             "size_bytes": 100,
@@ -263,9 +280,9 @@ def reference_manifest(reference_payloads):
 
 
 class Repo:
-    def __init__(self, transcript_payload):
+    def __init__(self, transcript_payload, language="en"):
         sep = separation()
-        document = persona()
+        document = persona(language)
         self.claim_value = Claim(
             IDENTIFIER,
             Disposition.CLAIMED,
@@ -273,13 +290,13 @@ class Repo:
             PART,
             f"{CHUNK_BASE}/audio.wav",
             f"{PART_BASE}/audio.wav",
-            "en",
+            language,
             3000,
             snapshot(),
             sep,
-            transcription_result(sep, transcript_payload),
+            transcription_result(sep, transcript_payload, language),
             document,
-            persona_result(document, transcript_payload),
+            persona_result(document, transcript_payload, language),
             {"reconstruction": "valid"},
         )
 
@@ -316,15 +333,20 @@ class Storage:
 
 
 class Dialogue:
-    def extend(self, persona_document, transcript_document, _policy):
+    def extend(
+        self, persona_document, transcript_document, _policy, language="en"
+    ):
+        assert persona_document["language"] == language
+        assert transcript_document["language"] == language
         assert persona_document["speaker_mapping"][0]["diarization_speaker_id"] == 4
         assert transcript_document["speakers"][1]["diarization_speaker_id"] == 7
+        chinese = language == "zh"
         utterances = [
             {
                 "utterance_index": 0,
                 "speaker_id": 0,
-                "text": "It was surprisingly good.",
-                "tone": "pleased",
+                "text": "比我想象中好很多。" if chinese else "It was surprisingly good.",
+                "tone": "愉快" if chinese else "pleased",
                 "type": "dialogue",
                 "placement": "sequential",
                 "audio_tags": [],
@@ -332,8 +354,8 @@ class Dialogue:
             {
                 "utterance_index": 1,
                 "speaker_id": 1,
-                "text": "Really?",
-                "tone": "curious",
+                "text": "真的吗？" if chinese else "Really?",
+                "tone": "好奇" if chinese else "curious",
                 "type": "backchannel",
                 "placement": "overlap_previous",
                 "audio_tags": ["[curious]"],
@@ -341,8 +363,8 @@ class Dialogue:
             {
                 "utterance_index": 2,
                 "speaker_id": 1,
-                "text": "Now I want to try it too.",
-                "tone": "warm",
+                "text": "那我也想试试看。" if chinese else "Now I want to try it too.",
+                "tone": "温和" if chinese else "warm",
                 "type": "dialogue",
                 "placement": "sequential",
                 "audio_tags": [],
@@ -352,8 +374,12 @@ class Dialogue:
             {
                 "utterance_index": index,
                 "speaker_id": index % 2,
-                "text": f"Continuation line {index}.",
-                "tone": "natural",
+                "text": (
+                    f"接下来的第{index}句话。"
+                    if chinese
+                    else f"Continuation line {index}."
+                ),
+                "tone": "自然" if chinese else "natural",
                 "type": "dialogue",
                 "placement": "sequential",
                 "audio_tags": [],
@@ -377,17 +403,17 @@ class Fish:
         self.transcribed = []
         self.synthesized = []
 
-    def transcribe_reference(self, payload):
-        self.transcribed.append(payload)
-        return "Reference words."
+    def transcribe_reference(self, payload, language="en"):
+        self.transcribed.append((payload, language))
+        return "参考语音。" if language == "zh" else "Reference words."
 
     def synthesize(self, text, reference_audio, reference_text):
         self.synthesized.append((text, reference_audio, reference_text))
         return wav_bytes(44100, 1000)
 
 
-def build_objects(*, include_second_reference=True):
-    transcript_payload = canonical(transcript())
+def build_objects(*, include_second_reference=True, language="en"):
+    transcript_payload = canonical(transcript(language))
     references = (wav_bytes(16000, 5000), wav_bytes(16000, 5000))
     manifest = reference_manifest(references)
     if not include_second_reference:
@@ -430,6 +456,49 @@ def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, p
     ] == ["diarization_reference", "diarization_reference"]
     assert all("audio.wav" not in uri for uri, _payload in storage.uploads)
     assert not hasattr(repo, "failed")
+
+
+def test_handler_generates_chinese_extension_and_preserves_language(
+    tmp_path, policy
+):
+    transcript_payload, objects = build_objects(language="zh")
+    repo = Repo(transcript_payload, "zh")
+    storage = Storage(objects)
+    fish = Fish()
+
+    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+        str(IDENTIFIER)
+    )
+
+    assert outcome["outcome"] == "completed"
+    assert [language for _payload, language in fish.transcribed] == ["zh", "zh"]
+    assert fish.synthesized[0][0] == "比我想象中好很多。"
+    assert fish.synthesized[0][2] == "参考语音。"
+    result = repo.completed[1]
+    assert result["language"] == "zh"
+    uploaded = dict(storage.uploads)
+    script_uri = f"{CHUNK_BASE}/results/dialogue-extension/script.json"
+    transcript_uri = f"{CHUNK_BASE}/results/dialogue-extension/transcript.json"
+    assert json.loads(uploaded[script_uri])["language"] == "zh"
+    assert json.loads(uploaded[transcript_uri])["language"] == "zh"
+    assert "比我想象中好很多。".encode() in uploaded[script_uri]
+    assert not hasattr(repo, "failed")
+
+    repo.claim_value = replace(
+        repo.claim_value,
+        disposition=Disposition.ALREADY_COMPLETED,
+        status="completed",
+        extension_result=result,
+    )
+    storage.objects.clear()
+    storage.uploads.clear()
+    repeat_fish = Fish()
+    repeat = Handler(repo, storage, Dialogue(), repeat_fish, policy, tmp_path)(
+        str(IDENTIFIER)
+    )
+    assert repeat["outcome"] == "already_completed"
+    assert repeat_fish.transcribed == []
+    assert storage.uploads == []
 
 
 def test_missing_mapped_reference_uses_separated_track_fallback(tmp_path, policy):

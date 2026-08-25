@@ -89,13 +89,18 @@ class Handler:
                 claim, snapshot, separation, mapping, workspace
             )
             reference_texts = [
-                self.fish_client.transcribe_reference(reference["bytes"])
+                self.fish_client.transcribe_reference(
+                    reference["bytes"], language=claim.lang
+                )
                 for reference in references
             ]
             wire, usage = self.dialogue_client.extend(
-                claim.persona, transcript, self.policy.dialogue
+                claim.persona,
+                transcript,
+                self.policy.dialogue,
+                language=claim.lang,
             )
-            script = self._build_script(wire, usage, mapping)
+            script = self._build_script(wire, usage, mapping, claim.lang)
             parse_dialogue_extension_document(
                 script,
                 speaker_mapping=mapping,
@@ -104,6 +109,7 @@ class Handler:
                 config_version=self.policy.config_version,
                 min_utterances=self.policy.dialogue.min_utterances,
                 max_utterances=self.policy.dialogue.max_utterances,
+                expected_language=claim.lang,
             )
             script_metadata = write_canonical_json(script, workspace.script)
 
@@ -125,7 +131,10 @@ class Handler:
                 track_paths=(workspace.track(0), workspace.track(1)),
             )
             parse_dialogue_extension_transcript(
-                transcript_output, script=script, speaker_mapping=mapping
+                transcript_output,
+                script=script,
+                speaker_mapping=mapping,
+                expected_language=claim.lang,
             )
             transcript_metadata = write_canonical_json(
                 transcript_output, workspace.output_transcript
@@ -193,7 +202,7 @@ class Handler:
 
     def _validate_upstream(self, claim):
         if (
-            claim.lang != "en"
+            claim.lang not in {"en", "zh"}
             or not claim.chunk_audio_uri
             or not claim.audio_part_audio_uri
             or not claim.duration_ms
@@ -234,6 +243,7 @@ class Handler:
             speaker_audio=separation.speaker_audio,
             artifact_uris=self.storage.transcription_uris(claim.chunk_audio_uri),
             artifact_metadata=metadata,
+            expected_language=claim.lang,
         )
         transcript_artifact = transcription["artifacts"]["transcript"]
         transcript_identity = self._identity_tuple(transcript_artifact, "transcript")
@@ -246,6 +256,7 @@ class Handler:
             speaker_mapping=mapping,
             model_id=persona_model_id,
             config_version="persona-v1",
+            expected_language=claim.lang,
         )
         persona_bytes = canonical_json_bytes(claim.persona)
         persona_artifact = claim.persona_result.get("artifact")
@@ -267,6 +278,7 @@ class Handler:
             ),
             input_transcript=transcript_identity,
             artifact=persona_identity,
+            expected_language=claim.lang,
         )
         return snapshot, separation, mapping, transcript_identity, persona_identity
 
@@ -283,6 +295,7 @@ class Handler:
             kind="transcript",
             duration_ms=claim.duration_ms,
             speaker_mapping=mapping,
+            expected_language=claim.lang,
         )
         if canonical_json_bytes(document) != payload:
             raise RuntimeError("input_transcript_is_not_canonical")
@@ -399,7 +412,7 @@ class Handler:
             )
         return references, manifest_identity
 
-    def _build_script(self, wire, usage, mapping):
+    def _build_script(self, wire, usage, mapping, language):
         if not isinstance(wire, Mapping) or set(wire) != {"utterances"}:
             raise TypeError("dialogue extension response fields are invalid")
         return {
@@ -409,7 +422,7 @@ class Handler:
                 "id": self.policy.openrouter.model,
                 "config_version": self.policy.config_version,
             },
-            "language": "en",
+            "language": language,
             "target_duration_ms": self.policy.dialogue.target_duration_ms,
             "speaker_mapping": [
                 {"speaker_id": speaker_id, "diarization_speaker_id": diarization_id}
@@ -454,7 +467,7 @@ class Handler:
                     "config_version": self.policy.config_version,
                 },
             },
-            "language": "en",
+            "language": claim.lang,
             "target_duration_ms": self.policy.dialogue.target_duration_ms,
             "actual_duration_ms": duration_ms,
             "inputs": {
@@ -523,7 +536,7 @@ class Handler:
         if (
             root["schema_version"] != 1
             or root["backend"] != "openrouter"
-            or root["language"] != "en"
+            or root["language"] != claim.lang
             or not self._positive_integer(root["target_duration_ms"])
             or not self._positive_integer(root["actual_duration_ms"])
         ):

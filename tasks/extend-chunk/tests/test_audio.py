@@ -20,6 +20,7 @@ def script():
         "audio_tags": [],
     }
     return {
+        "language": "en",
         "speaker_mapping": [
             {"speaker_id": 0, "diarization_speaker_id": 4},
             {"speaker_id": 1, "diarization_speaker_id": 7},

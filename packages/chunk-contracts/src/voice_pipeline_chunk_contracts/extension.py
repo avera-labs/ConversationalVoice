@@ -8,6 +8,7 @@ from itertools import pairwise
 from typing import Any
 
 from .contract import ChunkContractError
+from .language import ChunkLanguage, parse_chunk_language
 
 AUDIO_TAGS = frozenset(
     {
@@ -164,14 +165,16 @@ def parse_dialogue_extension_document(
     config_version: str = "dialogue-extension-v1",
     min_utterances: int = 2,
     max_utterances: int = 200,
+    expected_language: ChunkLanguage = "en",
 ) -> dict[str, Any]:
     """Validate the canonical LLM-produced continuation script."""
 
     root = _mapping(value, _SCRIPT_FIELDS, "dialogue extension document")
+    language = parse_chunk_language(expected_language)
     if (
         _integer(root["schema_version"], "schema_version") != 1
         or root["backend"] != "openrouter"
-        or root["language"] != "en"
+        or root["language"] != language
         or _integer(root["target_duration_ms"], "target_duration_ms", 1)
         != target_duration_ms
     ):
@@ -224,14 +227,17 @@ def parse_dialogue_extension_transcript(
     *,
     script: Mapping[str, Any],
     speaker_mapping: Sequence[int],
+    expected_language: ChunkLanguage = "en",
 ) -> dict[str, Any]:
     """Validate actual TTS timings against the approved continuation script."""
 
     root = _mapping(value, _TRANSCRIPT_FIELDS, "dialogue extension transcript")
+    language = parse_chunk_language(expected_language)
     duration_ms = _integer(root["duration_ms"], "duration_ms", 1)
     if (
         _integer(root["schema_version"], "schema_version") != 1
-        or root["language"] != "en"
+        or root["language"] != language
+        or script.get("language") != language
         or root["timebase"] != "dialogue_extension"
     ):
         raise ChunkContractError("dialogue extension transcript identity is invalid")

@@ -176,7 +176,7 @@ def assemble_tracks(
         )
     transcript = {
         "schema_version": 1,
-        "language": "en",
+        "language": script["language"],
         "timebase": "dialogue_extension",
         "duration_ms": round(global_end * 1000 / sample_rate_hz),
         "speaker_mapping": script["speaker_mapping"],

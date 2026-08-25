@@ -24,9 +24,11 @@ class OpenRouterFishAudioClient:
         self._owns_transport = transport is None
         self.sleeper = sleeper
 
-    def transcribe_reference(self, audio: bytes) -> str:
+    def transcribe_reference(self, audio: bytes, language: str = "en") -> str:
         if not audio:
             raise ValueError("reference audio is empty")
+        if language not in {"en", "zh"}:
+            raise ValueError("reference ASR language is invalid")
 
         def request():
             return self.transport.post(
@@ -41,7 +43,7 @@ class OpenRouterFishAudioClient:
                         "data": base64.b64encode(audio).decode("ascii"),
                         "format": "wav",
                     },
-                    "language": "en",
+                    "language": language,
                 },
                 timeout=self.policy.timeout_seconds,
             )

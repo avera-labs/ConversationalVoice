@@ -66,13 +66,13 @@ def _read_payload(path: Path) -> tuple[bytes, int]:
 
 def read_normalized_wav(path: Path, *, expected_duration_ms: int) -> PcmAudio:
     payload, frame_count = _read_payload(path)
-    duration_ms = _duration_ms(frame_count, SAMPLE_RATE_HZ)
-    if duration_ms != expected_duration_ms:
+    duration_delta = abs(frame_count * 1000 - expected_duration_ms * SAMPLE_RATE_HZ)
+    if duration_delta >= SAMPLE_RATE_HZ:
         raise WavError("WAV duration does not match the audio part")
     return PcmAudio(
         samples=np.frombuffer(payload, dtype="<i2").copy(),
         sample_rate_hz=SAMPLE_RATE_HZ,
-        duration_ms=duration_ms,
+        duration_ms=expected_duration_ms,
     )
 
 

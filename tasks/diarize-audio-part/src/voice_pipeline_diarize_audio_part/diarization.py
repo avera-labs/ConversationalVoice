@@ -5,6 +5,7 @@ from __future__ import annotations
 import gc
 import os
 import threading
+import wave
 from collections.abc import Callable, Iterable
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
@@ -60,6 +61,30 @@ def extract_turns(output: Any) -> tuple[RawTurn, ...]:
 
 
 PipelineLoader = Callable[[str, str], Any]
+
+
+def wav_duration_seconds(path: Path) -> float:
+    """Return the exact PCM duration represented by the WAV frame count."""
+    try:
+        with wave.open(str(path), "rb") as reader:
+            frame_count = reader.getnframes()
+            sample_rate = reader.getframerate()
+    except (EOFError, OSError, wave.Error) as exc:
+        raise ValueError("input WAV duration cannot be read") from exc
+    if frame_count <= 0 or sample_rate <= 0:
+        raise ValueError("input WAV duration is invalid")
+    return frame_count / sample_rate
+
+
+def crop_output_to_audio_duration(output: Any, duration_seconds: float) -> Any:
+    """Remove model output produced from padding beyond the input waveform."""
+    from pyannote.core import Segment
+
+    annotation = getattr(output, "speaker_diarization", output)
+    crop = getattr(annotation, "crop", None)
+    if not callable(crop):
+        raise TypeError("model output does not provide a diarization annotation")
+    return crop(Segment(0.0, duration_seconds), mode="intersection")
 
 
 @contextmanager
@@ -150,10 +175,12 @@ class DiarizationEngine:
 
     def infer(self, audio_path: Path) -> InferenceResult:
         pipeline, device_info, cache_hit = self._get_pipeline()
+        duration_seconds = wav_duration_seconds(audio_path)
         with discard_third_party_console_output():
             output = pipeline(str(audio_path))
+        annotation = crop_output_to_audio_duration(output, duration_seconds)
         return InferenceResult(
-            turns=extract_turns(output),
+            turns=extract_turns(annotation),
             device=device_info.device,
             accelerator=device_info.accelerator,
             model_cache_hit=cache_hit,

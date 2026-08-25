@@ -12,6 +12,7 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 _MILLISECOND = Decimal("0.001")
+_DURATION_ROUNDING_TOLERANCE_SECONDS = 0.001
 _TOP_LEVEL_FIELDS = {
     "schema_version",
     "model",
@@ -139,7 +140,7 @@ def build_artifact(
             or not math.isfinite(end)
             or start < 0
             or end <= start
-            or end > duration_seconds + 0.0005
+            or end >= duration_seconds + _DURATION_ROUNDING_TOLERANCE_SECONDS
         ):
             raise ValueError("invalid diarization turn")
         checked.append(RawTurn(start=start, end=end, speaker_label=label))
@@ -154,6 +155,9 @@ def build_artifact(
         end = _quantized_seconds(turn.end)
         start_ms = int(Decimal(str(start)) * 1000)
         end_ms = int(Decimal(str(end)) * 1000)
+        if end_ms == duration_ms + 1:
+            end_ms = duration_ms
+            end = duration_seconds
         if end_ms <= start_ms or end_ms > duration_ms:
             raise ValueError("turn is empty or out of bounds after normalization")
         segment_duration = (end_ms - start_ms) / 1000.0

@@ -1,4 +1,5 @@
 import sys
+import wave
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
@@ -35,9 +36,26 @@ class FakeTorch:
 
 
 class Annotation:
+    def __init__(self, start: float = 0.1, end: float = 0.9) -> None:
+        self.start = start
+        self.end = end
+
+    def crop(self, support, *, mode: str):
+        assert mode == "intersection"
+        return Annotation(max(self.start, support.start), min(self.end, support.end))
+
     def itertracks(self, *, yield_label: bool):
         assert yield_label
-        yield SimpleNamespace(start=0.1, end=0.9), None, "speaker-a"
+        if self.end > self.start:
+            yield SimpleNamespace(start=self.start, end=self.end), None, "speaker-a"
+
+
+def write_wav(path: Path, *, frame_count: int = 16_000) -> None:
+    with wave.open(str(path), "wb") as writer:
+        writer.setnchannels(1)
+        writer.setsampwidth(2)
+        writer.setframerate(16_000)
+        writer.writeframes(bytes(frame_count * 2))
 
 
 def test_extracts_direct_and_compatibility_annotations() -> None:
@@ -112,8 +130,12 @@ def test_official_factory_initializes_on_cpu_without_moving(monkeypatch) -> None
     assert torch.cuda.is_available() is True
 
 
-def test_pipeline_is_loaded_lazily_and_cached(capsys) -> None:
+def test_pipeline_is_loaded_lazily_and_cached(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     loads: list[tuple[str, str]] = []
+    audio_path = tmp_path / "audio.wav"
+    write_wav(audio_path)
 
     class Pipeline:
         def __call__(self, path: str):
@@ -132,10 +154,32 @@ def test_pipeline_is_loaded_lazily_and_cached(capsys) -> None:
         loader=loader,
         torch_module=torch,
     )
-    first = engine.infer(Path("audio.wav"))
-    second = engine.infer(Path("audio.wav"))
+    first = engine.infer(audio_path)
+    second = engine.infer(audio_path)
     assert first.model_cache_hit is False
     assert second.model_cache_hit is True
     assert len(loads) == 1
     assert "hidden local cache path" not in capsys.readouterr().out
+    engine.close()
+
+
+def test_pipeline_output_is_cropped_to_exact_wav_frame_duration(
+    tmp_path: Path,
+) -> None:
+    audio_path = tmp_path / "audio.wav"
+    write_wav(audio_path, frame_count=16_012)
+
+    engine = DiarizationEngine(
+        model="owner/model",
+        requested_device="cpu",
+        loader=lambda _model, _device: lambda _path: Annotation(0.8, 1.1),
+        torch_module=FakeTorch(False),
+    )
+
+    result = engine.infer(audio_path)
+
+    assert len(result.turns) == 1
+    assert result.turns[0].start == pytest.approx(0.8)
+    assert result.turns[0].end == pytest.approx(1.00075)
+    assert result.turns[0].speaker_label == "speaker-a"
     engine.close()

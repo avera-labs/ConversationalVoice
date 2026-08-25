@@ -174,8 +174,8 @@ class Handler:
                 output_uris=uris,
             )
             self.repository.complete(claim, parent.model, snapshot.to_dict(), result)
-            if claim.lang == "en" and self.publisher is not None:
-                self.publisher.publish(identifier)
+            if self.publisher is not None:
+                self.publisher.publish(identifier, claim.lang)
             self._finished(identifier, "separated")
             return {
                 "chunk_id": str(identifier),

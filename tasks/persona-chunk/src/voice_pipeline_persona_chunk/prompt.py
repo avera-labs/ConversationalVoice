@@ -110,7 +110,9 @@ def build_response_schema(speaker_ids: Sequence[int]) -> dict[str, Any]:
 
 
 def build_system_prompt(
-    speaker_ids: Sequence[int], schema: dict[str, Any] | None = None
+    speaker_ids: Sequence[int],
+    schema: dict[str, Any] | None = None,
+    language: str = "en",
 ) -> str:
     ids = sorted(str(value) for value in speaker_ids)
     rendered = ", ".join(ids)
@@ -118,7 +120,14 @@ def build_system_prompt(
     serialized_schema = json.dumps(
         schema, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     )
+    language_note = (
+        "The transcript is Chinese. Read it as valid UTF-8 Chinese and preserve its meaning."
+        if language == "zh"
+        else "The transcript is English."
+    )
     return f"""You analyze vocal personas from conversation audio and its transcript.
+
+{language_note}
 
 Use the audio as the primary signal for tone, energy, rhythm, vocal style,
 emotion, and audible events. Use the transcript only to understand words and

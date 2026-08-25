@@ -10,6 +10,7 @@ DIARIZATION_TASK_DIR="${PROJECT_ROOT}/tasks/diarize-audio-part"
 QUALITY_FILTER_TASK_DIR="${PROJECT_ROOT}/tasks/quality-filter-audio-part"
 SEPARATE_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/separate-chunk"
 TRANSCRIBE_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/transcribe-chunk"
+TRANSCRIBE_CHUNK_ZH_TASK_DIR="${PROJECT_ROOT}/tasks/transcribe-chunk-zh"
 PERSONA_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/persona-chunk"
 RECONSTRUCT_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/reconstruct-chunk"
 EXTEND_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/extend-chunk"
@@ -49,7 +50,7 @@ ensure_known_task_directories() {
     [[ -d "${task_dir}" ]] || continue
     task_name="${task_dir##*/}"
     case "${task_name}" in
-      split-raw-audio-into-parts | diarize-audio-part | quality-filter-audio-part | separate-chunk | transcribe-chunk | persona-chunk | reconstruct-chunk | extend-chunk) ;;
+      split-raw-audio-into-parts | diarize-audio-part | quality-filter-audio-part | separate-chunk | transcribe-chunk | transcribe-chunk-zh | persona-chunk | reconstruct-chunk | extend-chunk) ;;
       *) die "No start command is registered for tasks/${task_name}." ;;
     esac
   done
@@ -98,6 +99,7 @@ expected = {
     "quality_filter_audio_part",
     "separate_chunk",
     "transcribe_chunk",
+    "transcribe_chunk_zh",
     "persona_chunk",
     "reconstruct_chunk",
     "extend_chunk",
@@ -152,7 +154,7 @@ fi
 command -v uv >/dev/null 2>&1 || die "uv is not installed or is not on PATH."
 [[ -f "${ROOT_ENV}" ]] || die "Missing OSS root environment file: ${ROOT_ENV}"
 
-for workdir in "${INGEST_API_DIR}" "${SPLIT_TASK_DIR}" "${DIARIZATION_TASK_DIR}" "${QUALITY_FILTER_TASK_DIR}" "${SEPARATE_CHUNK_TASK_DIR}" "${TRANSCRIBE_CHUNK_TASK_DIR}" "${PERSONA_CHUNK_TASK_DIR}" "${RECONSTRUCT_CHUNK_TASK_DIR}" "${EXTEND_CHUNK_TASK_DIR}"; do
+for workdir in "${INGEST_API_DIR}" "${SPLIT_TASK_DIR}" "${DIARIZATION_TASK_DIR}" "${QUALITY_FILTER_TASK_DIR}" "${SEPARATE_CHUNK_TASK_DIR}" "${TRANSCRIBE_CHUNK_TASK_DIR}" "${TRANSCRIBE_CHUNK_ZH_TASK_DIR}" "${PERSONA_CHUNK_TASK_DIR}" "${RECONSTRUCT_CHUNK_TASK_DIR}" "${EXTEND_CHUNK_TASK_DIR}"; do
   [[ -d "${workdir}" ]] || die "Missing service directory: ${workdir}"
 done
 ensure_known_task_directories
@@ -163,6 +165,7 @@ ensure_env_link "${DIARIZATION_TASK_DIR}"
 ensure_env_link "${QUALITY_FILTER_TASK_DIR}"
 ensure_env_link "${SEPARATE_CHUNK_TASK_DIR}"
 ensure_env_link "${TRANSCRIBE_CHUNK_TASK_DIR}"
+ensure_env_link "${TRANSCRIBE_CHUNK_ZH_TASK_DIR}"
 ensure_env_link "${PERSONA_CHUNK_TASK_DIR}"
 ensure_env_link "${RECONSTRUCT_CHUNK_TASK_DIR}"
 ensure_env_link "${EXTEND_CHUNK_TASK_DIR}"
@@ -198,6 +201,12 @@ sync_local_packages \
   voice-pipeline-task-contracts
 sync_local_packages \
   "${TRANSCRIBE_CHUNK_TASK_DIR}" \
+  voice-pipeline-chunk-contracts \
+  voice-pipeline-models \
+  voice-pipeline-task-client \
+  voice-pipeline-task-contracts
+sync_local_packages \
+  "${TRANSCRIBE_CHUNK_ZH_TASK_DIR}" \
   voice-pipeline-chunk-contracts \
   voice-pipeline-models \
   voice-pipeline-task-client \
@@ -304,6 +313,20 @@ start_process \
   --without-mingle \
   --queues=transcribe_chunk \
   --hostname=transcribe-chunk@%h
+
+start_process \
+  "transcribe_chunk_zh worker" \
+  "${TRANSCRIBE_CHUNK_ZH_TASK_DIR}" \
+  celery \
+  -A voice_pipeline_transcribe_chunk_zh.worker:app \
+  worker \
+  --loglevel="${CELERY_LOG_LEVEL}" \
+  --pool=solo \
+  --concurrency=1 \
+  --without-gossip \
+  --without-mingle \
+  --queues=transcribe_chunk_zh \
+  --hostname=transcribe-chunk-zh@%h
 
 start_process \
   "persona_chunk worker" \

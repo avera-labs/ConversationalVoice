@@ -93,8 +93,8 @@ class ClaimFailureRepo:
 
 
 class Publisher:
-    def publish(self, identifier):
-        self.published = identifier
+    def publish(self, identifier, language):
+        self.published = (identifier, language)
 
 
 class CompletedRepo:
@@ -220,10 +220,10 @@ def test_english_chunk_dispatches_transcription_after_completion(tmp_path, polic
     )(str(IDENTIFIER))
     assert result["outcome"] == "separated"
     assert repo.completed
-    assert publisher.published == IDENTIFIER
+    assert publisher.published == (IDENTIFIER, "en")
 
 
-def test_non_english_chunk_is_not_dispatched(tmp_path, policy):
+def test_chinese_chunk_dispatches_chinese_transcription(tmp_path, policy):
     audio = tmp_path / "audio.wav"
     diar = tmp_path / "diarization.json"
     wav(audio)
@@ -241,7 +241,7 @@ def test_non_english_chunk_is_not_dispatched(tmp_path, policy):
         publisher,
     )(str(IDENTIFIER))
     assert result["outcome"] == "separated"
-    assert not hasattr(publisher, "published")
+    assert publisher.published == (IDENTIFIER, "zh")
 
 
 def test_claim_contract_failure_is_persisted_without_io(tmp_path, policy):

@@ -75,10 +75,10 @@ def create_raw_audio(
     meta: Annotated[str | None, Form()] = None,
 ) -> CreateRawAudioResponse:
     """Accept, normalize, persist, and enqueue one podcast audio upload."""
-    if not lang.strip():
+    if lang not in {"en", "zh"}:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="lang must not be empty.",
+            detail="lang must be 'en' or 'zh'.",
         )
 
     try:

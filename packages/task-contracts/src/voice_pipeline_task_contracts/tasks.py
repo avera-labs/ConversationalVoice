@@ -43,6 +43,12 @@ TRANSCRIBE_CHUNK = TaskContract(
     uuid_argument="chunk_id",
 )
 
+TRANSCRIBE_CHUNK_ZH = TaskContract(
+    name="transcribe_chunk_zh",
+    queue="transcribe_chunk_zh",
+    uuid_argument="chunk_id",
+)
+
 PERSONA_CHUNK = TaskContract(
     name="persona_chunk",
     queue="persona_chunk",
@@ -67,6 +73,7 @@ ALL_TASKS = (
     QUALITY_FILTER_AUDIO_PART,
     SEPARATE_CHUNK,
     TRANSCRIBE_CHUNK,
+    TRANSCRIBE_CHUNK_ZH,
     PERSONA_CHUNK,
     RECONSTRUCT_CHUNK,
     EXTEND_CHUNK,

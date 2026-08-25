@@ -86,7 +86,7 @@ def transcript_document():
 
 
 class Client:
-    def analyze(self, _mp3, _srt, mapping):
+    def analyze(self, _mp3, _srt, mapping, language="en"):
         assert mapping == (4, 7)
         speaker = {
             "name": None,

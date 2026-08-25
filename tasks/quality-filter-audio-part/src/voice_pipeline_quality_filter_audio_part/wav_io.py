@@ -13,6 +13,7 @@ from .intervals import rational_to_milliseconds
 SAMPLE_RATE = 16_000
 CHANNELS = 1
 SAMPLE_WIDTH_BYTES = 2
+DURATION_TOLERANCE_FRAMES = SAMPLE_RATE // 1000
 
 
 class WavError(ValueError):
@@ -52,13 +53,21 @@ def read_normalized_wav(path: Path, *, expected_duration_ms: int) -> PcmAudio:
                 raise WavError("WAV payload is incomplete")
     except (OSError, EOFError, wave.Error) as exc:
         raise WavError("WAV cannot be decoded") from exc
-    duration_ms = rational_to_milliseconds(frame_count, SAMPLE_RATE)
-    if duration_ms != expected_duration_ms:
+    expected_frames = milliseconds_to_frame(expected_duration_ms)
+    if abs(frame_count - expected_frames) > DURATION_TOLERANCE_FRAMES:
         raise WavError("WAV duration does not match the database")
     samples = np.frombuffer(payload, dtype="<i2").copy()
     if samples.size == 0:
         raise WavError("WAV is empty")
-    return PcmAudio(samples=samples, sample_rate=SAMPLE_RATE, duration_ms=duration_ms)
+    if samples.size > expected_frames:
+        samples = samples[:expected_frames]
+    elif samples.size < expected_frames:
+        samples = np.pad(samples, (0, expected_frames - samples.size))
+    return PcmAudio(
+        samples=samples,
+        sample_rate=SAMPLE_RATE,
+        duration_ms=expected_duration_ms,
+    )
 
 
 def speech_samples(audio: PcmAudio, *, start_ms: int, end_ms: int) -> np.ndarray:

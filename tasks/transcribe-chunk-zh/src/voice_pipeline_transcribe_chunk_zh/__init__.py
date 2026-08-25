@@ -1,0 +1,1 @@
+"""Chinese chunk transcription worker."""

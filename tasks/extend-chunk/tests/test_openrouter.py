@@ -102,6 +102,32 @@ def test_request_uses_strict_schema_and_two_minute_guidance(policy):
     assert usage["total_tokens"] == 30
 
 
+def test_request_explicitly_preserves_chinese(policy):
+    transport = Transport()
+    client = OpenRouterClient(policy.openrouter, "key", transport=transport)
+
+    client.extend(
+        {
+            "language": "zh",
+            "scene": {"description": "两个人继续聊天。"},
+            "speakers": [],
+            "speaker_mapping": [
+                {"output_slot": 0, "diarization_speaker_id": 4},
+                {"output_slot": 1, "diarization_speaker_id": 7},
+            ],
+        },
+        {"language": "zh", "speakers": []},
+        policy.dialogue,
+        language="zh",
+    )
+
+    messages = transport.kwargs["json"]["messages"]
+    assert "conversation language is Chinese (zh)" in messages[0]["content"]
+    assert "Do not translate" in messages[0]["content"]
+    assert '"language":"zh"' in messages[1]["content"]
+    assert "两个人继续聊天。" in messages[1]["content"]
+
+
 def test_retryable_status_uses_bounded_retry(policy):
     transport = SequenceTransport([ErrorResponse(429), Response()])
     sleeps = []

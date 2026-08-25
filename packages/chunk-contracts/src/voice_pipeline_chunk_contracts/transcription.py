@@ -8,6 +8,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any, Literal
 
 from .contract import ChunkContractError, SpeakerAudio
+from .language import ChunkLanguage, parse_chunk_language
 
 _ROOT_FIELDS = {
     "schema_version",
@@ -33,7 +34,19 @@ _INPUT_FIELDS = {"output_slot", "diarization_speaker_id", "uri", "size_bytes", "
 _ARTIFACTS_FIELDS = {"transcript", "word_alignment"}
 _ARTIFACT_FIELDS = {"uri", "size_bytes", "sha256"}
 _REVISION = re.compile(r"[0-9a-f]{40}\Z")
+_MODEL_REVISION = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\Z")
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
+
+_PARAKEET_REPO = "nvidia/parakeet-tdt-0.6b-v3"
+_PARAFORMER_REPO = (
+    "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
+)
+
+
+def _identity(language: ChunkLanguage) -> tuple[str, str, str]:
+    if language == "en":
+        return "parakeet_tdt", _PARAKEET_REPO, "parakeet-v1"
+    return "paraformer_zh", _PARAFORMER_REPO, "paraformer-zh-v1"
 
 
 def _mapping(value: object, fields: set[str], name: str) -> Mapping[str, Any]:
@@ -63,12 +76,15 @@ def _number(value: object, name: str) -> float:
     return result
 
 
-def _model(value: object) -> Mapping[str, Any]:
+def _model(value: object, *, language: ChunkLanguage) -> Mapping[str, Any]:
     model = _mapping(value, _MODEL_FIELDS, "transcription model")
+    _backend, repo_id, config_version = _identity(language)
+    revision = _string(model["revision"], "model revision")
     if (
-        model["repo_id"] != "nvidia/parakeet-tdt-0.6b-v3"
-        or model["config_version"] != "parakeet-v1"
-        or not _REVISION.fullmatch(_string(model["revision"], "model revision"))
+        model["repo_id"] != repo_id
+        or model["config_version"] != config_version
+        or (language == "en" and not _REVISION.fullmatch(revision))
+        or (language == "zh" and not _MODEL_REVISION.fullmatch(revision))
     ):
         raise ChunkContractError("transcription model identity is invalid")
     return model
@@ -80,17 +96,20 @@ def parse_transcription_artifact(
     kind: Literal["transcript", "word_alignment"],
     duration_ms: int,
     speaker_mapping: tuple[int, int],
+    expected_language: ChunkLanguage = "en",
 ) -> dict[str, Any]:
-    """Validate one canonical Parakeet artifact and return a plain document."""
+    """Validate one canonical transcription artifact and return a plain document."""
     root = _mapping(value, _ROOT_FIELDS, kind)
+    language = parse_chunk_language(expected_language)
+    backend, _repo_id, _config_version = _identity(language)
     if (
         _integer(root["schema_version"], "schema_version") != 1
-        or root["backend"] != "parakeet_tdt"
-        or root["language"] != "en"
+        or root["backend"] != backend
+        or root["language"] != language
         or root["timebase"] != "chunk"
     ):
         raise ChunkContractError(f"{kind} identity is invalid")
-    _model(root["model"])
+    _model(root["model"], language=language)
     raw_speakers = root["speakers"]
     if not isinstance(raw_speakers, list) or len(raw_speakers) != 2:
         raise ChunkContractError(f"{kind} speakers must contain two entries")
@@ -133,6 +152,7 @@ def validate_artifact_pair(
     *,
     duration_ms: int,
     speaker_mapping: tuple[int, int],
+    expected_language: ChunkLanguage = "en",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Validate both artifacts and their shared identity fields."""
     first = parse_transcription_artifact(
@@ -140,12 +160,14 @@ def validate_artifact_pair(
         kind="transcript",
         duration_ms=duration_ms,
         speaker_mapping=speaker_mapping,
+        expected_language=expected_language,
     )
     second = parse_transcription_artifact(
         word_alignment,
         kind="word_alignment",
         duration_ms=duration_ms,
         speaker_mapping=speaker_mapping,
+        expected_language=expected_language,
     )
     for field in ("schema_version", "backend", "model", "language", "timebase"):
         if first[field] != second[field]:
@@ -159,18 +181,21 @@ def parse_transcription_result(
     speaker_audio: Sequence[SpeakerAudio],
     artifact_uris: tuple[str, str],
     artifact_metadata: tuple[tuple[int, str], tuple[int, str]],
+    expected_language: ChunkLanguage = "en",
 ) -> dict[str, Any]:
     """Validate the minimal durable transcription result namespace."""
     if len(speaker_audio) != 2:
         raise ChunkContractError("speaker audio must contain two entries")
     root = _mapping(value, _RESULT_FIELDS, "transcription result")
+    language = parse_chunk_language(expected_language)
+    backend, _repo_id, _config_version = _identity(language)
     if (
         _integer(root["schema_version"], "schema_version") != 1
-        or root["backend"] != "parakeet_tdt"
-        or root["language"] != "en"
+        or root["backend"] != backend
+        or root["language"] != language
     ):
         raise ChunkContractError("transcription result identity is invalid")
-    _model(root["model"])
+    _model(root["model"], language=language)
     raw_inputs = root["input_speaker_audio"]
     if not isinstance(raw_inputs, list) or len(raw_inputs) != 2:
         raise ChunkContractError("input_speaker_audio must contain two entries")

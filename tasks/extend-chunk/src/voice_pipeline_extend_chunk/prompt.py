@@ -51,12 +51,29 @@ def build_response_schema(min_utterances: int) -> dict[str, Any]:
     }
 
 
-def build_system_prompt(policy, schema: dict[str, Any]) -> str:
+def build_system_prompt(
+    policy, schema: dict[str, Any], language: str = "en"
+) -> str:
+    if language == "zh":
+        language_instruction = (
+            "The canonical conversation language is Chinese (zh). Write all spoken "
+            "dialogue and tone descriptions in natural Chinese. Do not translate the "
+            "conversation into English."
+        )
+    elif language == "en":
+        language_instruction = (
+            "The canonical conversation language is English (en). Write all spoken "
+            "dialogue and tone descriptions in natural English."
+        )
+    else:
+        raise ValueError("dialogue language is invalid")
     return f"""You write a continuation of an existing natural two-person conversation.
 
 Continue from the final source utterance without repeating, summarizing, correcting, or
 rewriting the source. Preserve the topic, facts, relationship, language, and the two speaker
 personas. Speaker IDs 0 and 1 are fixed identities and must never be swapped.
+
+{language_instruction}
 
 Aim for approximately {policy.target_duration_seconds} seconds or {policy.target_words}
 spoken words. Return between {policy.min_utterances} and {policy.max_utterances} utterances.
@@ -86,7 +103,7 @@ The response is governed by strict structured output. Return only JSON matching 
 """
 
 
-def build_user_prompt(persona: dict, transcript: dict) -> str:
+def build_user_prompt(persona: dict, transcript: dict, language: str = "en") -> str:
     output_speaker_identity = [
         {
             "speaker_id": item["output_slot"],
@@ -95,11 +112,14 @@ def build_user_prompt(persona: dict, transcript: dict) -> str:
         for item in persona["speaker_mapping"]
     ]
     inputs = {
+        "language": language,
         "output_speaker_identity": output_speaker_identity,
         "persona": persona,
         "transcript": transcript,
     }
     return (
         "Continue this conversation from the supplied canonical inputs:\n"
-        + json.dumps(inputs, sort_keys=True, separators=(",", ":"))
+        + json.dumps(
+            inputs, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
     )

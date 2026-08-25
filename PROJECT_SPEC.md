@@ -43,10 +43,12 @@ POST audio + metadata
        create one chunks row per accepted span
   -> processing (per chunk)
        two-speaker source separation and speaker-mapping audit
-       -> speech transcription
+       -> route by canonical chunk language
+          en -> Parakeet speech transcription
+          zh -> Paraformer per-character transcription + CT-PUNC
        -> LLM persona extraction
-       -> source-faithful utterance reconstruction
-       -> LLM dialogue continuation
+       -> source-faithful utterance reconstruction for en and zh
+       -> LLM dialogue continuation for en and zh
        -> voice-cloning speech synthesis into two speaker tracks
        -> upload artifacts and write chunks.final_results
 ```
@@ -66,10 +68,11 @@ current queue has the same name as its task.
 | `split_raw_audio_into_parts` | `raw_audio_id` | `diarize_audio_part` per part |
 | `diarize_audio_part` | `audio_part_id` | `quality_filter_audio_part` |
 | `quality_filter_audio_part` | `audio_part_id` | `separate_chunk` per chunk |
-| `separate_chunk` | `chunk_id` | `transcribe_chunk` |
+| `separate_chunk` | `chunk_id` | `transcribe_chunk` for `en`; `transcribe_chunk_zh` for `zh` |
 | `transcribe_chunk` | `chunk_id` | `persona_chunk` |
-| `persona_chunk` | `chunk_id` | `reconstruct_chunk` |
-| `reconstruct_chunk` | `chunk_id` | `extend_chunk` |
+| `transcribe_chunk_zh` | `chunk_id` | `persona_chunk` |
+| `persona_chunk` | `chunk_id` | `reconstruct_chunk` for `en` and `zh` |
+| `reconstruct_chunk` | `chunk_id` | `extend_chunk` for `en` and `zh` |
 | `extend_chunk` | `chunk_id` | terminal |
 
 ## Persistence ownership

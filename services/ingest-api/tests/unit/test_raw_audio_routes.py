@@ -128,6 +128,49 @@ def test_create_returns_202_and_parses_form_metadata() -> None:
     asyncio.run(scenario())
 
 
+def test_create_accepts_canonical_chinese_language_code() -> None:
+    async def scenario() -> None:
+        service = FakeService(
+            IngestResult(record=_record(), task_id="task-zh", deduplicated=False)
+        )
+        app = _app(service=service, repository=FakeRepository(None))
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as client:
+            response = await client.post(
+                "/v1/raw-audios",
+                files={"audio": ("episode.wav", b"audio", "audio/wav")},
+                data={"lang": "zh"},
+            )
+
+        assert response.status_code == 202
+        assert service.requests[0].lang == "zh"
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("language", ["cn", "zh-CN", "zh_CN", "ZH"])
+def test_create_rejects_noncanonical_chinese_language_codes(language: str) -> None:
+    async def scenario() -> None:
+        service = FakeService()
+        app = _app(service=service, repository=FakeRepository(None))
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as client:
+            response = await client.post(
+                "/v1/raw-audios",
+                files={"audio": ("episode.wav", b"audio", "audio/wav")},
+                data={"lang": language},
+            )
+
+        assert response.status_code == 422
+        assert service.requests == []
+
+    asyncio.run(scenario())
+
+
 def test_create_duplicate_returns_200_without_task_id() -> None:
     async def scenario() -> None:
         service = FakeService(

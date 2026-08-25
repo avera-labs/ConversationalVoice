@@ -166,6 +166,25 @@ def test_transcription_artifacts_accept_canonical_empty_speaker():
         )
 
 
+def test_chinese_transcription_artifact_uses_zh_and_paraformer():
+    value = transcription_artifact("word_alignment")
+    value["backend"] = "paraformer_zh"
+    value["model"] = {
+        "repo_id": "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+        "revision": "v2.0.4",
+        "config_version": "paraformer-zh-v1",
+    }
+    value["language"] = "zh"
+    value["speakers"][0]["words"][0]["text"] = "你"
+    parse_transcription_artifact(
+        value,
+        kind="word_alignment",
+        duration_ms=1000,
+        speaker_mapping=(4, 7),
+        expected_language="zh",
+    )
+
+
 def test_transcription_artifact_rejects_unknown_fields():
     value = transcription_artifact()
     value["audit"] = {}

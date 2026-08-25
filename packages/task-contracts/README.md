@@ -13,6 +13,7 @@ workers. It has no Celery dependency and does not import task implementations.
 | `QUALITY_FILTER_AUDIO_PART` | `quality_filter_audio_part` | `quality_filter_audio_part` | `audio_part_id`: UUID string |
 | `SEPARATE_CHUNK` | `separate_chunk` | `separate_chunk` | `chunk_id`: UUID string |
 | `TRANSCRIBE_CHUNK` | `transcribe_chunk` | `transcribe_chunk` | `chunk_id`: UUID string |
+| `TRANSCRIBE_CHUNK_ZH` | `transcribe_chunk_zh` | `transcribe_chunk_zh` | `chunk_id`: UUID string |
 | `PERSONA_CHUNK` | `persona_chunk` | `persona_chunk` | `chunk_id`: UUID string |
 | `RECONSTRUCT_CHUNK` | `reconstruct_chunk` | `reconstruct_chunk` | `chunk_id`: UUID string |
 | `EXTEND_CHUNK` | `extend_chunk` | `extend_chunk` | `chunk_id`: UUID string |

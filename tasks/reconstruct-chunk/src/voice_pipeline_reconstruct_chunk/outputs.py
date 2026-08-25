@@ -24,7 +24,7 @@ class OutputArtifacts:
         return {
             "schema_version": 1,
             "config_version": self.policy.config_version,
-            "language": "en",
+            "language": claim.lang,
             "models": {
                 "audio_tags": {
                     "backend": "openrouter",
@@ -94,7 +94,7 @@ class OutputArtifacts:
                 "audio_tags": self.policy.audio_tags.model,
                 "tts": self.policy.tts.model,
             },
-            "language": "en",
+            "language": claim.lang,
             "source_duration_ms": claim.duration_ms,
             "actual_duration_ms": reconstruction.transcript["duration_ms"],
             "utterance_count": len(reconstruction.transcript["utterances"]),
@@ -144,7 +144,7 @@ class OutputArtifacts:
             result["schema_version"] != 1
             or result["config_version"] != "source-reconstruction-v1"
             or result["backend"] != "openrouter"
-            or result["language"] != "en"
+            or result["language"] != claim.lang
             or result["source_duration_ms"] != claim.duration_ms
             or not isinstance(result["actual_duration_ms"], int)
             or result["actual_duration_ms"] <= 0

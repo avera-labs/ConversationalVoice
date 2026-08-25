@@ -8,6 +8,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from .contract import ChunkContractError
+from .language import ChunkLanguage, parse_chunk_language
 
 _WIRE_FIELDS = {"scene", "speakers"}
 _DOCUMENT_FIELDS = {
@@ -132,14 +133,16 @@ def parse_persona_document(
     speaker_mapping: Sequence[int],
     model_id: str,
     config_version: str = "persona-v1",
+    expected_language: ChunkLanguage = "en",
 ) -> dict[str, Any]:
     """Validate the source-compatible durable persona document."""
     root = _mapping(value, _DOCUMENT_FIELDS, "persona document")
+    language = parse_chunk_language(expected_language)
     if (
         _integer(root["schema_version"], "schema_version") != 1
         or root["backend"] != "openrouter"
         or root["config_version"] != config_version
-        or root["language"] != "en"
+        or root["language"] != language
     ):
         raise ChunkContractError("persona document identity is invalid")
     _validate_scene(root["scene"])
@@ -205,13 +208,15 @@ def parse_persona_result(
     input_transcript: tuple[str, int, str],
     artifact: tuple[str, int, str],
     config_version: str = "persona-v1",
+    expected_language: ChunkLanguage = "en",
 ) -> dict[str, Any]:
     """Validate the minimal durable final_results.persona namespace."""
     root = _mapping(value, _RESULT_FIELDS, "persona result")
+    language = parse_chunk_language(expected_language)
     if (
         _integer(root["schema_version"], "schema_version") != 1
         or root["backend"] != "openrouter"
-        or root["language"] != "en"
+        or root["language"] != language
     ):
         raise ChunkContractError("persona result identity is invalid")
     model = _mapping(root["model"], _MODEL_FIELDS, "persona model")

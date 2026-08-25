@@ -30,6 +30,21 @@ def test_empty_artifact_is_valid() -> None:
     assert parsed.turns == ()
 
 
+def test_writer_normalizes_sub_millisecond_wav_duration_rounding() -> None:
+    artifact = build_artifact(
+        [RawTurn(0.8, 1.00075, "a")], model="model-name", duration_ms=1000
+    )
+
+    assert artifact.segments[0].end == 1.0
+
+
+def test_writer_rejects_a_full_millisecond_overrun() -> None:
+    with pytest.raises(ValueError, match="invalid diarization turn"):
+        build_artifact(
+            [RawTurn(0.8, 1.001, "a")], model="model-name", duration_ms=1000
+        )
+
+
 @pytest.mark.parametrize("mutation", ["extra", "duration", "precision", "speaker"])
 def test_reader_rejects_contract_drift(mutation: str) -> None:
     document = build_artifact(

@@ -79,6 +79,7 @@ class Handler:
                 loaded.references,
                 speaker_mapping=mapping,
                 source_duration_ms=claim.duration_ms,
+                language=claim.lang,
             )
             transcript_meta = write_canonical_json(
                 reconstruction.transcript, workspace.output_transcript
@@ -169,7 +170,8 @@ class Handler:
             self.repository.fail_publication(
                 identifier,
                 safe_error(
-                    "extend_chunk_publication_failed", self.policy.task.error_max_length
+                    "extend_chunk_publication_failed",
+                    self.policy.task.error_max_length,
                 ),
             )
             self._finished(identifier, "publication_failed")

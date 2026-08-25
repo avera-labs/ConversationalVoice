@@ -5,6 +5,8 @@ import wave
 from dataclasses import replace
 from uuid import UUID
 
+import pytest
+
 from voice_pipeline_persona_chunk import task as task_module
 from voice_pipeline_persona_chunk.repository import Claim, Disposition
 from voice_pipeline_persona_chunk.task import Handler
@@ -25,7 +27,9 @@ def make_wav(path, duration_ms=1000):
 
 
 def canonical(value):
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode()
 
 
 def snapshot():
@@ -75,16 +79,21 @@ def separation(audio_size, audio_sha):
     }
 
 
-def transcript():
+def transcript(language="en"):
+    chinese = language == "zh"
     return {
         "schema_version": 1,
-        "backend": "parakeet_tdt",
+        "backend": "paraformer_zh" if chinese else "parakeet_tdt",
         "model": {
-            "repo_id": "nvidia/parakeet-tdt-0.6b-v3",
-            "revision": "b" * 40,
-            "config_version": "parakeet-v1",
+            "repo_id": (
+                "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
+                if chinese
+                else "nvidia/parakeet-tdt-0.6b-v3"
+            ),
+            "revision": "v2.0.4" if chinese else "b" * 40,
+            "config_version": "paraformer-zh-v1" if chinese else "parakeet-v1",
         },
-        "language": "en",
+        "language": language,
         "timebase": "chunk",
         "speakers": [
             {
@@ -95,7 +104,7 @@ def transcript():
                         "utterance_index": 0,
                         "start_ms": 0,
                         "end_ms": 400,
-                        "text": "Hello",
+                        "text": "你好。" if chinese else "Hello",
                         "confidence": 0.9,
                     }
                 ],
@@ -108,7 +117,7 @@ def transcript():
                         "utterance_index": 0,
                         "start_ms": 500,
                         "end_ms": 900,
-                        "text": "Hi",
+                        "text": "好的。" if chinese else "Hi",
                         "confidence": 0.8,
                     }
                 ],
@@ -117,17 +126,22 @@ def transcript():
     }
 
 
-def transcription_result(sep, transcript_bytes):
+def transcription_result(sep, transcript_bytes, language="en"):
+    chinese = language == "zh"
     transcript_sha = hashlib.sha256(transcript_bytes).hexdigest()
     return {
         "schema_version": 1,
-        "backend": "parakeet_tdt",
+        "backend": "paraformer_zh" if chinese else "parakeet_tdt",
         "model": {
-            "repo_id": "nvidia/parakeet-tdt-0.6b-v3",
-            "revision": "b" * 40,
-            "config_version": "parakeet-v1",
+            "repo_id": (
+                "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
+                if chinese
+                else "nvidia/parakeet-tdt-0.6b-v3"
+            ),
+            "revision": "v2.0.4" if chinese else "b" * 40,
+            "config_version": "paraformer-zh-v1" if chinese else "parakeet-v1",
         },
-        "language": "en",
+        "language": language,
         "input_speaker_audio": [
             {
                 "output_slot": item["output_slot"],
@@ -154,7 +168,7 @@ def transcription_result(sep, transcript_bytes):
 
 
 class Repo:
-    def __init__(self, audio_size, audio_sha, transcript_bytes):
+    def __init__(self, audio_size, audio_sha, transcript_bytes, language="en"):
         sep = separation(audio_size, audio_sha)
         self.claim_value = Claim(
             IDENTIFIER,
@@ -162,13 +176,13 @@ class Repo:
             "persona_generating",
             PART,
             f"{BASE}/audio.wav",
-            "en",
+            language,
             1000,
             0,
             1000,
             snapshot(),
             sep,
-            transcription_result(sep, transcript_bytes),
+            transcription_result(sep, transcript_bytes, language),
         )
 
     def claim(self, _identifier):
@@ -219,8 +233,8 @@ class Client:
     def __init__(self):
         self.calls = []
 
-    def analyze(self, mp3, srt, mapping):
-        self.calls.append((mp3, srt, mapping))
+    def analyze(self, mp3, srt, mapping, language="en"):
+        self.calls.append((mp3, srt, mapping, language))
         speaker = {
             "name": None,
             "age": None,
@@ -313,6 +327,33 @@ def test_handler_completes_without_downloading_word_alignment(
     assert not hasattr(repo, "failed")
 
 
+def test_chinese_transcript_completes_persona_and_publishes_reconstruction(
+    tmp_path, policy, monkeypatch
+):
+    audio = tmp_path / "source.wav"
+    size, sha = make_wav(audio)
+    transcript_bytes = canonical(transcript("zh"))
+    repo = Repo(size, sha, transcript_bytes, "zh")
+    storage = Storage(audio, transcript_bytes)
+    client = Client()
+    publisher = Publisher()
+    monkeypatch.setattr(
+        task_module,
+        "encode_mp3",
+        lambda _source, destination, _policy: destination.write_bytes(b"mp3"),
+    )
+    result = Handler(repo, storage, client, publisher, policy, tmp_path)(
+        str(IDENTIFIER)
+    )
+    assert result["outcome"] == "persona_generated"
+    assert repo.completed[2]["language"] == "zh"
+    assert repo.completed[1]["language"] == "zh"
+    assert client.calls[0][3] == "zh"
+    assert "[Speaker 4]: 你好。" in client.calls[0][1]
+    assert publisher.calls == [IDENTIFIER]
+    assert not hasattr(repo, "failed")
+
+
 def test_completed_claim_is_validated_without_storage_or_provider_io(
     tmp_path, policy, monkeypatch
 ):
@@ -346,13 +387,16 @@ def test_completed_claim_is_validated_without_storage_or_provider_io(
     assert client.calls == []
 
 
+@pytest.mark.parametrize(
+    ("language", "status"), [("en", "failed"), ("zh", "persona_generated")]
+)
 def test_durable_persona_retry_only_republishes_successor(
-    tmp_path, policy, monkeypatch
+    tmp_path, policy, monkeypatch, language, status
 ):
     audio = tmp_path / "source.wav"
     size, sha = make_wav(audio)
-    transcript_bytes = canonical(transcript())
-    repo = Repo(size, sha, transcript_bytes)
+    transcript_bytes = canonical(transcript(language))
+    repo = Repo(size, sha, transcript_bytes, language)
     storage = Storage(audio, transcript_bytes)
     monkeypatch.setattr(
         task_module, "encode_mp3", lambda _s, d, _p: d.write_bytes(b"mp3")
@@ -362,7 +406,7 @@ def test_durable_persona_retry_only_republishes_successor(
     repo.claim_value = replace(
         repo.claim_value,
         disposition=Disposition.READY_TO_DISPATCH,
-        status="failed",
+        status=status,
         persona=persona,
         persona_result=result,
     )

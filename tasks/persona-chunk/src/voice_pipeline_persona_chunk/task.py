@@ -91,13 +91,18 @@ class Handler:
                 kind="transcript",
                 duration_ms=claim.duration_ms,
                 speaker_mapping=mapping,
+                expected_language=claim.lang,
             )
             if canonical_json_bytes(transcript_document) != transcript_bytes:
                 raise RuntimeError("input_transcript_is_not_canonical")
             srt = transcript_to_srt(transcript_document)
             encode_mp3(workspace.audio, workspace.mp3, self.policy.audio)
-            wire, usage = self.client.analyze(workspace.mp3.read_bytes(), srt, mapping)
-            persona = build_persona_document(wire, usage, mapping, self.policy)
+            wire, usage = self.client.analyze(
+                workspace.mp3.read_bytes(), srt, mapping, claim.lang
+            )
+            persona = build_persona_document(
+                wire, usage, mapping, self.policy, claim.lang
+            )
             metadata = write_canonical_json(persona, workspace.persona)
             persona_uri = self.storage.persona_uri(claim.audio_uri)
             self.storage.upload_json(persona_uri, workspace.persona)
@@ -116,6 +121,7 @@ class Handler:
                 input_audio=(claim.audio_uri, audio.size_bytes, audio.sha256),
                 input_transcript=transcript_identity,
                 artifact=(persona_uri, metadata.size_bytes, metadata.sha256),
+                expected_language=claim.lang,
             )
             self.repository.complete(claim, persona, result)
             return self._publish(identifier, speaker_count=2)
@@ -138,7 +144,7 @@ class Handler:
 
     def _validate_upstream(self, claim):
         if (
-            claim.lang != "en"
+            claim.lang not in {"en", "zh"}
             or not claim.audio_uri
             or not claim.duration_ms
             or claim.duration_ms <= 0
@@ -181,6 +187,7 @@ class Handler:
             speaker_audio=separation.speaker_audio,
             artifact_uris=uris,
             artifact_metadata=metadata,
+            expected_language=claim.lang,
         )
         transcript = transcription["artifacts"]["transcript"]
         return (
@@ -207,6 +214,7 @@ class Handler:
             speaker_mapping=mapping,
             model_id=persisted_model_id,
             config_version=self.policy.config_version,
+            expected_language=claim.lang,
         )
         artifact = claim.persona_result.get("artifact")
         if not isinstance(artifact, dict):
@@ -228,6 +236,7 @@ class Handler:
                 len(persona_bytes),
                 hashlib.sha256(persona_bytes).hexdigest(),
             ),
+            expected_language=claim.lang,
         )
 
     def _result(self, claim, uri, size, sha, transcript, input_audio):
@@ -238,7 +247,7 @@ class Handler:
                 "id": self.policy.openrouter.model,
                 "config_version": self.policy.config_version,
             },
-            "language": "en",
+            "language": claim.lang,
             "input_audio": {
                 "uri": claim.audio_uri,
                 "size_bytes": input_audio["size_bytes"],

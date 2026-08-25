@@ -1,5 +1,4 @@
 import json
-import logging
 import wave
 from pathlib import Path
 from uuid import UUID
@@ -244,44 +243,6 @@ def test_download_failure_marks_failed_reraises_and_redacts_log(tmp_path: Path) 
     assert len(logger.calls) == 1
     assert "sensitive" not in repr(logger.calls[0][2])
     assert logger.calls[0][2]["elapsed_model_inference_ms"] is None
-
-
-def test_invalid_model_output_logs_specific_cause_and_persists_safe_error(
-    tmp_path: Path, caplog: pytest.LogCaptureFixture
-) -> None:
-    events: list[str] = []
-    repository = Repository()
-    terminal_logger = CapturingLogger(tmp_path)
-
-    with (
-        caplog.at_level(
-            logging.ERROR,
-            logger="voice_pipeline_diarize_audio_part.task",
-        ),
-        pytest.raises(TaskStageError) as raised,
-    ):
-        handler(
-            tmp_path,
-            repository,
-            Storage(events),
-            Publisher(events),
-            terminal_logger,
-            turns=(RawTurn(0.5, 2.1001, "speaker"),),
-        )(str(IDENTIFIER))
-
-    assert raised.value.code is ErrorCode.INVALID_MODEL_OUTPUT
-    assert (
-        "diarize_audio_part.invalid_model_output "
-        f"audio_part_id={IDENTIFIER} duration_ms=2000 turn_count=1 "
-        "cause_type=ValueError cause=diarization turn end exceeds audio "
-        "duration by 100.100 ms; maximum allowed model boundary overrun "
-        "is 100 ms"
-    ) in caplog.text
-    assert repository.events[-1] == (
-        "processing_failed",
-        IDENTIFIER,
-        "diarize-audio-part artifact: invalid model output",
-    )
 
 
 def test_qualifying_speaker_reference_is_uploaded_before_manifest_and_commit(

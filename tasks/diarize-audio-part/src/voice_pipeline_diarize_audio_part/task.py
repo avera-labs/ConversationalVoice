@@ -241,7 +241,6 @@ class DiarizeAudioPartHandler:
                     "elapsed_normalize_serialize_ms",
                     self._build_and_write,
                     inference,
-                    audio_part_id,
                     claim.duration_ms,
                     workspace.paths.artifact_path,
                 )
@@ -366,11 +365,7 @@ class DiarizeAudioPartHandler:
             failure.add_note("Processing failure state could not be persisted.")
 
     def _build_and_write(
-        self,
-        inference: InferenceResult,
-        audio_part_id: UUID,
-        duration_ms: int,
-        path: Path,
+        self, inference: InferenceResult, duration_ms: int, path: Path
     ) -> DiarizationArtifact:
         try:
             artifact = build_artifact(
@@ -379,18 +374,6 @@ class DiarizeAudioPartHandler:
                 duration_ms=duration_ms,
             )
         except Exception as exc:
-            logger.error(
-                (
-                    "diarize_audio_part.invalid_model_output "
-                    "audio_part_id=%s duration_ms=%s turn_count=%s "
-                    "cause_type=%s cause=%s"
-                ),
-                audio_part_id,
-                duration_ms,
-                len(inference.turns),
-                type(exc).__name__,
-                str(exc),
-            )
             raise TaskStageError(
                 FailureStage.ARTIFACT, ErrorCode.INVALID_MODEL_OUTPUT
             ) from exc

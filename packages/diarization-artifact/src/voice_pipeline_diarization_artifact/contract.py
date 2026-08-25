@@ -12,8 +12,6 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 _MILLISECOND = Decimal("0.001")
-_MODEL_BOUNDARY_TOLERANCE_MS = 100
-_MODEL_BOUNDARY_TOLERANCE_SECONDS = _MODEL_BOUNDARY_TOLERANCE_MS / 1000.0
 _TOP_LEVEL_FIELDS = {
     "schema_version",
     "model",
@@ -134,21 +132,16 @@ def build_artifact(
         start = float(turn.start)
         end = float(turn.end)
         label = turn.speaker_label
-        if not isinstance(label, str) or not label:
-            raise ValueError("diarization turn has an invalid speaker label")
-        if not math.isfinite(start) or not math.isfinite(end):
-            raise ValueError("diarization turn has a non-finite timestamp")
-        if start < 0:
-            raise ValueError("diarization turn starts before the audio")
-        if end <= start:
-            raise ValueError("diarization turn does not have positive duration")
-        if end > duration_seconds + _MODEL_BOUNDARY_TOLERANCE_SECONDS:
-            overrun_ms = (end - duration_seconds) * 1000.0
-            raise ValueError(
-                "diarization turn end exceeds audio duration by "
-                f"{overrun_ms:.3f} ms; maximum allowed model boundary "
-                f"overrun is {_MODEL_BOUNDARY_TOLERANCE_MS} ms"
-            )
+        if (
+            not isinstance(label, str)
+            or not label
+            or not math.isfinite(start)
+            or not math.isfinite(end)
+            or start < 0
+            or end <= start
+            or end > duration_seconds + 0.0005
+        ):
+            raise ValueError("invalid diarization turn")
         checked.append(RawTurn(start=start, end=end, speaker_label=label))
 
     checked.sort(key=lambda item: (item.start, item.end, item.speaker_label))
@@ -161,13 +154,6 @@ def build_artifact(
         end = _quantized_seconds(turn.end)
         start_ms = int(Decimal(str(start)) * 1000)
         end_ms = int(Decimal(str(end)) * 1000)
-        if (
-            duration_ms
-            < end_ms
-            <= duration_ms + _MODEL_BOUNDARY_TOLERANCE_MS
-        ):
-            end_ms = duration_ms
-            end = duration_seconds
         if end_ms <= start_ms or end_ms > duration_ms:
             raise ValueError("turn is empty or out of bounds after normalization")
         segment_duration = (end_ms - start_ms) / 1000.0

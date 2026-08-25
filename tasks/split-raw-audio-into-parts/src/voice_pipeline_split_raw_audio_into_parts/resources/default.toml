@@ -1,6 +1,6 @@
 [vad]
 model = "pyannote/segmentation-3.0"
-device = "auto"
+device = "cpu"
 
 [windowing]
 gap_threshold_ms = 15000

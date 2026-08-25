@@ -23,7 +23,7 @@ def test_packaged_policy_defaults() -> None:
     policy = load_policy_settings()
 
     assert policy.vad.model == "pyannote/segmentation-3.0"
-    assert policy.vad.device == "auto"
+    assert policy.vad.device == "cpu"
     assert policy.windowing.gap_threshold_ms == 15_000
     assert policy.windowing.min_window_ms == 20_000
     assert policy.windowing.max_window_ms == 900_000

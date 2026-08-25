@@ -87,20 +87,7 @@ def test_read_rejects_wrong_format_or_duration(tmp_path: Path) -> None:
 
     write_source(source, np.zeros(16000, dtype="<i2"))
     with pytest.raises(WavError, match="duration"):
-        read_normalized_wav(source, expected_duration_ms=998)
-
-
-@pytest.mark.parametrize("frame_count", [15998, 16012])
-def test_read_accepts_up_to_one_millisecond_of_frame_rounding(
-    tmp_path: Path, frame_count: int
-) -> None:
-    source = tmp_path / "source.wav"
-    write_source(source, np.zeros(frame_count, dtype="<i2"))
-
-    audio = read_normalized_wav(source, expected_duration_ms=1000)
-
-    assert audio.samples.size == frame_count
-    assert audio.duration_ms == 1000
+        read_normalized_wav(source, expected_duration_ms=999)
 
 
 def test_write_rejects_out_of_bounds_segment_and_removes_output(

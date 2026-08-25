@@ -14,7 +14,6 @@ from .speaker_reference import ReferenceSegment
 SAMPLE_RATE_HZ = 16_000
 CHANNELS = 1
 SAMPLE_WIDTH_BYTES = 2
-DURATION_TOLERANCE_MS = 1
 
 
 class WavError(ValueError):
@@ -67,14 +66,13 @@ def _read_payload(path: Path) -> tuple[bytes, int]:
 
 def read_normalized_wav(path: Path, *, expected_duration_ms: int) -> PcmAudio:
     payload, frame_count = _read_payload(path)
-    expected_frame_count = expected_duration_ms * (SAMPLE_RATE_HZ // 1000)
-    tolerance_frames = DURATION_TOLERANCE_MS * (SAMPLE_RATE_HZ // 1000)
-    if abs(frame_count - expected_frame_count) > tolerance_frames:
+    duration_ms = _duration_ms(frame_count, SAMPLE_RATE_HZ)
+    if duration_ms != expected_duration_ms:
         raise WavError("WAV duration does not match the audio part")
     return PcmAudio(
         samples=np.frombuffer(payload, dtype="<i2").copy(),
         sample_rate_hz=SAMPLE_RATE_HZ,
-        duration_ms=expected_duration_ms,
+        duration_ms=duration_ms,
     )
 
 

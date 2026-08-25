@@ -33,8 +33,7 @@ Usage: ./start-all.sh
 
 Starts the ingest HTTP server and every Celery task worker in this OSS tree.
 Before starting processes, synchronizes every project from its lock file and
-reinstalls and verifies its local shared packages so source changes cannot
-remain cached.
+reinstalls its local shared packages so source changes cannot remain cached.
 
 Optional environment variables:
   HTTP_HOST         Uvicorn bind address (default: 0.0.0.0)
@@ -70,71 +69,6 @@ ensure_env_link() {
   printf 'Linked environment: %s -> ../../.env\n' "${target}"
 }
 
-verify_local_packages() {
-  local workdir="$1"
-  shift
-
-  printf 'Verifying installed local packages: %s\n' "${workdir}"
-  (
-    cd -- "${workdir}"
-    uv run --no-sync python - "$@" <<'PY'
-from __future__ import annotations
-
-import importlib.util
-import sys
-import tomllib
-from pathlib import Path
-
-
-workdir = Path.cwd()
-with (workdir / "uv.lock").open("rb") as lock_file:
-    lock = tomllib.load(lock_file)
-locked_packages = {item["name"]: item for item in lock["package"]}
-
-for distribution_name in sys.argv[1:]:
-    package = locked_packages.get(distribution_name)
-    directory = package.get("source", {}).get("directory") if package else None
-    if not isinstance(directory, str):
-        raise SystemExit(
-            f"Local package is missing a directory source: {distribution_name}"
-        )
-
-    module_name = distribution_name.replace("-", "_")
-    source_root = (workdir / directory / "src" / module_name).resolve()
-    spec = importlib.util.find_spec(module_name)
-    locations = tuple(spec.submodule_search_locations or ()) if spec else ()
-    if not source_root.is_dir() or len(locations) != 1:
-        raise SystemExit(f"Local package cannot be verified: {distribution_name}")
-    installed_root = Path(locations[0]).resolve()
-
-    mismatches: list[str] = []
-    for source_path in source_root.rglob("*"):
-        relative = source_path.relative_to(source_root)
-        if (
-            not source_path.is_file()
-            or "__pycache__" in relative.parts
-            or source_path.suffix == ".pyc"
-        ):
-            continue
-        installed_path = installed_root / relative
-        if (
-            not installed_path.is_file()
-            or installed_path.read_bytes() != source_path.read_bytes()
-        ):
-            mismatches.append(relative.as_posix())
-
-    if mismatches:
-        details = ", ".join(mismatches[:5])
-        if len(mismatches) > 5:
-            details += f", and {len(mismatches) - 5} more"
-        raise SystemExit(
-            f"Installed local package is stale: {distribution_name}: {details}"
-        )
-    print(f"Local package verified: {distribution_name}")
-PY
-  )
-}
-
 sync_local_packages() {
   local workdir="$1"
   shift
@@ -150,7 +84,6 @@ sync_local_packages() {
     cd -- "${workdir}"
     uv "${args[@]}"
   )
-  verify_local_packages "${workdir}" "$@"
 }
 
 verify_task_registry() {
@@ -191,7 +124,7 @@ start_process() {
   printf 'Starting %s\n' "${name}"
   (
     cd -- "${workdir}"
-    exec uv run --no-sync "$@"
+    exec uv run "$@"
   ) &
   CHILD_PIDS+=("$!")
   CHILD_NAMES+=("${name}")

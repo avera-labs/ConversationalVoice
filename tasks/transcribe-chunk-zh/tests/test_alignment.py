@@ -40,6 +40,22 @@ def test_punctuation_attaches_to_preceding_character_and_drives_utterances(polic
     assert utterances[0].start_ms == 0 and utterances[0].end_ms == 500
 
 
+def test_ascii_period_after_english_word_is_attached_and_splits_utterance(policy):
+    units = [
+        AlignedUnit(0, 100, "computing", 0.9),
+        AlignedUnit(100, 200, "devices", 0.8),
+        AlignedUnit(200, 300, "或", 0.9),
+    ]
+
+    punctuated = attach_punctuation(units, "computing devices.或")
+
+    assert [item.text for item in punctuated] == ["computing", "devices.", "或"]
+    assert [item.text for item in build_utterances(punctuated, policy.utterance)] == [
+        "computingdevices.",
+        "或",
+    ]
+
+
 @pytest.mark.parametrize("value", ["你坏。", "你。", "好你。"])
 def test_punctuation_model_cannot_rewrite_drop_or_reorder_text(value):
     units = [AlignedUnit(0, 100, "你", 0.9), AlignedUnit(100, 200, "好", 0.8)]

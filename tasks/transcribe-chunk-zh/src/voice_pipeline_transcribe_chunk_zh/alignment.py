@@ -5,9 +5,9 @@ from dataclasses import dataclass, replace
 
 from .config import UtterancePolicy
 
-SENTENCE_END = ("。", "！", "？", "!", "?", "…")
+SENTENCE_END = ("。", "！", "？", ".", "!", "?", "…")
 CLAUSE_END = ("，", "、", "；", ",", ";")
-PUNCTUATION = frozenset("。，、；：？！…—～·．,;:?!")
+PUNCTUATION = frozenset("。，、；：？！…—～·．.,;:?!")
 
 
 @dataclass(frozen=True, slots=True)

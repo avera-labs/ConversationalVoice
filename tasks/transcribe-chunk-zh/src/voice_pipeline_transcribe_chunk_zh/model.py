@@ -78,7 +78,7 @@ class ParaformerModel:
         self._torch = torch
         return auto_model
 
-    def _confidences(self, count: int) -> list[float]:
+    def _confidences(self, units: list[str]) -> list[float]:
         logits = self._captured_logits
         core = self._auto_model.model
         if logits is None or logits.ndim != 3 or logits.shape[0] != 1:
@@ -91,15 +91,54 @@ class ParaformerModel:
             if getattr(core, name, None) is not None
         }
         filtered = [
-            float(score)
+            (int(token_id), float(score))
             for score, token_id in zip(scores.tolist(), token_ids.tolist(), strict=True)
             if int(token_id) not in excluded
         ]
-        if len(filtered) != count or not all(
-            math.isfinite(value) and 0 <= value <= 1 for value in filtered
+        if not all(
+            math.isfinite(score) and 0 <= score <= 1 for _, score in filtered
         ):
             raise RuntimeError("Paraformer confidence count mismatch")
-        return filtered
+        if not filtered:
+            if units:
+                raise RuntimeError("Paraformer confidence count mismatch")
+            return []
+        tokenizer = getattr(self._auto_model, "kwargs", {}).get("tokenizer")
+        ids2tokens = getattr(tokenizer, "ids2tokens", None)
+        if not callable(ids2tokens):
+            raise RuntimeError("Paraformer tokenizer is unavailable")
+        raw_tokens = ids2tokens([token_id for token_id, _ in filtered])
+        if not isinstance(raw_tokens, list) or len(raw_tokens) != len(filtered):
+            raise RuntimeError("Paraformer tokenizer output is invalid")
+
+        # FunASR merges English BPE pieces (for example ``con@@ nota@@ tion``)
+        # into one timestamped surface unit. Reuse the pinned postprocessor with
+        # raw-token index spans so confidence follows the exact same grouping.
+        from funasr.utils.postprocess_utils import sentence_postprocess
+
+        try:
+            _, spans, processed_units = sentence_postprocess(
+                raw_tokens,
+                [[index, index + 1] for index in range(len(raw_tokens))],
+            )
+        except Exception as exc:
+            raise RuntimeError("Paraformer confidence alignment failed") from exc
+        if processed_units != units or len(spans) != len(units):
+            raise RuntimeError("Paraformer confidence count mismatch")
+
+        confidences: list[float] = []
+        raw_scores = [score for _, score in filtered]
+        for span in spans:
+            if (
+                not isinstance(span, (list, tuple))
+                or len(span) < 2
+                or not isinstance(span[0], int)
+                or not isinstance(span[1], int)
+                or not 0 <= span[0] < span[1] <= len(raw_scores)
+            ):
+                raise RuntimeError("Paraformer confidence alignment failed")
+            confidences.append(min(raw_scores[span[0] : span[1]]))
+        return confidences
 
     def transcribe(self, audio: np.ndarray) -> list[DecodedUnit]:
         if audio.ndim != 1 or audio.dtype != np.float32 or not np.isfinite(audio).all():
@@ -124,12 +163,17 @@ class ParaformerModel:
         timestamps = result.get("timestamp")
         if not isinstance(text, str) or not isinstance(timestamps, list):
             raise RuntimeError("Paraformer text or timestamps are missing")
-        units = [char for char in text if not char.isspace()]
-        if any(char in PUNCTUATION for char in units) or len(units) != len(timestamps):
-            raise RuntimeError("Paraformer character timestamp count mismatch")
-        confidences = self._confidences(len(units))
+        units = text.split()
+        if (
+            any(char in PUNCTUATION for unit in units for char in unit)
+            or len(units) != len(timestamps)
+        ):
+            raise RuntimeError("Paraformer surface unit timestamp count mismatch")
+        confidences = self._confidences(units)
         decoded = []
-        for char, stamp, confidence in zip(units, timestamps, confidences, strict=True):
+        for unit, stamp, confidence in zip(
+            units, timestamps, confidences, strict=True
+        ):
             if (
                 not isinstance(stamp, (list, tuple))
                 or len(stamp) < 2
@@ -140,7 +184,7 @@ class ParaformerModel:
             end = float(stamp[1]) / 1000
             if not math.isfinite(start) or not math.isfinite(end):
                 raise RuntimeError("Paraformer timestamp is not finite")
-            decoded.append(DecodedUnit(char, start, end, confidence))
+            decoded.append(DecodedUnit(unit, start, end, confidence))
         return decoded
 
     def close(self):

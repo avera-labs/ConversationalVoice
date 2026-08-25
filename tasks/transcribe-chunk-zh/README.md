@@ -14,16 +14,18 @@ CT-PUNC, writes per-character `word_alignment.json`, derives
 - Output backend: `paraformer_zh`
 - Timebase: chunk-relative integer milliseconds
 
-Every Chinese character is one `words[]` entry. Inserted punctuation is
-attached to the preceding character and never receives an independent
-timestamp. Both output documents otherwise use the same schema, speaker
-mapping, deterministic S3 keys, and canonical JSON encoding as the English
-worker.
+Every Chinese character is one `words[]` entry. FunASR English BPE pieces are
+merged into the same timestamped surface word returned by its postprocessor;
+their confidence is the minimum selected-token posterior in the merged group.
+Inserted punctuation is attached to the preceding timed unit and never receives
+an independent timestamp. Both output documents otherwise use the same schema,
+speaker mapping, deterministic S3 keys, and canonical JSON encoding as the
+English worker.
 
 The worker captures the selected token posterior from the pinned FunASR
-decoder and stores it as the character confidence. Missing decoder scores or
-any text/timestamp/confidence count mismatch fails the task instead of writing
-fabricated confidence values or truncated output.
+decoder and stores it as the timed-unit confidence. Missing decoder scores or
+any surface-unit/timestamp/confidence mismatch fails the task instead of
+writing fabricated confidence values or truncated output.
 Punctuation inference is split into bounded character batches using the
 reviewed `punctuation.max_chars` policy so large chunks do not create an
 unbounded CT-PUNC request.

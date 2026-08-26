@@ -1,10 +1,15 @@
 import pytest
 
-from voice_pipeline_extend_chunk.config import ConfigurationError, load_settings
+from voice_pipeline_extend_chunk.config import (
+    ConfigurationError,
+    FishAudioPolicy,
+    load_settings,
+)
 
 
 def test_default_policy_targets_two_minutes(settings):
     assert settings.policy.openrouter.model == "google/gemini-3.7-flash"
+    assert settings.policy.openrouter.max_attempts == 3
     assert settings.policy.dialogue.target_duration_seconds == 120
     assert settings.policy.dialogue.target_words == 300
     assert settings.policy.fish_audio.model == "fish-audio/s2.1-pro"
@@ -21,3 +26,10 @@ def test_openrouter_key_is_required_for_dialogue_and_speech():
                 "S3_REGION": "us-east-1",
             }
         )
+
+
+def test_tts_model_accepts_models_outside_the_capability_mapping(settings):
+    values = settings.policy.fish_audio.model_dump()
+    values["model"] = "provider/plain-tts"
+
+    assert FishAudioPolicy.model_validate(values).model == "provider/plain-tts"

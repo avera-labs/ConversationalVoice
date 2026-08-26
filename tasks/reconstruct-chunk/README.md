@@ -15,14 +15,18 @@ English (`en`) or Chinese (`zh`) two-speaker chunk before dialogue extension.
 For every utterance in the canonical chunk transcript, the worker slices the
 mapped separated track and builds an audio reference from a fixed clean speaker
 sample, exactly one second of PCM silence, and that separated utterance. It does
-not call ASR. The existing transcript supplies all synthesis text.
+not call ASR. The existing transcript supplies immutable source text. MiMo
+inserts approved tags at their audible positions in `text_with_audio_tags` and
+produces one actor-facing `instruction`; removing the tags must reproduce the
+source text exactly.
 
 The default audio-tag model is `xiaomi/mimo-v2.5`; the default voice-cloning
 model is `fish-audio/s2.1-pro`. Both are configured in
 `resources/default.toml`.
 
 The request includes `response_format=json_schema` and appends the same JSON
-Schema to the system prompt. Audio-tag requests use
+Schema and complete tag allowlist to the system prompt. Invalid provider or
+semantic output is retried at most twice with the failure reason. Audio-tag requests use
 `provider.require_parameters=true` without a provider allowlist, so OpenRouter
 automatically selects only endpoints that support the requested parameters,
 including structured output. Provider fallbacks remain enabled. Runtime
@@ -55,7 +59,7 @@ equal-duration 44.1 kHz mono PCM16 tracks.
 - `reconstruction.py` slices utterances, builds references, synthesizes audio,
   and schedules generated segments.
 - `outputs.py` builds and validates the durable manifest and task result.
-- `openrouter.py` implements structured audio-tag extraction.
+- `openrouter.py` implements structured position-aware audio annotation.
 - `fish_audio.py` implements reference-conditioned speech synthesis.
 - `providers.py` preserves the original provider import surface for callers.
 

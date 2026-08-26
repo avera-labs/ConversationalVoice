@@ -7,8 +7,8 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from .contract import ChunkContractError
-from .extension import AUDIO_TAGS
 from .language import ChunkLanguage, parse_chunk_language
+from .tagged_text import parse_text_with_audio_tags
 
 _ROOT_FIELDS = {
     "schema_version",
@@ -26,9 +26,9 @@ _UTTERANCE_FIELDS = {
     "diarization_speaker_id",
     "speaker_utterance_index",
     "text",
+    "text_with_audio_tags",
+    "instruction",
     "confidence",
-    "audio_tags",
-    "tone",
     "source_start_ms",
     "source_end_ms",
     "start_ms",
@@ -99,7 +99,8 @@ def parse_reconstruction_transcript(
         start = _integer(item["start_ms"], "start_ms")
         end = _integer(item["end_ms"], "end_ms", 1)
         confidence = item["confidence"]
-        tags = item["audio_tags"]
+        tagged = parse_text_with_audio_tags(item["text_with_audio_tags"])
+        instruction = item["instruction"]
         anchor = item["anchor_utterance_index"]
         if (
             _integer(item["utterance_index"], "utterance_index") != index
@@ -109,16 +110,16 @@ def parse_reconstruction_transcript(
             or not isinstance(item["text"], str)
             or not item["text"].strip()
             or item["text"] != item["text"].strip()
+            or tagged.text != item["text"]
+            or not isinstance(instruction, str)
+            or not instruction
+            or instruction != instruction.strip()
+            or "[" in instruction
+            or "]" in instruction
             or isinstance(confidence, bool)
             or not isinstance(confidence, int | float)
             or not math.isfinite(confidence)
             or not 0 <= confidence <= 1
-            or not isinstance(tags, list)
-            or len(tags) > 3
-            or len(set(tags)) != len(tags)
-            or any(tag not in AUDIO_TAGS for tag in tags)
-            or not isinstance(item["tone"], str)
-            or item["tone"] != item["tone"].strip()
             or not 0 <= source_start < source_end <= source_duration_ms
             or not previous_start <= start < end <= duration_ms
             or start < speaker_ends[speaker_id]

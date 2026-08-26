@@ -4,6 +4,7 @@ import base64
 import time
 
 import httpx
+from voice_pipeline_chunk_contracts import select_tts_inputs
 
 from .audio import pcm16_mono_to_wav
 from .errors import OpenRouterProviderError
@@ -19,10 +20,13 @@ class FishAudioClient:
         self._owns_transport = transport is None
         self.sleeper = sleeper
 
-    def synthesize(self, text: str, reference_audio: bytes) -> bytes:
-        if not text or not reference_audio:
+    def synthesize(self, utterance: dict, reference_audio: bytes) -> bytes:
+        if not reference_audio:
             raise ValueError("TTS input is incomplete")
-        payload = self._payload(text, reference_audio)
+        inputs = select_tts_inputs(self.policy.model, utterance)
+        if inputs.instruction is not None:
+            raise OpenRouterProviderError("tts_adapter_not_implemented")
+        payload = self._payload(inputs.text, reference_audio)
         last_error = None
         for attempt in range(1, self.policy.max_attempts + 1):
             try:
@@ -64,7 +68,7 @@ class FishAudioClient:
         )
 
     def _payload(self, text: str, reference_audio: bytes) -> dict:
-        return {
+        payload = {
             "model": self.policy.model,
             "input": text,
             "input_references": [
@@ -77,7 +81,9 @@ class FishAudioClient:
                 }
             ],
             "response_format": "pcm",
-            "provider": {
+        }
+        if self.policy.model == "fish-audio/s2.1-pro":
+            payload["provider"] = {
                 "options": {
                     "fish-audio": {
                         "temperature": self.policy.temperature,
@@ -98,13 +104,9 @@ class FishAudioClient:
                         "early_stop_threshold": 1.0,
                     }
                 }
-            },
-        }
+            }
+        return payload
 
     def close(self):
         if self._owns_transport:
             self.transport.close()
-
-
-def tts_text(tags: list[str], text: str) -> str:
-    return " ".join([*tags, text])

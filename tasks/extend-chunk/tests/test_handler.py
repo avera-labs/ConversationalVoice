@@ -333,9 +333,7 @@ class Storage:
 
 
 class Dialogue:
-    def extend(
-        self, persona_document, transcript_document, _policy, language="en"
-    ):
+    def extend(self, persona_document, transcript_document, _policy, language="en"):
         assert persona_document["language"] == language
         assert transcript_document["language"] == language
         assert persona_document["speaker_mapping"][0]["diarization_speaker_id"] == 4
@@ -345,29 +343,45 @@ class Dialogue:
             {
                 "utterance_index": 0,
                 "speaker_id": 0,
-                "text": "比我想象中好很多。" if chinese else "It was surprisingly good.",
-                "tone": "愉快" if chinese else "pleased",
+                "text": "比我想象中好很多。"
+                if chinese
+                else "It was surprisingly good.",
+                "text_with_audio_tags": (
+                    "[pleased]比我想象中好很多。"
+                    if chinese
+                    else "[pleased]It was surprisingly good."
+                ),
+                "instruction": "愉快而自然地说。"
+                if chinese
+                else "Speak naturally with pleased surprise.",
                 "type": "dialogue",
                 "placement": "sequential",
-                "audio_tags": [],
             },
             {
                 "utterance_index": 1,
                 "speaker_id": 1,
                 "text": "真的吗？" if chinese else "Really?",
-                "tone": "好奇" if chinese else "curious",
+                "text_with_audio_tags": "[curious]真的吗？"
+                if chinese
+                else "[curious]Really?",
+                "instruction": "带着真诚的好奇快速回应。"
+                if chinese
+                else "Respond quickly with genuine curiosity.",
                 "type": "backchannel",
                 "placement": "overlap_previous",
-                "audio_tags": ["[curious]"],
             },
             {
                 "utterance_index": 2,
                 "speaker_id": 1,
                 "text": "那我也想试试看。" if chinese else "Now I want to try it too.",
-                "tone": "温和" if chinese else "warm",
+                "text_with_audio_tags": "那我也想试试看。"
+                if chinese
+                else "Now I want to try it too.",
+                "instruction": "温和自然地继续。"
+                if chinese
+                else "Continue in a warm, natural voice.",
                 "type": "dialogue",
                 "placement": "sequential",
-                "audio_tags": [],
             },
         ]
         utterances.extend(
@@ -379,10 +393,14 @@ class Dialogue:
                     if chinese
                     else f"Continuation line {index}."
                 ),
-                "tone": "自然" if chinese else "natural",
+                "text_with_audio_tags": (
+                    f"接下来的第{index}句话。"
+                    if chinese
+                    else f"Continuation line {index}."
+                ),
+                "instruction": "自然地说。" if chinese else "Speak naturally.",
                 "type": "dialogue",
                 "placement": "sequential",
-                "audio_tags": [],
             }
             for index in range(3, 8)
         )
@@ -407,8 +425,8 @@ class Fish:
         self.transcribed.append((payload, language))
         return "参考语音。" if language == "zh" else "Reference words."
 
-    def synthesize(self, text, reference_audio, reference_text):
-        self.synthesized.append((text, reference_audio, reference_text))
+    def synthesize(self, utterance, reference_audio, reference_text):
+        self.synthesized.append((utterance, reference_audio, reference_text))
         return wav_bytes(44100, 1000)
 
 
@@ -455,12 +473,17 @@ def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, p
         reference["source"] for reference in result["inputs"]["speaker_references"]
     ] == ["diarization_reference", "diarization_reference"]
     assert all("audio.wav" not in uri for uri, _payload in storage.uploads)
+    script_uri = f"{CHUNK_BASE}/results/dialogue-extension/script.json"
+    first_utterance = json.loads(dict(storage.uploads)[script_uri])["utterances"][0]
+    assert first_utterance["text"] == "It was surprisingly good."
+    assert first_utterance["text_with_audio_tags"].startswith("[pleased]")
+    assert first_utterance["instruction"]
+    assert "tone" not in first_utterance
+    assert "audio_tags" not in first_utterance
     assert not hasattr(repo, "failed")
 
 
-def test_handler_generates_chinese_extension_and_preserves_language(
-    tmp_path, policy
-):
+def test_handler_generates_chinese_extension_and_preserves_language(tmp_path, policy):
     transcript_payload, objects = build_objects(language="zh")
     repo = Repo(transcript_payload, "zh")
     storage = Storage(objects)
@@ -472,7 +495,10 @@ def test_handler_generates_chinese_extension_and_preserves_language(
 
     assert outcome["outcome"] == "completed"
     assert [language for _payload, language in fish.transcribed] == ["zh", "zh"]
-    assert fish.synthesized[0][0] == "比我想象中好很多。"
+    assert fish.synthesized[0][0]["text"] == "比我想象中好很多。"
+    assert (
+        fish.synthesized[0][0]["text_with_audio_tags"] == "[pleased]比我想象中好很多。"
+    )
     assert fish.synthesized[0][2] == "参考语音。"
     result = repo.completed[1]
     assert result["language"] == "zh"

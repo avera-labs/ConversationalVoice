@@ -28,7 +28,7 @@ class AudioTagsPolicy(BaseModel):
     reasoning_effort: Literal["none"]
     max_tokens: int = Field(gt=0, le=4096)
     timeout_seconds: int = Field(gt=0, le=600)
-    max_attempts: int = Field(gt=0, le=5)
+    max_attempts: int = Field(gt=0, le=3)
     retry_backoff_seconds: float = Field(ge=0, le=60)
     require_parameters: bool
     allow_fallbacks: bool
@@ -43,7 +43,7 @@ class AudioTagsPolicy(BaseModel):
 
 class TtsPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
-    model: Literal["fish-audio/s2.1-pro"]
+    model: str
     timeout_seconds: int = Field(gt=0, le=600)
     max_attempts: int = Field(gt=0, le=5)
     retry_backoff_seconds: float = Field(ge=0, le=60)
@@ -57,6 +57,13 @@ class TtsPolicy(BaseModel):
     latency: Literal["normal", "balanced", "low"]
     normalize_text: bool
     normalize_loudness: bool
+
+    @field_validator("model")
+    @classmethod
+    def canonical_model(cls, value: str) -> str:
+        if not value or value != value.strip():
+            raise ValueError("model must be a non-empty canonical model name")
+        return value
 
 
 class AudioPolicy(BaseModel):

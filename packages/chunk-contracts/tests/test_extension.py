@@ -27,20 +27,30 @@ def script(language="en"):
             {
                 "utterance_index": 0,
                 "speaker_id": 0,
-                "text": "这正是我的意思。" if chinese else "That is exactly what I meant.",
-                "tone": "温和而沉思" if chinese else "warm and reflective",
+                "text": "这正是我的意思。"
+                if chinese
+                else "That is exactly what I meant.",
+                "text_with_audio_tags": (
+                    "[thoughtful]这正是我的意思。"
+                    if chinese
+                    else "[thoughtful]That is exactly what I meant."
+                ),
+                "instruction": "温和而沉思地说。"
+                if chinese
+                else "Speak warmly and reflectively.",
                 "type": "dialogue",
                 "placement": "sequential",
-                "audio_tags": ["[thoughtful]"],
             },
             {
                 "utterance_index": 1,
                 "speaker_id": 1,
                 "text": "对。" if chinese else "Yeah.",
-                "tone": "快速赞同" if chinese else "quick agreement",
+                "text_with_audio_tags": "对。" if chinese else "Yeah.",
+                "instruction": "快速地表示赞同。"
+                if chinese
+                else "Give a quick agreement.",
                 "type": "backchannel",
                 "placement": "overlap_previous",
-                "audio_tags": [],
             },
         ],
         "usage": {
@@ -107,19 +117,22 @@ def test_chinese_script_and_timed_transcript_accept_canonical_documents():
             {**value["utterances"][1], "start_ms": 1400, "end_ms": 2200},
         ],
     }
-    assert parse_dialogue_extension_transcript(
-        transcript,
-        script=parsed,
-        speaker_mapping=(4, 7),
-        expected_language="zh",
-    )["language"] == "zh"
+    assert (
+        parse_dialogue_extension_transcript(
+            transcript,
+            script=parsed,
+            speaker_mapping=(4, 7),
+            expected_language="zh",
+        )["language"]
+        == "zh"
+    )
 
 
 @pytest.mark.parametrize(
     ("field", "value"),
     [
         ("speaker_id", 2),
-        ("audio_tags", ["[unknown]"]),
+        ("text_with_audio_tags", "[unknown]That is exactly what I meant."),
         ("text", "[laughs] hidden tag"),
     ],
 )

@@ -23,7 +23,6 @@ from voice_pipeline_task_contracts import EXTEND_CHUNK
 from .artifacts import canonical_json_bytes, write_canonical_json
 from .audio import assemble_tracks, read_wav_bytes, slice_wav_bytes
 from .errors import safe_error
-from .fish_audio import tts_text
 from .reference import (
     SpeakerReferenceUnavailable,
     longest_pure_interval,
@@ -118,7 +117,7 @@ class Handler:
                 speaker_id = utterance["speaker_id"]
                 synthesized.append(
                     self.fish_client.synthesize(
-                        tts_text(utterance),
+                        utterance,
                         references[speaker_id]["bytes"],
                         reference_texts[speaker_id],
                     )

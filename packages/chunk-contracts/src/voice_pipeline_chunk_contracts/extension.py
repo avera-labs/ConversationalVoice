@@ -9,6 +9,7 @@ from typing import Any
 
 from .contract import ChunkContractError
 from .language import ChunkLanguage, parse_chunk_language
+from .tagged_text import parse_text_with_audio_tags
 
 AUDIO_TAGS = frozenset(
     {
@@ -347,10 +348,10 @@ _UTTERANCE_FIELDS = {
     "utterance_index",
     "speaker_id",
     "text",
-    "tone",
+    "text_with_audio_tags",
+    "instruction",
     "type",
     "placement",
-    "audio_tags",
 }
 _TRANSCRIPT_FIELDS = {
     "schema_version",
@@ -431,17 +432,14 @@ def _utterance(value: object, index: int, *, timed: bool) -> dict[str, Any]:
     text = _string(item["text"], "utterance text", empty=True)
     if "[" in text or "]" in text:
         raise ChunkContractError("utterance text must not contain audio tags")
-    _string(item["tone"], "utterance tone")
-    tags = item["audio_tags"]
-    if (
-        not isinstance(tags, list)
-        or len(tags) > 3
-        or len(set(tags)) != len(tags)
-        or any(tag not in AUDIO_TAGS for tag in tags)
-    ):
-        raise ChunkContractError("utterance audio_tags are invalid")
+    tagged = parse_text_with_audio_tags(item["text_with_audio_tags"])
+    if tagged.text != text:
+        raise ChunkContractError("utterance text disagrees with tagged text")
+    instruction = _string(item["instruction"], "utterance instruction")
+    if "[" in instruction or "]" in instruction:
+        raise ChunkContractError("utterance instruction must not contain audio tags")
     if utterance_type == "paralinguistic":
-        if not tags:
+        if not tagged.tags:
             raise ChunkContractError("paralinguistic utterance requires an audio tag")
     elif not text:
         raise ChunkContractError("spoken utterance text must not be empty")
@@ -572,7 +570,9 @@ def parse_dialogue_extension_transcript(
                 item["placement"] == "overlap_previous"
                 and item["start_ms"] >= previous["end_ms"]
             ):
-                raise ChunkContractError("overlapping utterance misses the previous turn")
+                raise ChunkContractError(
+                    "overlapping utterance misses the previous turn"
+                )
         previous = item
         maximum_end_ms = max(maximum_end_ms, item["end_ms"])
     if maximum_end_ms != duration_ms:

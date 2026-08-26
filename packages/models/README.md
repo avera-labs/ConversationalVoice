@@ -190,7 +190,7 @@ it never includes or concatenates the original chunk. Its `speaker-0.wav` and
 `speaker-1.wav` are equal-duration tracks on an extension-relative timebase.
 Their fixed slot IDs preserve the exact separation mapping to diarization
 speaker IDs. `script.json` contains the continuation lines, type, delivery
-tone, placement, and audio tags; the sibling `transcript.json` adds actual TTS
+instruction, placement, tagged text, and worker-derived plain text; the sibling `transcript.json` adds actual TTS
 timings. `chunks.final_results.dialogue_extension` binds all inputs, mapped
 speaker references, model identities, and output artifact identities.
 For each output slot, dialogue extension prefers the audio-part reference

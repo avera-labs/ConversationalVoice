@@ -5,6 +5,7 @@ import json
 import time
 
 import httpx
+from voice_pipeline_chunk_contracts import select_tts_inputs
 
 from .audio import pcm16_mono_to_wav
 
@@ -61,13 +62,16 @@ class OpenRouterFishAudioClient:
             ) from exc
 
     def synthesize(
-        self, text: str, reference_audio: bytes, reference_text: str
+        self, utterance: dict, reference_audio: bytes, reference_text: str
     ) -> bytes:
-        if not text or not reference_audio or not reference_text:
+        if not reference_audio or not reference_text:
             raise ValueError("TTS input is incomplete")
+        inputs = select_tts_inputs(self.policy.model, utterance)
+        if inputs.instruction is not None:
+            raise OpenRouterFishAudioError("tts_adapter_not_implemented")
         payload = {
             "model": self.policy.model,
-            "input": text,
+            "input": inputs.text,
             "input_references": [
                 {
                     "type": "input_audio",
@@ -79,7 +83,9 @@ class OpenRouterFishAudioClient:
                 {"type": "text", "text": reference_text},
             ],
             "response_format": "pcm",
-            "provider": {
+        }
+        if self.policy.model == "fish-audio/s2.1-pro":
+            payload["provider"] = {
                 "options": {
                     "fish-audio": {
                         "temperature": self.policy.temperature,
@@ -100,8 +106,7 @@ class OpenRouterFishAudioClient:
                         "early_stop_threshold": 1.0,
                     }
                 }
-            },
-        }
+            }
 
         def request():
             return self.transport.post(
@@ -162,12 +167,3 @@ class OpenRouterFishAudioClient:
 class _Retryable(Exception):
     def __init__(self, error: OpenRouterFishAudioError):
         self.error = error
-
-
-def tts_text(utterance: dict) -> str:
-    """Render canonical audio tags and spoken text for Fish Audio or Eleven v3."""
-
-    pieces = [*utterance["audio_tags"]]
-    if utterance["text"]:
-        pieces.append(utterance["text"])
-    return " ".join(pieces)

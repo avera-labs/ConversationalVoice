@@ -6,7 +6,6 @@ from voice_pipeline_chunk_contracts import parse_reconstruction_transcript
 
 from .artifacts import audio_identity
 from .audio import concatenate_reference, read_wav_bytes, slice_wav_bytes
-from .fish_audio import tts_text
 from .timeline import schedule
 
 
@@ -47,17 +46,17 @@ class Reconstructor:
                 end_ms=source["source_end_ms"],
                 sample_rate_hz=self.policy.audio.input_sample_rate_hz,
             )
-            tags, usage = self.tags_client.analyze(separated_segment, source["text"])
+            annotation, usage = self.tags_client.analyze(
+                separated_segment, source["text"]
+            )
             reference_segment = concatenate_reference(
                 references[speaker_id]["bytes"],
                 separated_segment,
                 silence_ms=self.policy.audio.reference_silence_ms,
                 sample_rate_hz=self.policy.audio.input_sample_rate_hz,
             )
-            generated = self.tts_client.synthesize(
-                tts_text(tags["audio_tags"], source["text"]),
-                reference_segment,
-            )
+            source.update(annotation)
+            generated = self.tts_client.synthesize(source, reference_segment)
             generated_audio = read_wav_bytes(
                 generated, expected_rate=self.policy.audio.output_sample_rate_hz
             )
@@ -65,15 +64,14 @@ class Reconstructor:
                 reference_segment,
                 expected_rate=self.policy.audio.input_sample_rate_hz,
             )
-            source.update(tags)
             generated_payloads.append(generated)
             generated_durations.append(generated_audio.duration_ms)
             tag_usage.append(usage)
             segment_records.append(
                 {
                     "utterance_index": source["utterance_index"],
-                    "audio_tags": tags["audio_tags"],
-                    "tone": tags["tone"],
+                    "text_with_audio_tags": annotation["text_with_audio_tags"],
+                    "instruction": annotation["instruction"],
                     "separated_segment": audio_identity(
                         separated_segment,
                         duration_ms=source["source_end_ms"] - source["source_start_ms"],

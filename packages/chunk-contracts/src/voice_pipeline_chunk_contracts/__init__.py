@@ -16,21 +16,34 @@ from .extension import (
 )
 from .persona import parse_persona_document, parse_persona_result
 from .reconstruction import parse_reconstruction_transcript
+from .tagged_text import ParsedTaggedText, TaggedTextError, parse_text_with_audio_tags
 from .transcription import (
     parse_transcription_artifact,
     parse_transcription_result,
     validate_artifact_pair,
 )
+from .tts_capabilities import (
+    DEFAULT_TTS_CAPABILITIES,
+    TTS_MODEL_CAPABILITIES,
+    TtsInputs,
+    select_tts_inputs,
+    tts_capabilities,
+)
 
 __all__ = [
     "AUDIO_TAGS",
+    "DEFAULT_TTS_CAPABILITIES",
     "ChunkContractError",
     "ChunkLanguage",
     "ChunkDiarization",
     "ChunkSegment",
+    "ParsedTaggedText",
     "SeparationResult",
     "SpeakerAudio",
     "SUPPORTED_CHUNK_LANGUAGES",
+    "TTS_MODEL_CAPABILITIES",
+    "TaggedTextError",
+    "TtsInputs",
     "build_chunk_diarization",
     "parse_chunk_diarization",
     "parse_chunk_language",
@@ -42,5 +55,8 @@ __all__ = [
     "parse_separation_result",
     "parse_transcription_artifact",
     "parse_transcription_result",
+    "parse_text_with_audio_tags",
+    "select_tts_inputs",
+    "tts_capabilities",
     "validate_artifact_pair",
 ]

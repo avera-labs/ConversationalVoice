@@ -24,9 +24,9 @@ def test_reconstruction_transcript_contract():
                 "diarization_speaker_id": 4,
                 "speaker_utterance_index": 0,
                 "text": "Hello.",
+                "text_with_audio_tags": "[calm]Hello.",
+                "instruction": "Speak calmly and clearly.",
                 "confidence": 0.9,
-                "audio_tags": [],
-                "tone": "calm",
                 "source_start_ms": 100,
                 "source_end_ms": 800,
                 "start_ms": 100,
@@ -36,9 +36,12 @@ def test_reconstruction_transcript_contract():
             }
         ],
     }
-    assert parse_reconstruction_transcript(
-        document, speaker_mapping=(4, 7), source_duration_ms=1000
-    ) == document
+    assert (
+        parse_reconstruction_transcript(
+            document, speaker_mapping=(4, 7), source_duration_ms=1000
+        )
+        == document
+    )
 
 
 def test_chinese_reconstruction_transcript_contract():
@@ -59,9 +62,9 @@ def test_chinese_reconstruction_transcript_contract():
                 "diarization_speaker_id": 4,
                 "speaker_utterance_index": 0,
                 "text": "你好。",
+                "text_with_audio_tags": "[calm]你好。",
+                "instruction": "平静而清晰地说。",
                 "confidence": 0.9,
-                "audio_tags": [],
-                "tone": "平静",
                 "source_start_ms": 100,
                 "source_end_ms": 800,
                 "start_ms": 100,
@@ -71,12 +74,15 @@ def test_chinese_reconstruction_transcript_contract():
             }
         ],
     }
-    assert parse_reconstruction_transcript(
-        document,
-        speaker_mapping=(4, 7),
-        source_duration_ms=1000,
-        expected_language="zh",
-    ) == document
+    assert (
+        parse_reconstruction_transcript(
+            document,
+            speaker_mapping=(4, 7),
+            source_duration_ms=1000,
+            expected_language="zh",
+        )
+        == document
+    )
 
     with pytest.raises(ChunkContractError, match="identity"):
         parse_reconstruction_transcript(

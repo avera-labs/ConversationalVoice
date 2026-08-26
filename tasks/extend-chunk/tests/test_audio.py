@@ -16,8 +16,7 @@ def wav_bytes(duration_ms):
 
 def script():
     base = {
-        "tone": "natural",
-        "audio_tags": [],
+        "instruction": "Speak naturally.",
     }
     return {
         "language": "en",
@@ -31,6 +30,7 @@ def script():
                 "utterance_index": 0,
                 "speaker_id": 0,
                 "text": "A full sentence.",
+                "text_with_audio_tags": "A full sentence.",
                 "type": "dialogue",
                 "placement": "sequential",
             },
@@ -39,6 +39,7 @@ def script():
                 "utterance_index": 1,
                 "speaker_id": 1,
                 "text": "Yeah.",
+                "text_with_audio_tags": "Yeah.",
                 "type": "backchannel",
                 "placement": "overlap_previous",
             },
@@ -47,6 +48,7 @@ def script():
                 "utterance_index": 2,
                 "speaker_id": 1,
                 "text": "And then I understood.",
+                "text_with_audio_tags": "And then I understood.",
                 "type": "dialogue",
                 "placement": "sequential",
             },

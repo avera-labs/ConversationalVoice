@@ -79,7 +79,11 @@ class Tags:
 
     def analyze(self, audio, text):
         self.calls.append((audio, text))
-        return {"audio_tags": [], "tone": "calm"}, {
+        return {
+            "text": text,
+            "text_with_audio_tags": "[calm]" + text,
+            "instruction": "Speak calmly and clearly.",
+        }, {
             "model": "xiaomi/mimo-v2.5",
             "in_tokens": 1,
             "out_tokens": 1,
@@ -92,8 +96,8 @@ class Tts:
     def __init__(self):
         self.calls = []
 
-    def synthesize(self, text, reference_audio):
-        self.calls.append((text, reference_audio))
+    def synthesize(self, utterance, reference_audio):
+        self.calls.append((utterance, reference_audio))
         return wav(44100, 700 if len(self.calls) == 1 else 500)
 
 
@@ -301,6 +305,13 @@ def test_handler_reconstructs_without_asr_and_publishes_extension(tmp_path, poli
         "speaker-0.wav",
         "speaker-1.wav",
     }
+    transcript_uri = f"{CHUNK_BASE}/results/reconstruction/transcript.json"
+    first_utterance = json.loads(dict(storage.uploads)[transcript_uri])["utterances"][0]
+    assert first_utterance["text"] == "Hello."
+    assert first_utterance["text_with_audio_tags"] == "[calm]Hello."
+    assert first_utterance["instruction"] == "Speak calmly and clearly."
+    assert "tone" not in first_utterance
+    assert "audio_tags" not in first_utterance
     assert not hasattr(repo, "failed")
 
 

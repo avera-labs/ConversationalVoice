@@ -43,7 +43,11 @@ class Qwen3SegmentAligner:
             )
             if not isinstance(results, list) or len(results) != 1:
                 raise RuntimeError("Qwen3 forced aligner returned an invalid result")
-            units = [_aligned_unit(item, duration_ms) for item in results[0]]
+            timestamp_tolerance_ms = _timestamp_tolerance_ms(model)
+            units = [
+                _aligned_unit(item, duration_ms, timestamp_tolerance_ms)
+                for item in results[0]
+            ]
         return build_segment_word_alignment(
             text_with_audio_tags,
             units,
@@ -62,7 +66,9 @@ class Qwen3SegmentAligner:
         from qwen_asr import Qwen3ForcedAligner
 
         if self.policy.device.startswith("cuda") and not torch.cuda.is_available():
-            raise RuntimeError("CUDA was requested for forced alignment but is unavailable")
+            raise RuntimeError(
+                "CUDA was requested for forced alignment but is unavailable"
+            )
         model_path = snapshot_download(
             repo_id=self.policy.repo_id,
             revision=self.policy.revision,
@@ -85,7 +91,9 @@ class Qwen3SegmentAligner:
             self._torch.cuda.empty_cache()
 
 
-def _aligned_unit(item: object, duration_ms: int) -> AlignedTextUnit:
+def _aligned_unit(
+    item: object, duration_ms: int, timestamp_tolerance_ms: int
+) -> AlignedTextUnit:
     text = getattr(item, "text", None)
     start_seconds = getattr(item, "start_time", None)
     end_seconds = getattr(item, "end_time", None)
@@ -102,9 +110,33 @@ def _aligned_unit(item: object, duration_ms: int) -> AlignedTextUnit:
         raise RuntimeError("Qwen3 forced aligner returned a malformed item")
     start_ms = round(start_seconds * 1000)
     end_ms = round(end_seconds * 1000)
-    if not 0 <= start_ms <= end_ms <= duration_ms:
-        raise RuntimeError("Qwen3 forced aligner timestamp is outside the segment")
-    return AlignedTextUnit(text, start_ms, end_ms)
+    if (
+        not 0 <= start_ms <= end_ms
+        or start_ms > duration_ms + timestamp_tolerance_ms
+        or end_ms > duration_ms + timestamp_tolerance_ms
+    ):
+        raise RuntimeError(
+            "Qwen3 forced aligner timestamp is outside the segment: "
+            f"text={text!r}, start_ms={start_ms}, end_ms={end_ms}, "
+            f"duration_ms={duration_ms}, tolerance_ms={timestamp_tolerance_ms}"
+        )
+    return AlignedTextUnit(
+        text,
+        min(start_ms, duration_ms),
+        min(end_ms, duration_ms),
+    )
+
+
+def _timestamp_tolerance_ms(model: object) -> int:
+    value = getattr(model, "timestamp_segment_time", 80)
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, int | float)
+        or not math.isfinite(value)
+        or value <= 0
+    ):
+        raise RuntimeError("Qwen3 forced aligner timestamp resolution is invalid")
+    return math.ceil(value)
 
 
 def _wav_duration_ms(payload: bytes) -> int:

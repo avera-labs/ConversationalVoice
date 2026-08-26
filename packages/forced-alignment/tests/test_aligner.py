@@ -3,6 +3,8 @@ import wave
 from dataclasses import dataclass
 from types import SimpleNamespace
 
+import pytest
+
 from voice_pipeline_forced_alignment import Qwen3SegmentAligner
 
 
@@ -24,6 +26,8 @@ class Item:
 
 
 class Model:
+    timestamp_segment_time = 80
+
     def __init__(self):
         self.calls = []
 
@@ -60,9 +64,7 @@ def test_tag_only_segment_does_not_load_model():
         model_factory=lambda _policy: (_ for _ in ()).throw(AssertionError()),
     )
 
-    assert aligner.align(
-        wav(), text_with_audio_tags="[sighs]", language="zh"
-    ) == [
+    assert aligner.align(wav(), text_with_audio_tags="[sighs]", language="zh") == [
         {
             "item_index": 0,
             "type": "audio_tag",
@@ -73,3 +75,38 @@ def test_tag_only_segment_does_not_load_model():
             "end_ms": 0,
         }
     ]
+
+
+def test_timestamp_within_one_model_step_is_clamped_to_wav_duration():
+    class QuantizedModel(Model):
+        def align(self, **kwargs):
+            self.calls.append(kwargs)
+            return [[Item("Hello", 0.1, 1.04)]]
+
+    model = QuantizedModel()
+    aligner = Qwen3SegmentAligner(
+        SimpleNamespace(), model_factory=lambda _policy: model
+    )
+
+    result = aligner.align(wav(), text_with_audio_tags="Hello", language="en")
+
+    assert result[0]["start_ms"] == 100
+    assert result[0]["end_ms"] == 1000
+
+
+def test_timestamp_beyond_one_model_step_is_rejected_with_diagnostics():
+    class InvalidModel(Model):
+        def align(self, **kwargs):
+            self.calls.append(kwargs)
+            return [[Item("Hello", 0.1, 1.081)]]
+
+    model = InvalidModel()
+    aligner = Qwen3SegmentAligner(
+        SimpleNamespace(), model_factory=lambda _policy: model
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match=("start_ms=100, end_ms=1081, duration_ms=1000, tolerance_ms=80"),
+    ):
+        aligner.align(wav(), text_with_audio_tags="Hello", language="en")

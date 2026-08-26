@@ -50,19 +50,13 @@ def build_response_schema(min_utterances: int) -> dict[str, Any]:
 
 
 def build_system_prompt(policy, schema: dict[str, Any], language: str = "en") -> str:
-    if language == "zh":
-        language_instruction = (
-            "The canonical conversation language is Chinese (zh). Write all spoken "
-            "dialogue and performance instructions in natural Chinese. Do not translate the "
-            "conversation into English."
-        )
-    elif language == "en":
-        language_instruction = (
-            "The canonical conversation language is English (en). Write all spoken "
-            "dialogue and performance instructions in natural English."
-        )
-    else:
+    if not language or language != language.strip():
         raise ValueError("dialogue language is invalid")
+    language_instruction = (
+        f"The canonical conversation language identifier is {language!r}. Write all "
+        "spoken dialogue and performance instructions in that language. Do not translate "
+        "the conversation into another language."
+    )
     allowed_tags = json.dumps(
         sorted(AUDIO_TAGS), ensure_ascii=False, separators=(",", ":")
     )

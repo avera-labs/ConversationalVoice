@@ -354,6 +354,29 @@ def test_chinese_transcript_completes_persona_and_publishes_reconstruction(
     assert not hasattr(repo, "failed")
 
 
+def test_arbitrary_language_reaches_persona_provider(tmp_path, policy, monkeypatch):
+    audio = tmp_path / "source.wav"
+    size, sha = make_wav(audio)
+    transcript_bytes = canonical(transcript("es"))
+    repo = Repo(size, sha, transcript_bytes, "es")
+    storage = Storage(audio, transcript_bytes)
+    client = Client()
+    monkeypatch.setattr(
+        task_module,
+        "encode_mp3",
+        lambda _source, destination, _policy: destination.write_bytes(b"mp3"),
+    )
+
+    result = Handler(repo, storage, client, Publisher(), policy, tmp_path)(
+        str(IDENTIFIER)
+    )
+
+    assert result["outcome"] == "persona_generated"
+    assert client.calls[0][3] == "es"
+    assert repo.completed[1]["language"] == "es"
+    assert repo.completed[2]["language"] == "es"
+
+
 def test_completed_claim_is_validated_without_storage_or_provider_io(
     tmp_path, policy, monkeypatch
 ):

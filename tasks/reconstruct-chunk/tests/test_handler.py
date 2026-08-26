@@ -411,3 +411,25 @@ def test_handler_reconstructs_chinese_and_publishes_extension(tmp_path, policy):
     assert json.loads(uploaded[transcript_uri])["language"] == "zh"
     assert json.loads(uploaded[manifest_uri])["language"] == "zh"
     assert not hasattr(repo, "failed")
+
+
+def test_handler_passes_arbitrary_language_to_forced_aligner(tmp_path, policy):
+    claim, objects = build_claim_and_objects("es")
+    repo = Repo(claim)
+    storage = Storage(objects)
+    alignment = ForcedAlignment()
+
+    outcome = Handler(
+        repo,
+        storage,
+        Tags(),
+        Tts(),
+        Publisher(),
+        policy,
+        tmp_path,
+        forced_aligner=alignment,
+    )(str(IDENTIFIER))
+
+    assert outcome["outcome"] == "reconstructed"
+    assert [call[2] for call in alignment.calls] == ["es", "es"]
+    assert repo.completed[1]["language"] == "es"

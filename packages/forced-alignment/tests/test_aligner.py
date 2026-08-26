@@ -58,6 +58,37 @@ def test_aligner_uses_plain_text_and_merges_inline_tags():
     ]
 
 
+@pytest.mark.parametrize(
+    ("language", "provider_language"),
+    [
+        ("yue", "Cantonese"),
+        ("de", "German"),
+        ("es", "Spanish"),
+        ("fr", "French"),
+        ("it", "Italian"),
+        ("ja", "Japanese"),
+        ("ko", "Korean"),
+        ("pt", "Portuguese"),
+        ("ru", "Russian"),
+    ],
+)
+def test_passes_each_model_supported_language(language, provider_language):
+    model = Model()
+    aligner = Qwen3SegmentAligner(
+        SimpleNamespace(), model_factory=lambda _policy: model
+    )
+    aligner.align(wav(), text_with_audio_tags="Hello world", language=language)
+    assert model.calls[0]["language"] == provider_language
+
+
+def test_rejects_language_only_at_forced_alignment_boundary():
+    aligner = Qwen3SegmentAligner(
+        SimpleNamespace(), model_factory=lambda _policy: Model()
+    )
+    with pytest.raises(ValueError, match="forced-alignment language is unsupported"):
+        aligner.align(wav(), text_with_audio_tags="Hallo", language="nl")
+
+
 def test_tag_only_segment_does_not_load_model():
     aligner = Qwen3SegmentAligner(
         SimpleNamespace(),

@@ -1,16 +1,14 @@
-"""Canonical language codes shared by chunk pipeline contracts."""
+"""Opaque language identifiers shared by chunk pipeline contracts."""
 
 from __future__ import annotations
 
-from typing import Literal
-
 from .contract import ChunkContractError
 
-ChunkLanguage = Literal["en", "zh"]
-SUPPORTED_CHUNK_LANGUAGES = frozenset({"en", "zh"})
+ChunkLanguage = str
 
 
 def parse_chunk_language(value: object) -> ChunkLanguage:
-    if value not in SUPPORTED_CHUNK_LANGUAGES:
-        raise ChunkContractError("chunk language must be 'en' or 'zh'")
-    return value  # type: ignore[return-value]
+    """Validate storage shape without imposing a pipeline-wide support list."""
+    if not isinstance(value, str) or not value or value != value.strip():
+        raise ChunkContractError("chunk language must be a non-empty canonical string")
+    return value

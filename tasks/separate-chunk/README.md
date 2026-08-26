@@ -14,10 +14,10 @@ required `diarization_speaker_id` for its `output_slot`. The two entries form a
 complete bijection with the IDs in `chunks.diarizations`. Consumers must use
 this mapping; it never renames or reorders storage objects.
 
-After the first successful separation commit, an English chunk is published to
-the registered `transcribe_chunk` queue and Chinese (`zh`) chunks to the
-registered `transcribe_chunk_zh` queue. Unsupported languages are rejected at
-ingest. A publication exception is re-raised without rolling back the committed
+After the first successful separation commit, every non-`zh` chunk is published
+to the registered `transcribe_chunk` queue and Chinese (`zh`) chunks to the
+registered `transcribe_chunk_zh` queue. Language capability is checked only by
+model-specific stages. A publication exception is re-raised without rolling back the committed
 separation result.
 
 An invocation that finds an existing separation result validates the complete

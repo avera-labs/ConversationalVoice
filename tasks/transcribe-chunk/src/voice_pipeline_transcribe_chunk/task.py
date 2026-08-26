@@ -52,10 +52,9 @@ class Handler:
             return {"chunk_id": str(identifier), "outcome": claim.disposition.value}
         workspace = Workspace(self.policy.task.workspace_prefix, self.workspace_parent)
         try:
-            if claim.lang != "en":
-                raise RuntimeError("unsupported_chunk_language")
             if (
-                not claim.audio_uri
+                not claim.lang
+                or not claim.audio_uri
                 or not claim.duration_ms
                 or claim.duration_ms <= 0
                 or claim.end_ms - claim.start_ms != claim.duration_ms
@@ -118,7 +117,9 @@ class Handler:
                     (slot, speaker.diarization_speaker_id, words, utterances)
                 )
             transcript, word_alignment = build_artifacts(
-                policy=self.policy, speaker_outputs=speaker_outputs
+                policy=self.policy,
+                speaker_outputs=speaker_outputs,
+                language=claim.lang,
             )
             mapping = tuple(
                 item.diarization_speaker_id for item in separation.speaker_audio
@@ -128,6 +129,7 @@ class Handler:
                 word_alignment,
                 duration_ms=claim.duration_ms,
                 speaker_mapping=mapping,
+                expected_language=claim.lang,
             )
             transcript_meta = write_canonical_json(transcript, workspace.transcript)
             alignment_meta = write_canonical_json(
@@ -144,7 +146,7 @@ class Handler:
                 "schema_version": 1,
                 "backend": "parakeet_tdt",
                 "model": model_identity(self.policy),
-                "language": "en",
+                "language": claim.lang,
                 "input_speaker_audio": [
                     {
                         "output_slot": item.output_slot,
@@ -169,6 +171,7 @@ class Handler:
                 speaker_audio=separation.speaker_audio,
                 artifact_uris=artifact_uris,
                 artifact_metadata=artifact_metadata,
+                expected_language=claim.lang,
             )
             self.repository.complete(claim, result)
             if self.publisher is not None:
@@ -201,7 +204,7 @@ class Handler:
 
     def _validate_completed_claim(self, claim):
         if (
-            claim.lang != "en"
+            not claim.lang
             or not claim.audio_uri
             or not claim.duration_ms
             or not isinstance(claim.diarizations, dict)
@@ -240,6 +243,7 @@ class Handler:
             speaker_audio=separation.speaker_audio,
             artifact_uris=artifact_uris,
             artifact_metadata=metadata,
+            expected_language=claim.lang,
         )
 
     @staticmethod

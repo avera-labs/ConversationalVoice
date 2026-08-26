@@ -1,7 +1,7 @@
 # Persona Chunk Worker
 
 This single-process Celery worker generates a structured vocal-persona document
-for an English (`en`) or Chinese (`zh`) chunk. It validates the completed
+for a chunk carrying any canonical language identifier. It validates the completed
 separation and language-specific transcription contracts, converts the original
 mixed chunk WAV to a compact MP3, and sends the MP3 plus a deterministic
 speaker-labelled UTF-8 SRT transcript to OpenRouter.
@@ -12,7 +12,7 @@ speaker-labelled UTF-8 SRT transcript to OpenRouter.
 - Argument: one canonical chunk UUID string
 - Claim transition: `transcribed`, or a persona-owned `failed` row, to `persona_generating`
 - Completion transition: `persona_generating` to `persona_generated`, then
-  publish `reconstruct_chunk` for both `en` and `zh`
+  publish `reconstruct_chunk` without filtering by language
 - Failure transition: `persona_generating` to `failed`, followed by re-raising
 - A successor-publication failure transitions `persona_generated` to `failed` while retaining the durable persona
 - `persona_generating` is an in-progress no-op; `extending`, `completed`, and an extension-owned `rejected` state validate the durable persona and return without republishing

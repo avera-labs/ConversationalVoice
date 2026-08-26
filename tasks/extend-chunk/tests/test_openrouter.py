@@ -126,30 +126,36 @@ def test_request_uses_strict_schema_and_two_minute_guidance(policy):
     assert usage["total_tokens"] == 30
 
 
-def test_request_explicitly_preserves_chinese(policy):
+@pytest.mark.parametrize(
+    ("language", "description"),
+    [("zh", "两个人继续聊天。"), ("es", "Dos personas siguen hablando.")],
+)
+def test_request_explicitly_preserves_requested_language(
+    policy, language, description
+):
     transport = Transport()
     client = OpenRouterClient(policy.openrouter, "key", transport=transport)
 
     client.extend(
         {
-            "language": "zh",
-            "scene": {"description": "两个人继续聊天。"},
+            "language": language,
+            "scene": {"description": description},
             "speakers": [],
             "speaker_mapping": [
                 {"output_slot": 0, "diarization_speaker_id": 4},
                 {"output_slot": 1, "diarization_speaker_id": 7},
             ],
         },
-        {"language": "zh", "speakers": []},
+        {"language": language, "speakers": []},
         policy.dialogue,
-        language="zh",
+        language=language,
     )
 
     messages = transport.kwargs["json"]["messages"]
-    assert "conversation language is Chinese (zh)" in messages[0]["content"]
+    assert f"language identifier is {language!r}" in messages[0]["content"]
     assert "Do not translate" in messages[0]["content"]
-    assert '"language":"zh"' in messages[1]["content"]
-    assert "两个人继续聊天。" in messages[1]["content"]
+    assert f'"language":"{language}"' in messages[1]["content"]
+    assert description in messages[1]["content"]
 
 
 def test_retryable_status_uses_bounded_retry(policy):

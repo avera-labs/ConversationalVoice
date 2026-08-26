@@ -86,7 +86,8 @@ NGINX limits the complete request body. The service still enforces
 - `audio`: required, non-empty audio file
 - `title`: optional text
 - `source_url`: optional text stored as metadata; it is never fetched
-- `lang`: optional canonical language code, `en` or `zh`; default `en`
+- `lang`: optional non-empty canonical language identifier; default `en`. The
+  API stores and forwards it without applying a model-support allowlist.
 - `meta`: optional JSON object encoded as a form string
 
 A new upload returns `202 Accepted` with the raw audio UUID, `pending` status,

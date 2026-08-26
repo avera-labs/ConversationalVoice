@@ -97,6 +97,17 @@ def test_reference_asr_uses_chinese_language(policy):
     assert transport.calls[0][1]["json"]["language"] == "zh"
 
 
+def test_reference_asr_forwards_language_without_pipeline_filter(policy):
+    transport = Transport()
+    client = OpenRouterFishAudioClient(
+        policy.fish_audio, "openrouter-key", transport=transport
+    )
+
+    client.transcribe_reference(b"wav", language="x-unsupported")
+
+    assert transport.calls[0][1]["json"]["language"] == "x-unsupported"
+
+
 def test_deterministic_fish_error_is_not_retried(policy):
     class FailedTransport:
         calls = 0

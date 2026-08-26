@@ -44,9 +44,9 @@ _PARAFORMER_REPO = (
 
 
 def _identity(language: ChunkLanguage) -> tuple[str, str, str]:
-    if language == "en":
-        return "parakeet_tdt", _PARAKEET_REPO, "parakeet-v1"
-    return "paraformer_zh", _PARAFORMER_REPO, "paraformer-zh-v1"
+    if language == "zh":
+        return "paraformer_zh", _PARAFORMER_REPO, "paraformer-zh-v1"
+    return "parakeet_tdt", _PARAKEET_REPO, "parakeet-v1"
 
 
 def _mapping(value: object, fields: set[str], name: str) -> Mapping[str, Any]:
@@ -83,7 +83,7 @@ def _model(value: object, *, language: ChunkLanguage) -> Mapping[str, Any]:
     if (
         model["repo_id"] != repo_id
         or model["config_version"] != config_version
-        or (language == "en" and not _REVISION.fullmatch(revision))
+        or (language != "zh" and not _REVISION.fullmatch(revision))
         or (language == "zh" and not _MODEL_REVISION.fullmatch(revision))
     ):
         raise ChunkContractError("transcription model identity is invalid")

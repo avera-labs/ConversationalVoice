@@ -12,7 +12,19 @@ from voice_pipeline_chunk_contracts import (
     parse_text_with_audio_tags,
 )
 
-_LANGUAGES = {"en": "English", "zh": "Chinese"}
+_LANGUAGES = {
+    "yue": "Cantonese",
+    "zh": "Chinese",
+    "en": "English",
+    "de": "German",
+    "es": "Spanish",
+    "fr": "French",
+    "it": "Italian",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "pt": "Portuguese",
+    "ru": "Russian",
+}
 
 
 class Qwen3SegmentAligner:

@@ -21,7 +21,7 @@ workers. It has no Celery dependency and does not import task implementations.
 The diarization task publishes `QUALITY_FILTER_AUDIO_PART` only after its
 durable artifact URI and `diarized` status commit successfully.
 The quality-filter task publishes `SEPARATE_CHUNK` after committing accepted
-chunks. Separation publishes `TRANSCRIBE_CHUNK` for English chunks after its
+chunks. Separation publishes `TRANSCRIBE_CHUNK` for non-`zh` chunks after its
 durable completion commit.
 Transcription publishes `PERSONA_CHUNK` after its durable completion commit.
 Persona publishes `RECONSTRUCT_CHUNK` after its durable completion commit.

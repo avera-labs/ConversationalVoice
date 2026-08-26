@@ -121,9 +121,8 @@ def build_system_prompt(
         schema, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     )
     language_note = (
-        "The transcript is Chinese. Read it as valid UTF-8 Chinese and preserve its meaning."
-        if language == "zh"
-        else "The transcript is English."
+        f"The canonical transcript language identifier is {language!r}. Read the "
+        "transcript in that language and preserve its meaning."
     )
     return f"""You analyze vocal personas from conversation audio and its transcript.
 

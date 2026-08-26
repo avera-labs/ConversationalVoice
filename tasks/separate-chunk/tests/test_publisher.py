@@ -19,16 +19,15 @@ class Publisher:
 
 @pytest.mark.parametrize(
     ("language", "contract"),
-    [("en", TRANSCRIBE_CHUNK), ("zh", TRANSCRIBE_CHUNK_ZH)],
+    [
+        ("en", TRANSCRIBE_CHUNK),
+        ("zh", TRANSCRIBE_CHUNK_ZH),
+        ("es", TRANSCRIBE_CHUNK),
+        ("x-unsupported", TRANSCRIBE_CHUNK),
+    ],
 )
-def test_routes_by_canonical_language(language, contract):
+def test_routes_only_chinese_to_the_specialized_worker(language, contract):
     inner = Publisher()
     publisher = TranscribeChunkPublisher(inner)
     assert publisher.publish(IDENTIFIER, language) == "task-id"
     assert inner.value == (contract, IDENTIFIER)
-
-
-def test_rejects_noncanonical_language():
-    publisher = TranscribeChunkPublisher(Publisher())
-    with pytest.raises(ValueError, match="unsupported chunk language"):
-        publisher.publish(IDENTIFIER, "cn")

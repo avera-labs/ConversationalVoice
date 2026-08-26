@@ -8,13 +8,17 @@ version = "0.1.0"
 description = "Strict chunk diarization and separation result contracts"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = ["voice-pipeline-diarization-artifact"]
+dependencies = [
+    "voice-pipeline-diarization-artifact",
+    "voice-pipeline-task-contracts",
+]
 
 [project.optional-dependencies]
 test = ["pytest>=8.3,<9"]
 
 [tool.uv.sources]
 voice-pipeline-diarization-artifact = { path = "../diarization-artifact" }
+voice-pipeline-task-contracts = { path = "../task-contracts" }
 
 [tool.pytest.ini_options]
 addopts = "-ra"

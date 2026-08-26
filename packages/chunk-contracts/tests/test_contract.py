@@ -166,6 +166,18 @@ def test_transcription_artifacts_accept_canonical_empty_speaker():
         )
 
 
+def test_non_chinese_transcription_artifact_uses_parakeet_identity():
+    value = transcription_artifact()
+    value["language"] = "es"
+    parse_transcription_artifact(
+        value,
+        kind="transcript",
+        duration_ms=1000,
+        speaker_mapping=(4, 7),
+        expected_language="es",
+    )
+
+
 def test_chinese_transcription_artifact_uses_zh_and_paraformer():
     value = transcription_artifact("word_alignment")
     value["backend"] = "paraformer_zh"

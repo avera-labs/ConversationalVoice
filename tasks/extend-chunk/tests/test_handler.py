@@ -603,6 +603,29 @@ def test_handler_generates_chinese_extension_and_preserves_language(tmp_path, po
     assert storage.uploads == []
 
 
+def test_handler_passes_arbitrary_language_to_each_provider(tmp_path, policy):
+    transcript_payload, objects = build_objects(language="es")
+    repo = Repo(transcript_payload, "es")
+    storage = Storage(objects)
+    fish = Fish()
+    alignment = ForcedAlignment()
+
+    outcome = make_handler(
+        repo,
+        storage,
+        Dialogue(),
+        fish,
+        policy,
+        tmp_path,
+        forced_aligner=alignment,
+    )(str(IDENTIFIER))
+
+    assert outcome["outcome"] == "completed"
+    assert [language for _payload, language in fish.transcribed] == ["es", "es"]
+    assert [call[2] for call in alignment.calls] == ["es"] * 8
+    assert repo.completed[1]["language"] == "es"
+
+
 def test_missing_mapped_reference_uses_separated_track_fallback(tmp_path, policy):
     transcript_payload, objects = build_objects(include_second_reference=False)
     repo = Repo(transcript_payload)

@@ -28,7 +28,7 @@ class OpenRouterFishAudioClient:
     def transcribe_reference(self, audio: bytes, language: str = "en") -> str:
         if not audio:
             raise ValueError("reference audio is empty")
-        if language not in {"en", "zh"}:
+        if not language or language != language.strip():
             raise ValueError("reference ASR language is invalid")
 
         def request():

@@ -1,7 +1,7 @@
 # Reconstruct Chunk Worker
 
 This single-process Celery worker performs source-faithful reconstruction of an
-English (`en`) or Chinese (`zh`) two-speaker chunk before dialogue extension.
+a two-speaker chunk carrying any canonical language identifier before dialogue extension.
 
 ## Contract
 
@@ -9,7 +9,7 @@ English (`en`) or Chinese (`zh`) two-speaker chunk before dialogue extension.
 - Argument: canonical chunk UUID string
 - Claim: `persona_generated -> reconstructing`
 - Completion: `reconstructing -> reconstructed`, then publish `extend_chunk`
-  for both `en` and `zh`
+  without a pipeline-wide language allowlist
 - Durable result: `chunks.final_results.reconstruction`
 
 For every utterance in the canonical chunk transcript, the worker slices the

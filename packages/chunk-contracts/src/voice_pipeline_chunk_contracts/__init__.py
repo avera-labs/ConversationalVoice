@@ -8,7 +8,12 @@ from .contract import (
     parse_chunk_diarization,
     parse_separation_result,
 )
-from .language import ChunkLanguage, SUPPORTED_CHUNK_LANGUAGES, parse_chunk_language
+from .language import (
+    ChunkLanguage,
+    is_chinese_language,
+    parse_chunk_language,
+    primary_language,
+)
 from .forced_alignment import (
     AlignedTextUnit,
     build_segment_word_alignment,
@@ -48,7 +53,6 @@ __all__ = [
     "ParsedTaggedText",
     "SeparationResult",
     "SpeakerAudio",
-    "SUPPORTED_CHUNK_LANGUAGES",
     "TTS_MODEL_CAPABILITIES",
     "TaggedTextError",
     "TtsInputs",
@@ -57,6 +61,8 @@ __all__ = [
     "fit_segment_word_alignment",
     "parse_chunk_diarization",
     "parse_chunk_language",
+    "is_chinese_language",
+    "primary_language",
     "parse_dialogue_extension_document",
     "parse_dialogue_extension_transcript",
     "parse_persona_document",

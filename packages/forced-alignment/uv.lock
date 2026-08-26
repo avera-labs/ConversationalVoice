@@ -1611,12 +1611,14 @@ version = "0.1.0"
 source = { directory = "../chunk-contracts" }
 dependencies = [
     { name = "voice-pipeline-diarization-artifact" },
+    { name = "voice-pipeline-task-contracts" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3,<9" },
     { name = "voice-pipeline-diarization-artifact", directory = "../diarization-artifact" },
+    { name = "voice-pipeline-task-contracts", directory = "../task-contracts" },
 ]
 provides-extras = ["test"]
 
@@ -1657,6 +1659,16 @@ requires-dist = [
     { name = "voice-pipeline-chunk-contracts", directory = "../chunk-contracts" },
 ]
 provides-extras = ["test"]
+
+[[package]]
+name = "voice-pipeline-task-contracts"
+version = "0.2.0"
+source = { directory = "../task-contracts" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.0.0,<10.0.0" }]
 
 [[package]]
 name = "werkzeug"

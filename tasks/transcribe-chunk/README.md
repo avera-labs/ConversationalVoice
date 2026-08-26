@@ -1,17 +1,19 @@
 # Transcribe Chunk Worker
 
-This single-process Celery worker transcribes the two separated tracks of an English chunk with Parakeet TDT. It consumes the persisted chunk-relative diarization snapshot and the separation result, uploads deterministic transcript artifacts, atomically advances the chunk to `transcribed`, and then publishes `persona_chunk` on a best-effort basis.
+This single-process Celery worker transcribes the two separated tracks of a non-`zh` chunk with Parakeet TDT. It consumes the persisted chunk-relative diarization snapshot and the separation result, uploads deterministic transcript artifacts, atomically advances the chunk to `transcribed`, and then publishes `persona_chunk` on a best-effort basis.
 
 ## Task contract
 
 - Task and queue: `transcribe_chunk`
 - Argument: one canonical chunk UUID string
-- Accepted language: `en`
+- Routed languages: every non-`zh` identifier; actual recognition quality is
+  bounded by Parakeet rather than a pipeline allowlist
 - Claim transition: `separated` or an ASR-owned `failed` row to `transcribing`
 - Completion transition: `transcribing` to `transcribed`
 - Failure transition: `transcribing` to `failed`, followed by re-raising the exception
 
-The task does not process or dispatch Chinese chunks. A non-English direct invocation fails before audio download or model loading.
+Chinese `zh` chunks are routed to the dedicated Paraformer worker. Other
+identifiers are preserved in the output artifacts without a global support check.
 
 ## Input and speaker identity
 

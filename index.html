@@ -81,7 +81,6 @@
       </section>
 
       <section id="examples">
-        <h2><span class="en">Key Pipeline Comparisons</span></h2>
         <article class="step" id="separation">
           <h3><span class="en">Speaker Separation</span></h3>
           <div class="step-intro">
@@ -288,6 +287,19 @@
               </div>
             </section>
           </div>
+          <div class="finding-list">
+            <div class="finding"><strong><span class="en">Source grounding</span></strong><span class="en">Each expansion retains the source exchange's context and interaction structure.</span></div>
+            <div class="finding"><strong><span class="en">Interaction control</span></strong><span class="en">Turn-taking, pauses, overlap, and paralinguistic cues can be targeted for specific training needs.</span></div>
+            <div class="finding"><strong><span class="en">Scalable expansion</span></strong><span class="en">A single source exchange can yield longer and more varied training examples.</span></div>
+          </div>
+        </article>
+
+        <article class="step" id="multilingual">
+          <h3><span class="en">Multilingual</span></h3>
+          <div class="step-intro">
+            <p class="en">The pipeline is language-agnostic by design; its effective language coverage is determined by the capabilities of the component models. The default configuration currently supports eight languages: English, Chinese, German, Spanish, French, Italian, Portuguese, and Russian.</p>
+            <p class="en">Extending coverage does not require changes to the overall pipeline architecture. Additional languages can be enabled, subject to model availability, by substituting compatible models for the three language-dependent components: ASR, forced alignment, and TTS.</p>
+          </div>
           <div class="comparison-grid">
             <section class="method-panel video-panel" aria-label="Source Chinese drama clip">
               <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">Chinese Drama Clip</span></h4></header>
@@ -327,11 +339,6 @@
                 </div>
               </div>
             </section>
-          </div>
-          <div class="finding-list">
-            <div class="finding"><strong><span class="en">Source grounding</span></strong><span class="en">Each expansion retains the source exchange's context and interaction structure.</span></div>
-            <div class="finding"><strong><span class="en">Interaction control</span></strong><span class="en">Turn-taking, pauses, overlap, and paralinguistic cues can be targeted for specific training needs.</span></div>
-            <div class="finding"><strong><span class="en">Scalable expansion</span></strong><span class="en">A single source exchange can yield longer and more varied training examples.</span></div>
           </div>
         </article>
       </section>

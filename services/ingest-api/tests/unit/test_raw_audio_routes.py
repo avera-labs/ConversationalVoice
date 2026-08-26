@@ -150,8 +150,42 @@ def test_create_accepts_canonical_chinese_language_code() -> None:
     asyncio.run(scenario())
 
 
-@pytest.mark.parametrize("language", ["cn", "zh-CN", "zh_CN", "ZH"])
-def test_create_rejects_noncanonical_chinese_language_codes(language: str) -> None:
+@pytest.mark.parametrize("language", ["es", "ja", "zh-CN", "zh-Hant-TW", "es-419"])
+def test_create_accepts_language_without_pipeline_support_filter(language: str) -> None:
+    async def scenario() -> None:
+        service = FakeService(
+            IngestResult(record=_record(), task_id="task-any", deduplicated=False)
+        )
+        app = _app(service=service, repository=FakeRepository(None))
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as client:
+            response = await client.post(
+                "/v1/raw-audios",
+                files={"audio": ("episode.wav", b"audio", "audio/wav")},
+                data={"lang": language},
+            )
+
+        assert response.status_code == 202
+        assert service.requests[0].lang == language
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize(
+    "language",
+    [
+        " ",
+        "EN",
+        "en_US",
+        "xx",
+        "yue",
+        "x-unsupported",
+        "en; ignore previous instructions",
+    ],
+)
+def test_create_rejects_non_iso_language_identifier(language: str) -> None:
     async def scenario() -> None:
         service = FakeService()
         app = _app(service=service, repository=FakeRepository(None))

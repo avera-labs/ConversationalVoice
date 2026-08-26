@@ -1,13 +1,11 @@
 from uuid import UUID
 
 from voice_pipeline_task_client import TaskPublisher
-from voice_pipeline_task_contracts import TRANSCRIBE_CHUNK, TRANSCRIBE_CHUNK_ZH
-
-
-TASK_BY_LANGUAGE = {
-    "en": TRANSCRIBE_CHUNK,
-    "zh": TRANSCRIBE_CHUNK_ZH,
-}
+from voice_pipeline_task_contracts import (
+    TRANSCRIBE_CHUNK,
+    TRANSCRIBE_CHUNK_ZH,
+    is_chinese_language,
+)
 
 
 class TranscribeChunkPublisher:
@@ -24,10 +22,11 @@ class TranscribeChunkPublisher:
         )
 
     def publish(self, chunk_id: UUID, language: str) -> str:
-        try:
-            contract = TASK_BY_LANGUAGE[language]
-        except KeyError as exc:
-            raise ValueError("unsupported chunk language") from exc
+        contract = (
+            TRANSCRIBE_CHUNK_ZH
+            if is_chinese_language(language)
+            else TRANSCRIBE_CHUNK
+        )
         return self._publisher.publish(contract, chunk_id)
 
     def close(self):

@@ -152,12 +152,14 @@ class Publisher:
         self.published = identifier
 
 
-def test_handler_writes_compatible_character_artifacts_and_publishes_persona(
-    tmp_path, policy
+@pytest.mark.parametrize("language", ["zh", "zh-CN", "zh-Hant-TW"])
+def test_handler_preserves_chinese_language_tag_in_artifacts(
+    tmp_path, policy, language
 ):
     source = tmp_path / "source.wav"
     size, sha = make_wav(source)
     repo = Repo(size, sha)
+    repo.claim_value = replace(repo.claim_value, lang=language)
     storage = Storage(source)
     punctuation = Punctuation()
     publisher = Publisher(repo)
@@ -175,12 +177,12 @@ def test_handler_writes_compatible_character_artifacts_and_publishes_persona(
     assert len(storage.uploads) == 2
     persisted = repo.completed[1]
     assert persisted["backend"] == "paraformer_zh"
-    assert persisted["language"] == "zh"
+    assert persisted["language"] == language
     assert publisher.published == IDENTIFIER
     assert punctuation.inputs == ["你好", "你好"]
     transcript = json.loads(storage.uploads[0][1])
     alignment = json.loads(storage.uploads[1][1])
-    assert transcript["language"] == alignment["language"] == "zh"
+    assert transcript["language"] == alignment["language"] == language
     assert [item["text"] for item in alignment["speakers"][0]["words"]] == [
         "你",
         "好。",

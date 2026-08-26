@@ -148,9 +148,6 @@ curl --request POST http://localhost:8000/v1/raw-audios \
   --form "lang=en"
 ```
 
-Set `lang=zh` for Chinese audio. The API accepts only the canonical `en` and
-`zh` language codes; Chinese is never represented as `cn`.
-
 The API returns `202 Accepted` for a new upload and includes the source UUID and
 initial Celery task ID. Uploads are deduplicated by the SHA-1 of the original
 bytes; an existing upload returns `200 OK` with `deduplicated: true`.
@@ -174,7 +171,7 @@ under deterministic keys in the configured bucket.
 | Diarization | Audio-part UUID | Speaker turns and clean reference WAVs |
 | Quality filter | Diarized audio part | Clean two-speaker `chunks` rows |
 | Separation | Chunk UUID | Two fixed speaker tracks and audited speaker mapping |
-| English transcription (`transcribe_chunk`) | Separated `en` chunk | Parakeet transcript and word-level alignment artifacts |
+| General transcription (`transcribe_chunk`) | Separated non-`zh` chunk | Parakeet transcript and word-level alignment artifacts |
 | Chinese transcription (`transcribe_chunk_zh`) | Separated `zh` chunk | Paraformer transcript and per-character alignment artifacts with punctuation |
 | Speaker profile (`persona_chunk`) | Transcribed chunk | Structured scene and speaker-profile document |
 | Source reconstruction (`reconstruct_chunk`) | Profile-complete chunk | Reconstructed transcript and two source-faithful speaker tracks |

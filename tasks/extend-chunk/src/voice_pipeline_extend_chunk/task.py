@@ -212,7 +212,7 @@ class Handler:
 
     def _validate_upstream(self, claim):
         if (
-            claim.lang not in {"en", "zh"}
+            not claim.lang
             or not claim.chunk_audio_uri
             or not claim.audio_part_audio_uri
             or not claim.duration_ms

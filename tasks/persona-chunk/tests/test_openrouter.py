@@ -110,6 +110,17 @@ def test_request_uses_structured_output_and_schema_in_system_prompt(policy):
     assert usage["total_tokens"] == 15
 
 
+def test_request_describes_arbitrary_transcript_language(policy):
+    transport = Transport([success()])
+    client = OpenRouterClient(
+        policy.openrouter, "secret", transport, sleeper=lambda _: None
+    )
+    client.analyze(b"mp3", "SRT", (4, 7), language="es")
+    prompt = transport.calls[0][1]["json"]["messages"][0]["content"]
+    assert "language identifier is 'es'" in prompt
+    assert "The transcript is English" not in prompt
+
+
 def test_transient_error_retries_but_deterministic_4xx_does_not(policy):
     transport = Transport([Response(429), success()])
     client = OpenRouterClient(

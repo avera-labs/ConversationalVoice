@@ -1,4 +1,5 @@
 import hashlib
+import json
 import shutil
 import wave
 from dataclasses import replace
@@ -221,20 +222,21 @@ def test_completed_result_is_validated_without_io_or_model(tmp_path, policy):
     assert model.calls == []
 
 
-def test_non_english_fails_before_download_or_model(tmp_path, policy):
+def test_non_english_flows_through_parakeet_and_preserves_language(tmp_path, policy):
     source = tmp_path / "source.wav"
     size, sha = make_wav(source)
     repo = Repo(size, sha)
-    repo.claim_value = replace(repo.claim_value, lang="zh")
+    repo.claim_value = replace(repo.claim_value, lang="es")
     storage = Storage(source)
     model = Model()
-    import pytest
-
-    with pytest.raises(RuntimeError, match="unsupported_chunk_language"):
-        Handler(repo, storage, model, policy, tmp_path)(str(IDENTIFIER))
-    assert storage.uploads == []
-    assert model.calls == []
-    assert repo.failed[0] == IDENTIFIER
+    result = Handler(repo, storage, model, policy, tmp_path)(str(IDENTIFIER))
+    assert result["outcome"] == "transcribed"
+    assert model.calls
+    assert repo.completed[1]["language"] == "es"
+    assert all(
+        json.loads(payload)["language"] == "es"
+        for _uri, payload in storage.uploads
+    )
 
 
 def test_workspace_cleanup_failure_does_not_replace_success(

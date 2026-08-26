@@ -22,12 +22,12 @@ def model_identity(policy) -> dict[str, object]:
     }
 
 
-def build_artifacts(*, policy, speaker_outputs):
+def build_artifacts(*, policy, speaker_outputs, language="en"):
     shared = {
         "schema_version": 1,
         "backend": "parakeet_tdt",
         "model": model_identity(policy),
-        "language": "en",
+        "language": language,
         "timebase": "chunk",
     }
     transcript_speakers = []

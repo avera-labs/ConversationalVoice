@@ -1246,12 +1246,14 @@ version = "0.1.0"
 source = { directory = "../../packages/chunk-contracts" }
 dependencies = [
     { name = "voice-pipeline-diarization-artifact" },
+    { name = "voice-pipeline-task-contracts" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3,<9" },
     { name = "voice-pipeline-diarization-artifact", directory = "../../packages/diarization-artifact" },
+    { name = "voice-pipeline-task-contracts", directory = "../../packages/task-contracts" },
 ]
 provides-extras = ["test"]
 

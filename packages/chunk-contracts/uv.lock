@@ -69,6 +69,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "voice-pipeline-diarization-artifact" },
+    { name = "voice-pipeline-task-contracts" },
 ]
 
 [package.optional-dependencies]
@@ -80,6 +81,7 @@ test = [
 requires-dist = [
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3,<9" },
     { name = "voice-pipeline-diarization-artifact", directory = "../diarization-artifact" },
+    { name = "voice-pipeline-task-contracts", directory = "../task-contracts" },
 ]
 provides-extras = ["test"]
 
@@ -92,3 +94,13 @@ source = { directory = "../diarization-artifact" }
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=8,<10" }]
+
+[[package]]
+name = "voice-pipeline-task-contracts"
+version = "0.2.0"
+source = { directory = "../task-contracts" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=8.0.0,<10.0.0" }]

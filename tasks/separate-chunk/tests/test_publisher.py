@@ -22,11 +22,12 @@ class Publisher:
     [
         ("en", TRANSCRIBE_CHUNK),
         ("zh", TRANSCRIBE_CHUNK_ZH),
+        ("zh-CN", TRANSCRIBE_CHUNK_ZH),
+        ("zh-Hant-TW", TRANSCRIBE_CHUNK_ZH),
         ("es", TRANSCRIBE_CHUNK),
-        ("x-unsupported", TRANSCRIBE_CHUNK),
     ],
 )
-def test_routes_only_chinese_to_the_specialized_worker(language, contract):
+def test_routes_chinese_language_family_to_the_specialized_worker(language, contract):
     inner = Publisher()
     publisher = TranscribeChunkPublisher(inner)
     assert publisher.publish(IDENTIFIER, language) == "task-id"

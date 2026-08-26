@@ -9,6 +9,7 @@ from collections.abc import Callable
 from voice_pipeline_chunk_contracts import (
     AlignedTextUnit,
     build_segment_word_alignment,
+    is_chinese_language,
     parse_text_with_audio_tags,
 )
 
@@ -41,7 +42,14 @@ class Qwen3SegmentAligner:
     ) -> list[dict[str, object]]:
         duration_ms = _wav_duration_ms(audio)
         tagged = parse_text_with_audio_tags(text_with_audio_tags)
-        if language not in _LANGUAGES:
+        model_language = _LANGUAGES.get(language)
+        if model_language is None:
+            try:
+                if is_chinese_language(language):
+                    model_language = "Chinese"
+            except ValueError:
+                pass
+        if model_language is None:
             raise ValueError("forced-alignment language is unsupported")
         if not tagged.text:
             units: list[AlignedTextUnit] = []
@@ -51,7 +59,7 @@ class Qwen3SegmentAligner:
             results = model.align(
                 audio=encoded,
                 text=tagged.text,
-                language=_LANGUAGES[language],
+                language=model_language,
             )
             if not isinstance(results, list) or len(results) != 1:
                 raise RuntimeError("Qwen3 forced aligner returned an invalid result")

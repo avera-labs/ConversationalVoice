@@ -150,7 +150,7 @@ def test_create_accepts_canonical_chinese_language_code() -> None:
     asyncio.run(scenario())
 
 
-@pytest.mark.parametrize("language", ["es", "ja", "yue", "x-unsupported"])
+@pytest.mark.parametrize("language", ["es", "ja", "zh-CN", "zh-Hant-TW", "es-419"])
 def test_create_accepts_language_without_pipeline_support_filter(language: str) -> None:
     async def scenario() -> None:
         service = FakeService(
@@ -173,7 +173,19 @@ def test_create_accepts_language_without_pipeline_support_filter(language: str) 
     asyncio.run(scenario())
 
 
-def test_create_rejects_blank_language_identifier() -> None:
+@pytest.mark.parametrize(
+    "language",
+    [
+        " ",
+        "EN",
+        "en_US",
+        "xx",
+        "yue",
+        "x-unsupported",
+        "en; ignore previous instructions",
+    ],
+)
+def test_create_rejects_non_iso_language_identifier(language: str) -> None:
     async def scenario() -> None:
         service = FakeService()
         app = _app(service=service, repository=FakeRepository(None))
@@ -184,7 +196,7 @@ def test_create_rejects_blank_language_identifier() -> None:
             response = await client.post(
                 "/v1/raw-audios",
                 files={"audio": ("episode.wav", b"audio", "audio/wav")},
-                data={"lang": " "},
+                data={"lang": language},
             )
 
         assert response.status_code == 422

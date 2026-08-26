@@ -5,6 +5,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile, status
+from voice_pipeline_task_contracts import parse_language_identifier
 
 from ..dependencies import IngestServiceDependency, RawAudioRepositoryDependency
 from ..repository import RawAudioRecord, RawAudioRepositoryError
@@ -75,11 +76,13 @@ def create_raw_audio(
     meta: Annotated[str | None, Form()] = None,
 ) -> CreateRawAudioResponse:
     """Accept, normalize, persist, and enqueue one podcast audio upload."""
-    if not lang or lang != lang.strip():
+    try:
+        lang = parse_language_identifier(lang)
+    except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="lang must be a non-empty canonical string.",
-        )
+            detail="lang must be a canonical ISO 639-1 language tag.",
+        ) from exc
 
     try:
         result = service.ingest(

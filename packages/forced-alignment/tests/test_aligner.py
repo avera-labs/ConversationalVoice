@@ -62,6 +62,8 @@ def test_aligner_uses_plain_text_and_merges_inline_tags():
     ("language", "provider_language"),
     [
         ("yue", "Cantonese"),
+        ("zh-CN", "Chinese"),
+        ("zh-Hant-TW", "Chinese"),
         ("de", "German"),
         ("es", "Spanish"),
         ("fr", "French"),

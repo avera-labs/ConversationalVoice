@@ -1,3 +1,9 @@
+from .language import (
+    ISO_639_1_CODES,
+    is_chinese_language,
+    parse_language_identifier,
+    primary_language,
+)
 from .tasks import (
     ALL_TASKS,
     DIARIZE_AUDIO_PART,
@@ -18,6 +24,7 @@ __all__ = [
     "ALL_TASKS",
     "DIARIZE_AUDIO_PART",
     "EXTEND_CHUNK",
+    "ISO_639_1_CODES",
     "PERSONA_CHUNK",
     "QUALITY_FILTER_AUDIO_PART",
     "RECONSTRUCT_CHUNK",
@@ -28,4 +35,7 @@ __all__ = [
     "TRANSCRIBE_CHUNK_ZH",
     "TaskContract",
     "get_task_contract",
+    "is_chinese_language",
+    "parse_language_identifier",
+    "primary_language",
 ]

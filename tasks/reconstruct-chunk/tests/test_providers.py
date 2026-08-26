@@ -2,6 +2,7 @@ import base64
 import json
 
 import pytest
+from voice_pipeline_chunk_contracts import AUDIO_TAGS
 
 from voice_pipeline_reconstruct_chunk.providers import (
     AudioTagsClient,
@@ -53,6 +54,10 @@ def test_audio_tags_uses_configured_mimo_model_and_wav(policy):
     assert payload["model"] == "xiaomi/mimo-v2.5"
     schema = payload["response_format"]["json_schema"]["schema"]
     schema_json = json.dumps(schema, sort_keys=True, separators=(",", ":"))
+    audio_tag_schema = schema["properties"]["audio_tags"]
+    assert audio_tag_schema["items"]["enum"] == sorted(AUDIO_TAGS)
+    assert audio_tag_schema["maxItems"] == 3
+    assert len(audio_tag_schema["items"]["enum"]) == 316
     assert payload["response_format"]["type"] == "json_schema"
     assert payload["messages"][0]["content"].endswith(schema_json)
     assert payload["reasoning"] == {"effort": "none"}

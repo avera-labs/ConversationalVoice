@@ -5,7 +5,7 @@ model = "xiaomi/mimo-v2.5"
 reasoning_effort = "none"
 max_tokens = 256
 timeout_seconds = 90
-max_attempts = 2
+max_attempts = 3
 retry_backoff_seconds = 1.0
 require_parameters = true
 allow_fallbacks = true
@@ -25,6 +25,12 @@ sample_rate_hz = 44100
 latency = "normal"
 normalize_text = true
 normalize_loudness = true
+
+[forced_alignment]
+repo_id = "Qwen/Qwen3-ForcedAligner-0.6B"
+revision = "c7cbfc2048c462b0d63a45797104fc9db3ad62b7"
+device = "cuda:0"
+dtype = "bfloat16"
 
 [audio]
 input_sample_rate_hz = 16000

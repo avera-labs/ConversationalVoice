@@ -7,6 +7,11 @@ from pathlib import Path
 from uuid import UUID
 
 import pytest
+from voice_pipeline_chunk_contracts import (
+    AlignedTextUnit,
+    build_segment_word_alignment,
+    parse_text_with_audio_tags,
+)
 
 from voice_pipeline_extend_chunk.repository import Claim, Disposition
 from voice_pipeline_extend_chunk.storage import ObjectStorage
@@ -333,9 +338,7 @@ class Storage:
 
 
 class Dialogue:
-    def extend(
-        self, persona_document, transcript_document, _policy, language="en"
-    ):
+    def extend(self, persona_document, transcript_document, _policy, language="en"):
         assert persona_document["language"] == language
         assert transcript_document["language"] == language
         assert persona_document["speaker_mapping"][0]["diarization_speaker_id"] == 4
@@ -345,29 +348,45 @@ class Dialogue:
             {
                 "utterance_index": 0,
                 "speaker_id": 0,
-                "text": "比我想象中好很多。" if chinese else "It was surprisingly good.",
-                "tone": "愉快" if chinese else "pleased",
+                "text": "比我想象中好很多。"
+                if chinese
+                else "It was surprisingly good.",
+                "text_with_audio_tags": (
+                    "[pleased]比我想象中好很多。"
+                    if chinese
+                    else "[pleased]It was surprisingly good."
+                ),
+                "instruction": "愉快而自然地说。"
+                if chinese
+                else "Speak naturally with pleased surprise.",
                 "type": "dialogue",
                 "placement": "sequential",
-                "audio_tags": [],
             },
             {
                 "utterance_index": 1,
                 "speaker_id": 1,
                 "text": "真的吗？" if chinese else "Really?",
-                "tone": "好奇" if chinese else "curious",
+                "text_with_audio_tags": "[curious]真的吗？"
+                if chinese
+                else "[curious]Really?",
+                "instruction": "带着真诚的好奇快速回应。"
+                if chinese
+                else "Respond quickly with genuine curiosity.",
                 "type": "backchannel",
                 "placement": "overlap_previous",
-                "audio_tags": ["[curious]"],
             },
             {
                 "utterance_index": 2,
                 "speaker_id": 1,
                 "text": "那我也想试试看。" if chinese else "Now I want to try it too.",
-                "tone": "温和" if chinese else "warm",
+                "text_with_audio_tags": "那我也想试试看。"
+                if chinese
+                else "Now I want to try it too.",
+                "instruction": "温和自然地继续。"
+                if chinese
+                else "Continue in a warm, natural voice.",
                 "type": "dialogue",
                 "placement": "sequential",
-                "audio_tags": [],
             },
         ]
         utterances.extend(
@@ -379,10 +398,14 @@ class Dialogue:
                     if chinese
                     else f"Continuation line {index}."
                 ),
-                "tone": "自然" if chinese else "natural",
+                "text_with_audio_tags": (
+                    f"接下来的第{index}句话。"
+                    if chinese
+                    else f"Continuation line {index}."
+                ),
+                "instruction": "自然地说。" if chinese else "Speak naturally.",
                 "type": "dialogue",
                 "placement": "sequential",
-                "audio_tags": [],
             }
             for index in range(3, 8)
         )
@@ -407,9 +430,45 @@ class Fish:
         self.transcribed.append((payload, language))
         return "参考语音。" if language == "zh" else "Reference words."
 
-    def synthesize(self, text, reference_audio, reference_text):
-        self.synthesized.append((text, reference_audio, reference_text))
+    def synthesize(self, utterance, reference_audio, reference_text):
+        self.synthesized.append((utterance, reference_audio, reference_text))
         return wav_bytes(44100, 1000)
+
+
+class ForcedAlignment:
+    def __init__(self):
+        self.calls = []
+
+    def align(self, audio, *, text_with_audio_tags, language):
+        self.calls.append((audio, text_with_audio_tags, language))
+        tagged = parse_text_with_audio_tags(text_with_audio_tags)
+        unit = "".join(character for character in tagged.text if character.isalnum())
+        return build_segment_word_alignment(
+            text_with_audio_tags,
+            [AlignedTextUnit(unit, 100, 900)] if unit else [],
+            duration_ms=1000,
+        )
+
+
+def make_handler(
+    repository,
+    storage,
+    dialogue,
+    fish,
+    policy,
+    workspace_parent,
+    *,
+    forced_aligner=None,
+):
+    return Handler(
+        repository,
+        storage,
+        dialogue,
+        fish,
+        policy,
+        workspace_parent,
+        forced_aligner=forced_aligner or ForcedAlignment(),
+    )
 
 
 def build_objects(*, include_second_reference=True, language="en"):
@@ -435,7 +494,7 @@ def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, p
     storage = Storage(objects)
     fish = Fish()
 
-    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -455,24 +514,67 @@ def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, p
         reference["source"] for reference in result["inputs"]["speaker_references"]
     ] == ["diarization_reference", "diarization_reference"]
     assert all("audio.wav" not in uri for uri, _payload in storage.uploads)
+    script_uri = f"{CHUNK_BASE}/results/dialogue-extension/script.json"
+    first_utterance = json.loads(dict(storage.uploads)[script_uri])["utterances"][0]
+    assert first_utterance["text"] == "It was surprisingly good."
+    assert first_utterance["text_with_audio_tags"].startswith("[pleased]")
+    assert first_utterance["instruction"]
+    assert "tone" not in first_utterance
+    assert "audio_tags" not in first_utterance
+    transcript_uri = f"{CHUNK_BASE}/results/dialogue-extension/transcript.json"
+    aligned = json.loads(dict(storage.uploads)[transcript_uri])["utterances"][0]
+    assert [item["type"] for item in aligned["word_alignment"]] == [
+        "audio_tag",
+        "word",
+    ]
+    assert aligned["word_alignment"][0]["start_ms"] == 100
+    assert (
+        result["models"]["forced_alignment"]["id"]
+        == "Qwen/Qwen3-ForcedAligner-0.6B"
+    )
     assert not hasattr(repo, "failed")
 
 
-def test_handler_generates_chinese_extension_and_preserves_language(
+def test_handler_accepts_tts_model_from_policy_without_capability_mapping(
     tmp_path, policy
 ):
+    transcript_payload, objects = build_objects()
+    repo = Repo(transcript_payload)
+    storage = Storage(objects)
+    configured_model = "provider/plain-tts"
+    configured_policy = policy.model_copy(
+        update={
+            "fish_audio": policy.fish_audio.model_copy(
+                update={"model": configured_model}
+            )
+        }
+    )
+
+    outcome = make_handler(
+        repo, storage, Dialogue(), Fish(), configured_policy, tmp_path
+    )(str(IDENTIFIER))
+
+    assert outcome["outcome"] == "completed"
+    assert repo.completed[1]["models"]["tts"]["id"] == configured_model
+    assert not hasattr(repo, "failed")
+
+
+def test_handler_generates_chinese_extension_and_preserves_language(tmp_path, policy):
     transcript_payload, objects = build_objects(language="zh")
     repo = Repo(transcript_payload, "zh")
     storage = Storage(objects)
     fish = Fish()
 
-    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
     assert outcome["outcome"] == "completed"
     assert [language for _payload, language in fish.transcribed] == ["zh", "zh"]
-    assert fish.synthesized[0][0] == "比我想象中好很多。"
+    assert fish.synthesized[0][0]["text"] == "比我想象中好很多。"
+    assert (
+        fish.synthesized[0][0]["text_with_audio_tags"] == "[pleased]比我想象中好很多。"
+    )
     assert fish.synthesized[0][2] == "参考语音。"
     result = repo.completed[1]
     assert result["language"] == "zh"
@@ -493,7 +595,7 @@ def test_handler_generates_chinese_extension_and_preserves_language(
     storage.objects.clear()
     storage.uploads.clear()
     repeat_fish = Fish()
-    repeat = Handler(repo, storage, Dialogue(), repeat_fish, policy, tmp_path)(
+    repeat = make_handler(repo, storage, Dialogue(), repeat_fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
     assert repeat["outcome"] == "already_completed"
@@ -507,7 +609,7 @@ def test_missing_mapped_reference_uses_separated_track_fallback(tmp_path, policy
     storage = Storage(objects)
     fish = Fish()
 
-    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -530,7 +632,7 @@ def test_missing_mapped_reference_uses_separated_track_fallback(tmp_path, policy
         extension_result=repo.completed[1],
     )
     storage.objects.clear()
-    repeat = Handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(
+    repeat = make_handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(
         str(IDENTIFIER)
     )
     assert repeat["outcome"] == "already_completed"
@@ -554,7 +656,7 @@ def test_missing_reference_and_pure_interval_is_rejected_before_provider_calls(
     )
     fish = Fish()
 
-    outcome = Handler(repo, Storage(objects), Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, Storage(objects), Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -568,7 +670,7 @@ def test_completed_invocation_validates_without_external_io(tmp_path, policy):
     transcript_payload, objects = build_objects()
     repo = Repo(transcript_payload)
     storage = Storage(objects)
-    Handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
+    make_handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
     result = repo.completed[1]
     repo.claim_value = replace(
         repo.claim_value,
@@ -580,7 +682,7 @@ def test_completed_invocation_validates_without_external_io(tmp_path, policy):
     storage.uploads.clear()
     fish = Fish()
 
-    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -595,7 +697,7 @@ def test_completed_invocation_accepts_the_persisted_model_after_config_change(
     transcript_payload, objects = build_objects()
     repo = Repo(transcript_payload)
     storage = Storage(objects)
-    Handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
+    make_handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
     repo.claim_value = replace(
         repo.claim_value,
         disposition=Disposition.ALREADY_COMPLETED,
@@ -613,7 +715,9 @@ def test_completed_invocation_accepts_the_persisted_model_after_config_change(
         }
     )
 
-    outcome = Handler(repo, storage, Dialogue(), Fish(), changed_policy, tmp_path)(
+    outcome = make_handler(
+        repo, storage, Dialogue(), Fish(), changed_policy, tmp_path
+    )(
         str(IDENTIFIER)
     )
 
@@ -629,7 +733,9 @@ def test_tts_failure_marks_claimed_row_failed(tmp_path, policy):
             raise RuntimeError("provider failed")
 
     with pytest.raises(RuntimeError, match="provider failed"):
-        Handler(repo, Storage(objects), Dialogue(), FailedFish(), policy, tmp_path)(
+        make_handler(
+            repo, Storage(objects), Dialogue(), FailedFish(), policy, tmp_path
+        )(
             str(IDENTIFIER)
         )
     assert repo.failed[0] == IDENTIFIER

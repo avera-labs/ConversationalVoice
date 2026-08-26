@@ -2,10 +2,28 @@ from copy import deepcopy
 
 import pytest
 from voice_pipeline_chunk_contracts import (
+    AlignedTextUnit,
     ChunkContractError,
+    build_segment_word_alignment,
+    offset_word_alignment,
     parse_dialogue_extension_document,
     parse_dialogue_extension_transcript,
 )
+
+
+def timed_utterance(value, start_ms, end_ms):
+    unit = "".join(character for character in value["text"] if character.isalnum())
+    segment = build_segment_word_alignment(
+        value["text_with_audio_tags"],
+        [AlignedTextUnit(unit, 0, end_ms - start_ms)] if unit else [],
+        duration_ms=end_ms - start_ms,
+    )
+    return {
+        **value,
+        "start_ms": start_ms,
+        "end_ms": end_ms,
+        "word_alignment": offset_word_alignment(segment, start_ms),
+    }
 
 
 def script(language="en"):
@@ -27,20 +45,30 @@ def script(language="en"):
             {
                 "utterance_index": 0,
                 "speaker_id": 0,
-                "text": "这正是我的意思。" if chinese else "That is exactly what I meant.",
-                "tone": "温和而沉思" if chinese else "warm and reflective",
+                "text": "这正是我的意思。"
+                if chinese
+                else "That is exactly what I meant.",
+                "text_with_audio_tags": (
+                    "[thoughtful]这正是我的意思。"
+                    if chinese
+                    else "[thoughtful]That is exactly what I meant."
+                ),
+                "instruction": "温和而沉思地说。"
+                if chinese
+                else "Speak warmly and reflectively.",
                 "type": "dialogue",
                 "placement": "sequential",
-                "audio_tags": ["[thoughtful]"],
             },
             {
                 "utterance_index": 1,
                 "speaker_id": 1,
                 "text": "对。" if chinese else "Yeah.",
-                "tone": "快速赞同" if chinese else "quick agreement",
+                "text_with_audio_tags": "对。" if chinese else "Yeah.",
+                "instruction": "快速地表示赞同。"
+                if chinese
+                else "Give a quick agreement.",
                 "type": "backchannel",
                 "placement": "overlap_previous",
-                "audio_tags": [],
             },
         ],
         "usage": {
@@ -68,8 +96,8 @@ def test_script_and_timed_transcript_accept_canonical_documents():
         "duration_ms": 2200,
         "speaker_mapping": value["speaker_mapping"],
         "utterances": [
-            {**value["utterances"][0], "start_ms": 0, "end_ms": 1800},
-            {**value["utterances"][1], "start_ms": 1400, "end_ms": 2200},
+            timed_utterance(value["utterances"][0], 0, 1800),
+            timed_utterance(value["utterances"][1], 1400, 2200),
         ],
     }
     assert (
@@ -103,23 +131,26 @@ def test_chinese_script_and_timed_transcript_accept_canonical_documents():
         "duration_ms": 2200,
         "speaker_mapping": value["speaker_mapping"],
         "utterances": [
-            {**value["utterances"][0], "start_ms": 0, "end_ms": 1800},
-            {**value["utterances"][1], "start_ms": 1400, "end_ms": 2200},
+            timed_utterance(value["utterances"][0], 0, 1800),
+            timed_utterance(value["utterances"][1], 1400, 2200),
         ],
     }
-    assert parse_dialogue_extension_transcript(
-        transcript,
-        script=parsed,
-        speaker_mapping=(4, 7),
-        expected_language="zh",
-    )["language"] == "zh"
+    assert (
+        parse_dialogue_extension_transcript(
+            transcript,
+            script=parsed,
+            speaker_mapping=(4, 7),
+            expected_language="zh",
+        )["language"]
+        == "zh"
+    )
 
 
 @pytest.mark.parametrize(
     ("field", "value"),
     [
         ("speaker_id", 2),
-        ("audio_tags", ["[unknown]"]),
+        ("text_with_audio_tags", "[unknown]That is exactly what I meant."),
         ("text", "[laughs] hidden tag"),
     ],
 )
@@ -169,8 +200,8 @@ def test_transcript_rejects_script_mutation():
         "duration_ms": 2200,
         "speaker_mapping": value["speaker_mapping"],
         "utterances": [
-            {**value["utterances"][0], "start_ms": 0, "end_ms": 1800},
-            {**value["utterances"][1], "start_ms": 1400, "end_ms": 2200},
+            timed_utterance(value["utterances"][0], 0, 1800),
+            timed_utterance(value["utterances"][1], 1400, 2200),
         ],
     }
     changed = deepcopy(transcript)

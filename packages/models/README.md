@@ -190,8 +190,11 @@ it never includes or concatenates the original chunk. Its `speaker-0.wav` and
 `speaker-1.wav` are equal-duration tracks on an extension-relative timebase.
 Their fixed slot IDs preserve the exact separation mapping to diarization
 speaker IDs. `script.json` contains the continuation lines, type, delivery
-tone, placement, and audio tags; the sibling `transcript.json` adds actual TTS
-timings. `chunks.final_results.dialogue_extension` binds all inputs, mapped
+instruction, placement, tagged text, and worker-derived plain text; the sibling `transcript.json` adds actual TTS
+timings plus Qwen3 word alignment. Each word stores its assembled-track
+timestamps and source-text offsets. Inline audio tags are restored into the
+same ordered alignment as zero-duration items at their original text offsets.
+`chunks.final_results.dialogue_extension` binds all inputs, mapped
 speaker references, model identities, and output artifact identities.
 For each output slot, dialogue extension prefers the audio-part reference
 listed for its mapped diarization speaker. If that entry is absent, it uses the
@@ -202,7 +205,9 @@ timebase, interval, and exact reference-audio identity; the temporary fallback
 slice is not stored as another object.
 Both reference transcription and Fish Audio synthesis are requested through
 OpenRouter with `fish-audio/transcribe-1` and `fish-audio/s2.1-pro`; the worker
-does not require a provider-specific Fish Audio credential.
+does not require a provider-specific Fish Audio credential. Generated segments
+are aligned locally with the pinned `Qwen/Qwen3-ForcedAligner-0.6B` snapshot
+before extension silence, gaps, or overlaps are introduced.
 
 ## Development
 

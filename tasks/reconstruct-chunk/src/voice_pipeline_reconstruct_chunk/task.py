@@ -29,6 +29,8 @@ class Handler:
         publisher,
         policy,
         workspace_parent=None,
+        *,
+        forced_aligner,
     ):
         self.repository = repository
         self.storage = storage
@@ -36,7 +38,9 @@ class Handler:
         self.policy = policy
         self.workspace_parent = workspace_parent
         self.inputs = InputLoader(storage, policy)
-        self.reconstructor = Reconstructor(tags_client, tts_client, policy)
+        self.reconstructor = Reconstructor(
+            tags_client, tts_client, forced_aligner, policy
+        )
         self.outputs = OutputArtifacts(storage, policy)
 
     def __call__(self, value):

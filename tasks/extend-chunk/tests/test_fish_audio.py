@@ -7,7 +7,6 @@ import pytest
 from voice_pipeline_extend_chunk.fish_audio import (
     OpenRouterFishAudioClient,
     OpenRouterFishAudioError,
-    tts_text,
 )
 
 
@@ -38,7 +37,15 @@ def test_reference_asr_and_voice_clone_use_openrouter_json_apis(policy):
         policy.fish_audio, "openrouter-key", transport=transport
     )
     assert client.transcribe_reference(b"wav") == "Reference words."
-    output = client.synthesize("[laughs] Hi", b"wav", "Reference words.")
+    output = client.synthesize(
+        {
+            "text": "Hi",
+            "text_with_audio_tags": "[laughs] Hi",
+            "instruction": "Laugh, then greet the listener.",
+        },
+        b"wav",
+        "Reference words.",
+    )
 
     _, asr_request = transport.calls[0]
     assert asr_request["headers"] == {
@@ -90,13 +97,6 @@ def test_reference_asr_uses_chinese_language(policy):
     assert transport.calls[0][1]["json"]["language"] == "zh"
 
 
-def test_tts_text_keeps_portable_square_bracket_tags_separate_from_words():
-    assert (
-        tts_text({"audio_tags": ["[laughs]", "[excited]"], "text": "We did it!"})
-        == "[laughs] [excited] We did it!"
-    )
-
-
 def test_deterministic_fish_error_is_not_retried(policy):
     class FailedTransport:
         calls = 0
@@ -111,5 +111,57 @@ def test_deterministic_fish_error_is_not_retried(policy):
     with pytest.raises(
         OpenRouterFishAudioError, match="openrouter_fish_audio_http_422"
     ):
-        client.synthesize("Hello", b"wav", "Reference words.")
+        client.synthesize(
+            {
+                "text": "Hello",
+                "text_with_audio_tags": "Hello",
+                "instruction": "Speak naturally.",
+            },
+            b"wav",
+            "Reference words.",
+        )
     assert transport.calls == 1
+
+
+def test_unmapped_tts_model_uses_plain_text_without_fish_options(policy):
+    transport = Transport()
+    tts_policy = policy.fish_audio.model_copy(update={"model": "provider/plain-tts"})
+    client = OpenRouterFishAudioClient(tts_policy, "key", transport=transport)
+
+    client.synthesize(
+        {
+            "text": "Hello",
+            "text_with_audio_tags": "[laughs]Hello",
+            "instruction": "Laugh while greeting the listener.",
+        },
+        b"wav",
+        "Reference words.",
+    )
+
+    payload = transport.calls[0][1]["json"]
+    assert payload["model"] == "provider/plain-tts"
+    assert payload["input"] == "Hello"
+    assert "provider" not in payload
+
+
+def test_temporarily_unmapped_mimo_uses_plain_text(policy, caplog):
+    transport = Transport()
+    tts_policy = policy.fish_audio.model_copy(
+        update={"model": "mimo-v2.5-tts-voiceclone"}
+    )
+    client = OpenRouterFishAudioClient(tts_policy, "key", transport=transport)
+
+    client.synthesize(
+        {
+            "text": "Hello",
+            "text_with_audio_tags": "[laughs]Hello",
+            "instruction": "Laugh while greeting the listener.",
+        },
+        b"wav",
+        "Reference words.",
+    )
+
+    payload = transport.calls[0][1]["json"]
+    assert payload["input"] == "Hello"
+    assert "provider" not in payload
+    assert "missing from TTS_MODEL_CAPABILITIES" in caplog.text

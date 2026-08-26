@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from voice_pipeline_chunk_contracts import parse_reconstruction_transcript
+from voice_pipeline_chunk_contracts import (
+    offset_word_alignment,
+    parse_reconstruction_transcript,
+)
 
 from .artifacts import audio_identity
 from .audio import concatenate_reference, read_wav_bytes, slice_wav_bytes
-from .fish_audio import tts_text
 from .timeline import schedule
 
 
@@ -19,9 +21,10 @@ class Reconstruction:
 
 
 class Reconstructor:
-    def __init__(self, tags_client, tts_client, policy):
+    def __init__(self, tags_client, tts_client, forced_aligner, policy):
         self.tags_client = tags_client
         self.tts_client = tts_client
+        self.forced_aligner = forced_aligner
         self.policy = policy
 
     def reconstruct(
@@ -39,6 +42,7 @@ class Reconstructor:
         generated_durations = []
         segment_records = []
         tag_usage = []
+        segment_alignments = []
         for source in source_utterances:
             speaker_id = source["speaker_id"]
             separated_segment = slice_wav_bytes(
@@ -47,17 +51,17 @@ class Reconstructor:
                 end_ms=source["source_end_ms"],
                 sample_rate_hz=self.policy.audio.input_sample_rate_hz,
             )
-            tags, usage = self.tags_client.analyze(separated_segment, source["text"])
+            annotation, usage = self.tags_client.analyze(
+                separated_segment, source["text"]
+            )
             reference_segment = concatenate_reference(
                 references[speaker_id]["bytes"],
                 separated_segment,
                 silence_ms=self.policy.audio.reference_silence_ms,
                 sample_rate_hz=self.policy.audio.input_sample_rate_hz,
             )
-            generated = self.tts_client.synthesize(
-                tts_text(tags["audio_tags"], source["text"]),
-                reference_segment,
-            )
+            source.update(annotation)
+            generated = self.tts_client.synthesize(source, reference_segment)
             generated_audio = read_wav_bytes(
                 generated, expected_rate=self.policy.audio.output_sample_rate_hz
             )
@@ -65,15 +69,21 @@ class Reconstructor:
                 reference_segment,
                 expected_rate=self.policy.audio.input_sample_rate_hz,
             )
-            source.update(tags)
             generated_payloads.append(generated)
             generated_durations.append(generated_audio.duration_ms)
+            segment_alignments.append(
+                self.forced_aligner.align(
+                    generated,
+                    text_with_audio_tags=source["text_with_audio_tags"],
+                    language=language,
+                )
+            )
             tag_usage.append(usage)
             segment_records.append(
                 {
                     "utterance_index": source["utterance_index"],
-                    "audio_tags": tags["audio_tags"],
-                    "tone": tags["tone"],
+                    "text_with_audio_tags": annotation["text_with_audio_tags"],
+                    "instruction": annotation["instruction"],
                     "separated_segment": audio_identity(
                         separated_segment,
                         duration_ms=source["source_end_ms"] - source["source_start_ms"],
@@ -93,6 +103,12 @@ class Reconstructor:
             )
 
         scheduled = schedule(source_utterances, generated_durations)
+        for utterance, alignment in zip(
+            scheduled, segment_alignments, strict=True
+        ):
+            utterance["word_alignment"] = offset_word_alignment(
+                alignment, utterance["start_ms"]
+            )
         transcript_output = {
             "schema_version": 1,
             "language": language,

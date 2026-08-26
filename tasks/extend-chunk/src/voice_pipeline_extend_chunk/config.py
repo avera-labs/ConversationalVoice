@@ -27,7 +27,7 @@ class OpenRouterPolicy(BaseModel):
     model: str
     max_tokens: int = Field(gt=0, le=65536)
     timeout_seconds: int = Field(gt=0, le=600)
-    max_attempts: int = Field(gt=0, le=5)
+    max_attempts: int = Field(gt=0, le=3)
     retry_backoff_seconds: float = Field(ge=0, le=60)
     require_parameters: bool
     allow_fallbacks: bool
@@ -42,7 +42,7 @@ class OpenRouterPolicy(BaseModel):
 
 class FishAudioPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
-    model: Literal["fish-audio/s2.1-pro"]
+    model: str
     transcription_model: Literal["fish-audio/transcribe-1"]
     timeout_seconds: int = Field(gt=0, le=600)
     max_attempts: int = Field(gt=0, le=5)
@@ -57,6 +57,28 @@ class FishAudioPolicy(BaseModel):
     latency: Literal["normal", "balanced", "low"]
     normalize_text: bool
     normalize_loudness: bool
+
+    @field_validator("model")
+    @classmethod
+    def canonical_model(cls, value: str) -> str:
+        if not value or value != value.strip():
+            raise ValueError("model must be a non-empty canonical model name")
+        return value
+
+
+class ForcedAlignmentPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+    repo_id: Literal["Qwen/Qwen3-ForcedAligner-0.6B"]
+    revision: str
+    device: Literal["cuda:0", "cpu"]
+    dtype: Literal["bfloat16", "float32"]
+
+    @field_validator("revision")
+    @classmethod
+    def pinned_revision(cls, value: str) -> str:
+        if re.fullmatch(r"[0-9a-f]{40}", value) is None:
+            raise ValueError("forced aligner revision must be a pinned commit")
+        return value
 
 
 class DialoguePolicy(BaseModel):
@@ -108,6 +130,7 @@ class Policy(BaseModel):
     config_version: Literal["dialogue-extension-v1"]
     openrouter: OpenRouterPolicy
     fish_audio: FishAudioPolicy
+    forced_alignment: ForcedAlignmentPolicy
     dialogue: DialoguePolicy
     timeline: TimelinePolicy
     task: TaskPolicy

@@ -25,7 +25,7 @@ Extension `speaker_id` values are fixed output slots `0` and `1`. They retain th
 
 ## Dialogue generation
 
-OpenRouter is the only dialogue provider. The default model is `google/gemini-3.7-flash`. The request contains the current persona and canonical transcript and asks only for the continuation. It uses strict structured output with Gemini-compatible JSON Schema keywords, embeds the same schema in the system prompt, and enables OpenRouter response healing for non-streaming JSON repair. Invariants outside Gemini's supported schema subset, including the configured maximum utterance count, non-empty tone strings, and unique audio tags, remain explicit prompt requirements and are enforced by the runtime contract before synthesis. Safe error codes distinguish rejected requests, incomplete completions, refusals, missing structured content, malformed JSON, and invalid usage metadata without logging the response body.
+OpenRouter is the only dialogue provider. The default model is `google/gemini-3.7-flash`. The request contains the current persona and canonical transcript and asks only for the continuation. It uses strict structured output with Gemini-compatible JSON Schema keywords, embeds the schema and complete audio-tag allowlist in the system prompt, and enables OpenRouter response healing for non-streaming JSON repair. The model produces `instruction` and position-preserving `text_with_audio_tags`, but never `text`; the worker validates the inline tags and derives plain `text` before synthesis. Invalid provider or semantic output is retried at most twice with a safe reason code and correction requirement.
 
 The configured target duration defaults to 120 seconds. It is a generation target rather than a hard audio limit because final duration depends on TTS prosody. Each utterance is classified as one of:
 
@@ -33,13 +33,21 @@ The configured target duration defaults to 120 seconds. It is a generation targe
 - `backchannel`: a brief acknowledgement, optionally overlapping the previous speaker;
 - `paralinguistic`: laughter, crying, breathing, coughing, or another approved non-lexical event, optionally overlapping the previous speaker.
 
-Spoken text is stored separately from `audio_tags`. Audio tags use a canonical square-bracket allowlist that is suitable for Fish Audio S2.1 Pro and portable to Eleven v3-style prompting.
+Audio tags are embedded at their audible positions in `text_with_audio_tags`. One or two adjacent tags are allowed at a position; three are rejected. The durable plain `text` is derived by the worker, while `instruction` stores one concise actor-facing performance direction.
 
 ## Voice cloning and timeline
 
 OpenRouter is the only external API used for speech. The worker transcribes each selected reference with `fish-audio/transcribe-1` through OpenRouter's transcription endpoint, then invokes the configured `fish-audio/s2.1-pro` model through OpenRouter's speech endpoint. The reference audio and transcript are supplied as stateless `input_references` for every TTS request associated with that output slot. No remote voice resource is created or persisted.
 
 The task schedules sequential utterances with the configured turn gap. Approved backchannels and paralinguistic events may overlap the immediately preceding utterance. It renders two equal-duration, 44.1 kHz mono PCM16 WAVs, with silence everywhere that the corresponding speaker is inactive. Transcript timestamps are relative to the start of the extension, so a future concatenation step can resample to its target format and apply its own offset and gap policy.
+
+Before scheduling or adding silence, every isolated TTS WAV is forced-aligned
+against its worker-derived plain `text` with the pinned
+`Qwen/Qwen3-ForcedAligner-0.6B` model. The segment-relative word timestamps are
+shifted by the final utterance start when tracks are assembled. Audio tags are
+reinserted from `text_with_audio_tags` at their exact plain-text offsets as
+`audio_tag` alignment items with `start_ms == end_ms`, so tags preserve order
+without consuming timeline duration.
 
 ## Outputs
 
@@ -53,7 +61,7 @@ All output keys are deterministic:
 └── speaker-1.wav
 ```
 
-`script.json` preserves the model-produced continuation, utterance type, tone, placement, and audio tags. `transcript.json` adds actual synthesized start and end times. The two WAV filenames remain fixed output slots and never use diarization speaker IDs.
+`script.json` preserves the model-produced continuation, utterance type, placement, `instruction`, and `text_with_audio_tags`, plus worker-derived `text`. `transcript.json` adds actual synthesized start and end times and a `word_alignment` array to every utterance. Each array contains ordered `word` and zero-duration `audio_tag` items with global audio timestamps and plain-text character offsets. The two WAV filenames remain fixed output slots and never use diarization speaker IDs.
 
 `chunks.final_results.dialogue_extension` stores the model identities, target and actual duration, input artifact identities, reference-audio mapping, and URI/size/SHA-256 identities for all four outputs. Each speaker reference records whether it came from the DiariZen reference set or a separated-track slice, the source object identity, the source timebase and selected intervals, the exact temporary audio identity sent to Fish Audio, and the reference transcript hash. Completion commits this namespace and `status = 'completed'` atomically after every artifact is uploaded and validated.
 
@@ -69,9 +77,9 @@ S3_REGION
 OPENROUTER_API_KEY
 ```
 
-Optional variables are `S3_ENDPOINT_URL` and `EXTEND_CHUNK_CONFIG_FILE`. OpenRouter endpoints are fixed to the official API and cannot be redirected through configuration. The dialogue, reference-transcription, and TTS models, duration target, synthesis controls, retry limits, and timeline gaps are configured in `resources/default.toml`.
+Optional variables are `S3_ENDPOINT_URL` and `EXTEND_CHUNK_CONFIG_FILE`. OpenRouter endpoints are fixed to the official API and cannot be redirected through configuration. The dialogue, reference-transcription, TTS, and forced-alignment models, duration target, synthesis controls, retry limits, and timeline gaps are configured in `resources/default.toml`.
 
-The worker requires no local GPU. Both Linux x86_64 and aarch64 dependency environments are locked.
+The default forced-alignment policy requires a CUDA GPU and uses bfloat16. Both Linux x86_64 and aarch64 dependency environments are locked.
 
 ## Run
 

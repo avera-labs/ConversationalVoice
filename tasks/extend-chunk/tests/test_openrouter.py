@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from voice_pipeline_chunk_contracts import AUDIO_TAGS
 
 from voice_pipeline_extend_chunk.openrouter import OpenRouterClient, OpenRouterError
 
@@ -86,6 +87,11 @@ def test_request_uses_strict_schema_and_two_minute_guidance(policy):
         is False
     )
     schema = payload["response_format"]["json_schema"]["schema"]
+    audio_tag_schema = schema["properties"]["utterances"]["items"]["properties"][
+        "audio_tags"
+    ]
+    assert audio_tag_schema["items"]["enum"] == sorted(AUDIO_TAGS)
+    assert len(audio_tag_schema["items"]["enum"]) == 316
     speaker_id_schema = schema["properties"]["utterances"]["items"]["properties"][
         "speaker_id"
     ]
@@ -96,7 +102,9 @@ def test_request_uses_strict_schema_and_two_minute_guidance(policy):
     assert "uniqueItems" not in encoded_schema
     assert "minLength" not in encoded_schema
     assert "approximately 120 seconds or 300" in payload["messages"][0]["content"]
-    assert "[laughs]" in payload["messages"][0]["content"]
+    assert json.dumps(
+        schema, sort_keys=True, separators=(",", ":")
+    ) in payload["messages"][0]["content"]
     assert '"persona_speaker_id":"4"' in payload["messages"][1]["content"]
     assert wire["utterances"][0]["speaker_id"] == 0
     assert usage["total_tokens"] == 30

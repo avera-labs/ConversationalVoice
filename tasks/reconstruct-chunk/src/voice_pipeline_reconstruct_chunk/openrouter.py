@@ -59,6 +59,7 @@ class AudioTagsClient:
                 "audio_tags": {
                     "type": "array",
                     "items": {"type": "string", "enum": sorted(AUDIO_TAGS)},
+                    "maxItems": 3,
                 },
                 "tone": {"type": "string"},
             },

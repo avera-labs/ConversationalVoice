@@ -148,12 +148,6 @@ curl --request POST http://localhost:8000/v1/raw-audios \
   --form "lang=en"
 ```
 
-Set `lang=zh` for Chinese audio. `lang` may be any non-empty canonical language
-identifier. The pipeline preserves it without a global support check: `zh` uses
-the dedicated Chinese transcription worker and every other identifier uses the
-Parakeet worker. A model-specific stage may still reject a language it cannot
-process.
-
 The API returns `202 Accepted` for a new upload and includes the source UUID and
 initial Celery task ID. Uploads are deduplicated by the SHA-1 of the original
 bytes; an existing upload returns `200 OK` with `deduplicated: true`.

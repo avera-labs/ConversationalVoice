@@ -31,6 +31,11 @@ class OutputArtifacts:
                     "id": self.policy.audio_tags.model,
                 },
                 "tts": {"backend": "openrouter", "id": self.policy.tts.model},
+                "forced_alignment": {
+                    "backend": "huggingface",
+                    "id": self.policy.forced_alignment.repo_id,
+                    "revision": self.policy.forced_alignment.revision,
+                },
             },
             "speaker_mapping": _speaker_mapping(mapping),
             "inputs": {
@@ -93,6 +98,10 @@ class OutputArtifacts:
             "models": {
                 "audio_tags": self.policy.audio_tags.model,
                 "tts": self.policy.tts.model,
+                "forced_alignment": {
+                    "id": self.policy.forced_alignment.repo_id,
+                    "revision": self.policy.forced_alignment.revision,
+                },
             },
             "language": claim.lang,
             "source_duration_ms": claim.duration_ms,
@@ -155,15 +164,28 @@ class OutputArtifacts:
         models = result["models"]
         if (
             not isinstance(models, Mapping)
-            or set(models) != {"audio_tags", "tts"}
+            or set(models) != {"audio_tags", "tts", "forced_alignment"}
             or not isinstance(models["tts"], str)
             or not models["tts"]
             or models["tts"] != models["tts"].strip()
+            or not isinstance(models["forced_alignment"], Mapping)
+            or set(models["forced_alignment"]) != {"id", "revision"}
+            or models["forced_alignment"]["id"]
+            != "Qwen/Qwen3-ForcedAligner-0.6B"
+            or not isinstance(models["forced_alignment"]["revision"], str)
+            or re.fullmatch(
+                r"[0-9a-f]{40}", models["forced_alignment"]["revision"]
+            )
+            is None
         ):
             raise ValueError("reconstruction models are invalid")
         if current_policy and models != {
             "audio_tags": self.policy.audio_tags.model,
             "tts": self.policy.tts.model,
+            "forced_alignment": {
+                "id": self.policy.forced_alignment.repo_id,
+                "revision": self.policy.forced_alignment.revision,
+            },
         }:
             raise ValueError("reconstruction models disagree with policy")
         mapping = tuple(

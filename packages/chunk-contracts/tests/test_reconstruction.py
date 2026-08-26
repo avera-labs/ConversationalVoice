@@ -1,9 +1,22 @@
 import pytest
 
 from voice_pipeline_chunk_contracts import (
+    AlignedTextUnit,
     ChunkContractError,
+    build_segment_word_alignment,
+    offset_word_alignment,
     parse_reconstruction_transcript,
 )
+
+
+def alignment(text_with_audio_tags, text, start_ms, end_ms):
+    unit = "".join(character for character in text if character.isalnum())
+    segment = build_segment_word_alignment(
+        text_with_audio_tags,
+        [AlignedTextUnit(unit, 0, end_ms - start_ms)],
+        duration_ms=end_ms - start_ms,
+    )
+    return offset_word_alignment(segment, start_ms)
 
 
 def test_reconstruction_transcript_contract():
@@ -31,6 +44,7 @@ def test_reconstruction_transcript_contract():
                 "source_end_ms": 800,
                 "start_ms": 100,
                 "end_ms": 900,
+                "word_alignment": alignment("[calm]Hello.", "Hello.", 100, 900),
                 "relation": "leading",
                 "anchor_utterance_index": None,
             }
@@ -69,6 +83,7 @@ def test_chinese_reconstruction_transcript_contract():
                 "source_end_ms": 800,
                 "start_ms": 100,
                 "end_ms": 900,
+                "word_alignment": alignment("[calm]你好。", "你好。", 100, 900),
                 "relation": "leading",
                 "anchor_utterance_index": None,
             }

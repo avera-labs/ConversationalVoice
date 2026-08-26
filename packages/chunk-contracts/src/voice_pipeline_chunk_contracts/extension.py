@@ -8,6 +8,7 @@ from itertools import pairwise
 from typing import Any
 
 from .contract import ChunkContractError
+from .forced_alignment import validate_utterance_word_alignment
 from .language import ChunkLanguage, parse_chunk_language
 from .tagged_text import parse_text_with_audio_tags
 
@@ -361,7 +362,11 @@ _TRANSCRIPT_FIELDS = {
     "speaker_mapping",
     "utterances",
 }
-_TIMED_UTTERANCE_FIELDS = _UTTERANCE_FIELDS | {"start_ms", "end_ms"}
+_TIMED_UTTERANCE_FIELDS = _UTTERANCE_FIELDS | {
+    "start_ms",
+    "end_ms",
+    "word_alignment",
+}
 _USAGE_FIELDS = {"model", "in_tokens", "out_tokens", "total_tokens", "cost_usd"}
 _TYPES = {"dialogue", "backchannel", "paralinguistic"}
 _PLACEMENTS = {"sequential", "overlap_previous"}
@@ -451,6 +456,12 @@ def _utterance(value: object, index: int, *, timed: bool) -> dict[str, Any]:
         end = _integer(item["end_ms"], "end_ms", 1)
         if end <= start:
             raise ChunkContractError("utterance timing is invalid")
+        validate_utterance_word_alignment(
+            item["word_alignment"],
+            text_with_audio_tags=item["text_with_audio_tags"],
+            start_ms=start,
+            end_ms=end,
+        )
     return result
 
 

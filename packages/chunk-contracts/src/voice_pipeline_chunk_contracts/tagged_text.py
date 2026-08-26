@@ -21,6 +21,7 @@ class ParsedTaggedText:
     text_with_audio_tags: str
     text: str
     tags: tuple[str, ...]
+    tag_offsets: tuple[int, ...]
 
 
 def parse_text_with_audio_tags(value: str) -> ParsedTaggedText:
@@ -80,16 +81,20 @@ def parse_text_with_audio_tags(value: str) -> ParsedTaggedText:
         index = closing + 1
     segments.append("".join(current))
 
-    text = _join_text_segments(segments)
-    return ParsedTaggedText(value, text, tuple(tags))
+    text, tag_offsets = _join_text_segments(segments)
+    return ParsedTaggedText(value, text, tuple(tags), tag_offsets)
 
 
-def _join_text_segments(segments: list[str]) -> str:
+def _join_text_segments(segments: list[str]) -> tuple[str, tuple[int, ...]]:
     """Join tag-separated text while removing only whitespace duplicated at seams."""
 
     result = segments[0]
+    offsets: list[int] = []
     for segment in segments[1:]:
         if result and result[-1] in " \t" and segment and segment[0] in " \t":
             segment = segment.lstrip(" \t")
+        offsets.append(len(result))
         result += segment
-    return result.strip(" \t")
+    leading = len(result) - len(result.lstrip(" \t"))
+    text = result.strip(" \t")
+    return text, tuple(min(max(offset - leading, 0), len(text)) for offset in offsets)

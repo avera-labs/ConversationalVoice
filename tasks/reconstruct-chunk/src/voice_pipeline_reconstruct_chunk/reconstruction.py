@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from voice_pipeline_chunk_contracts import parse_reconstruction_transcript
+from voice_pipeline_chunk_contracts import (
+    offset_word_alignment,
+    parse_reconstruction_transcript,
+)
 
 from .artifacts import audio_identity
 from .audio import concatenate_reference, read_wav_bytes, slice_wav_bytes
@@ -18,9 +21,10 @@ class Reconstruction:
 
 
 class Reconstructor:
-    def __init__(self, tags_client, tts_client, policy):
+    def __init__(self, tags_client, tts_client, forced_aligner, policy):
         self.tags_client = tags_client
         self.tts_client = tts_client
+        self.forced_aligner = forced_aligner
         self.policy = policy
 
     def reconstruct(
@@ -38,6 +42,7 @@ class Reconstructor:
         generated_durations = []
         segment_records = []
         tag_usage = []
+        segment_alignments = []
         for source in source_utterances:
             speaker_id = source["speaker_id"]
             separated_segment = slice_wav_bytes(
@@ -66,6 +71,13 @@ class Reconstructor:
             )
             generated_payloads.append(generated)
             generated_durations.append(generated_audio.duration_ms)
+            segment_alignments.append(
+                self.forced_aligner.align(
+                    generated,
+                    text_with_audio_tags=source["text_with_audio_tags"],
+                    language=language,
+                )
+            )
             tag_usage.append(usage)
             segment_records.append(
                 {
@@ -91,6 +103,12 @@ class Reconstructor:
             )
 
         scheduled = schedule(source_utterances, generated_durations)
+        for utterance, alignment in zip(
+            scheduled, segment_alignments, strict=True
+        ):
+            utterance["word_alignment"] = offset_word_alignment(
+                alignment, utterance["start_ms"]
+            )
         transcript_output = {
             "schema_version": 1,
             "language": language,

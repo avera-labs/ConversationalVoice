@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from voice_pipeline_forced_alignment import Qwen3SegmentAligner
+
 from .celery_app import create_app
 from .fish_audio import FishAudioClient
 from .openrouter import AudioTagsClient
@@ -16,6 +18,7 @@ class Runtime:
     storage: ObjectStorage
     tags_client: AudioTagsClient
     tts_client: FishAudioClient
+    forced_aligner: Qwen3SegmentAligner
     publisher: ExtendChunkPublisher
     task: object
 
@@ -27,16 +30,33 @@ class Runtime:
         api_key = settings.environment.openrouter_api_key.get_secret_value()
         tags_client = AudioTagsClient(settings.policy.audio_tags, api_key)
         tts_client = FishAudioClient(settings.policy.tts, api_key)
+        forced_aligner = Qwen3SegmentAligner(settings.policy.forced_alignment)
         publisher = ExtendChunkPublisher.create(settings.environment)
         task = register(
             app,
             Handler(
-                repository, storage, tags_client, tts_client, publisher, settings.policy
+                repository,
+                storage,
+                tags_client,
+                tts_client,
+                publisher,
+                settings.policy,
+                forced_aligner=forced_aligner,
             ),
         )
-        return cls(app, repository, storage, tags_client, tts_client, publisher, task)
+        return cls(
+            app,
+            repository,
+            storage,
+            tags_client,
+            tts_client,
+            forced_aligner,
+            publisher,
+            task,
+        )
 
     def close(self):
+        self.forced_aligner.close()
         self.publisher.close()
         self.tts_client.close()
         self.tags_client.close()

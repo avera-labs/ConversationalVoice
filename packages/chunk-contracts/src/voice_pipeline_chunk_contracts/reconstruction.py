@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from .contract import ChunkContractError
+from .forced_alignment import validate_utterance_word_alignment
 from .language import ChunkLanguage, parse_chunk_language
 from .tagged_text import parse_text_with_audio_tags
 
@@ -33,6 +34,7 @@ _UTTERANCE_FIELDS = {
     "source_end_ms",
     "start_ms",
     "end_ms",
+    "word_alignment",
     "relation",
     "anchor_utterance_index",
 }
@@ -135,6 +137,12 @@ def parse_reconstruction_transcript(
             )
         ):
             raise ChunkContractError("reconstruction utterance is invalid")
+        validate_utterance_word_alignment(
+            item["word_alignment"],
+            text_with_audio_tags=item["text_with_audio_tags"],
+            start_ms=start,
+            end_ms=end,
+        )
         previous_start = start
         speaker_ends[speaker_id] = end
         maximum_end = max(maximum_end, end)

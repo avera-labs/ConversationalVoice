@@ -17,6 +17,7 @@ dependencies = [
   "python-dotenv>=1.0,<2",
   "sqlalchemy>=2.0,<3",
   "voice-pipeline-chunk-contracts",
+  "voice-pipeline-forced-alignment",
   "voice-pipeline-models",
   "voice-pipeline-task-contracts",
 ]
@@ -29,6 +30,7 @@ extend-chunk-worker = "voice_pipeline_extend_chunk.worker:main"
 
 [tool.uv.sources]
 voice-pipeline-chunk-contracts = { path = "../../packages/chunk-contracts" }
+voice-pipeline-forced-alignment = { path = "../../packages/forced-alignment" }
 voice-pipeline-models = { path = "../../packages/models" }
 voice-pipeline-task-contracts = { path = "../../packages/task-contracts" }
 

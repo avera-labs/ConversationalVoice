@@ -2,10 +2,28 @@ from copy import deepcopy
 
 import pytest
 from voice_pipeline_chunk_contracts import (
+    AlignedTextUnit,
     ChunkContractError,
+    build_segment_word_alignment,
+    offset_word_alignment,
     parse_dialogue_extension_document,
     parse_dialogue_extension_transcript,
 )
+
+
+def timed_utterance(value, start_ms, end_ms):
+    unit = "".join(character for character in value["text"] if character.isalnum())
+    segment = build_segment_word_alignment(
+        value["text_with_audio_tags"],
+        [AlignedTextUnit(unit, 0, end_ms - start_ms)] if unit else [],
+        duration_ms=end_ms - start_ms,
+    )
+    return {
+        **value,
+        "start_ms": start_ms,
+        "end_ms": end_ms,
+        "word_alignment": offset_word_alignment(segment, start_ms),
+    }
 
 
 def script(language="en"):
@@ -78,8 +96,8 @@ def test_script_and_timed_transcript_accept_canonical_documents():
         "duration_ms": 2200,
         "speaker_mapping": value["speaker_mapping"],
         "utterances": [
-            {**value["utterances"][0], "start_ms": 0, "end_ms": 1800},
-            {**value["utterances"][1], "start_ms": 1400, "end_ms": 2200},
+            timed_utterance(value["utterances"][0], 0, 1800),
+            timed_utterance(value["utterances"][1], 1400, 2200),
         ],
     }
     assert (
@@ -113,8 +131,8 @@ def test_chinese_script_and_timed_transcript_accept_canonical_documents():
         "duration_ms": 2200,
         "speaker_mapping": value["speaker_mapping"],
         "utterances": [
-            {**value["utterances"][0], "start_ms": 0, "end_ms": 1800},
-            {**value["utterances"][1], "start_ms": 1400, "end_ms": 2200},
+            timed_utterance(value["utterances"][0], 0, 1800),
+            timed_utterance(value["utterances"][1], 1400, 2200),
         ],
     }
     assert (
@@ -182,8 +200,8 @@ def test_transcript_rejects_script_mutation():
         "duration_ms": 2200,
         "speaker_mapping": value["speaker_mapping"],
         "utterances": [
-            {**value["utterances"][0], "start_ms": 0, "end_ms": 1800},
-            {**value["utterances"][1], "start_ms": 1400, "end_ms": 2200},
+            timed_utterance(value["utterances"][0], 0, 1800),
+            timed_utterance(value["utterances"][1], 1400, 2200),
         ],
     }
     changed = deepcopy(transcript)

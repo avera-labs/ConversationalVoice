@@ -14,6 +14,11 @@ def test_default_policy_targets_two_minutes(settings):
     assert settings.policy.dialogue.target_words == 300
     assert settings.policy.fish_audio.model == "fish-audio/s2.1-pro"
     assert settings.policy.fish_audio.transcription_model == "fish-audio/transcribe-1"
+    assert (
+        settings.policy.forced_alignment.repo_id
+        == "Qwen/Qwen3-ForcedAligner-0.6B"
+    )
+    assert len(settings.policy.forced_alignment.revision) == 40
 
 
 def test_openrouter_key_is_required_for_dialogue_and_speech():

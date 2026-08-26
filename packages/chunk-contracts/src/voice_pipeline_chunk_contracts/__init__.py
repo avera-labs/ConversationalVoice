@@ -9,6 +9,13 @@ from .contract import (
     parse_separation_result,
 )
 from .language import ChunkLanguage, SUPPORTED_CHUNK_LANGUAGES, parse_chunk_language
+from .forced_alignment import (
+    AlignedTextUnit,
+    build_segment_word_alignment,
+    fit_segment_word_alignment,
+    offset_word_alignment,
+    validate_utterance_word_alignment,
+)
 from .extension import (
     AUDIO_TAGS,
     parse_dialogue_extension_document,
@@ -32,6 +39,7 @@ from .tts_capabilities import (
 
 __all__ = [
     "AUDIO_TAGS",
+    "AlignedTextUnit",
     "DEFAULT_TTS_CAPABILITIES",
     "ChunkContractError",
     "ChunkLanguage",
@@ -45,6 +53,8 @@ __all__ = [
     "TaggedTextError",
     "TtsInputs",
     "build_chunk_diarization",
+    "build_segment_word_alignment",
+    "fit_segment_word_alignment",
     "parse_chunk_diarization",
     "parse_chunk_language",
     "parse_dialogue_extension_document",
@@ -56,7 +66,9 @@ __all__ = [
     "parse_transcription_artifact",
     "parse_transcription_result",
     "parse_text_with_audio_tags",
+    "offset_word_alignment",
     "select_tts_inputs",
     "tts_capabilities",
+    "validate_utterance_word_alignment",
     "validate_artifact_pair",
 ]

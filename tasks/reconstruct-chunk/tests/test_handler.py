@@ -4,6 +4,11 @@ import json
 import wave
 from uuid import UUID
 
+from voice_pipeline_chunk_contracts import (
+    AlignedTextUnit,
+    build_segment_word_alignment,
+    parse_text_with_audio_tags,
+)
 from voice_pipeline_reconstruct_chunk.repository import Claim, Disposition
 from voice_pipeline_reconstruct_chunk.storage import ObjectStorage
 from voice_pipeline_reconstruct_chunk.task import Handler
@@ -99,6 +104,22 @@ class Tts:
     def synthesize(self, utterance, reference_audio):
         self.calls.append((utterance, reference_audio))
         return wav(44100, 700 if len(self.calls) == 1 else 500)
+
+
+class ForcedAlignment:
+    def __init__(self):
+        self.calls = []
+
+    def align(self, audio, *, text_with_audio_tags, language):
+        self.calls.append((audio, text_with_audio_tags, language))
+        tagged = parse_text_with_audio_tags(text_with_audio_tags)
+        duration_ms = 700 if len(self.calls) == 1 else 500
+        unit = "".join(character for character in tagged.text if character.isalnum())
+        return build_segment_word_alignment(
+            text_with_audio_tags,
+            [AlignedTextUnit(unit, 50, duration_ms - 50)],
+            duration_ms=duration_ms,
+        )
 
 
 class Publisher:
@@ -281,7 +302,17 @@ def test_handler_reconstructs_without_asr_and_publishes_extension(tmp_path, poli
     tts = Tts()
     publisher = Publisher()
 
-    outcome = Handler(repo, storage, tags, tts, publisher, policy, tmp_path)(
+    alignment = ForcedAlignment()
+    outcome = Handler(
+        repo,
+        storage,
+        tags,
+        tts,
+        publisher,
+        policy,
+        tmp_path,
+        forced_aligner=alignment,
+    )(
         str(IDENTIFIER)
     )
 
@@ -289,11 +320,16 @@ def test_handler_reconstructs_without_asr_and_publishes_extension(tmp_path, poli
     assert outcome["utterance_count"] == 2
     assert publisher.identifier == IDENTIFIER
     assert len(tags.calls) == len(tts.calls) == 2
+    assert len(alignment.calls) == 2
     assert all(call[1].startswith(b"RIFF") for call in tts.calls)
     result = repo.completed[1]
     assert result["models"] == {
         "audio_tags": "xiaomi/mimo-v2.5",
         "tts": "fish-audio/s2.1-pro",
+        "forced_alignment": {
+            "id": "Qwen/Qwen3-ForcedAligner-0.6B",
+            "revision": policy.forced_alignment.revision,
+        },
     }
     assert (
         result["artifacts"]["speaker_audio"][0]["duration_ms"]
@@ -310,6 +346,8 @@ def test_handler_reconstructs_without_asr_and_publishes_extension(tmp_path, poli
     assert first_utterance["text"] == "Hello."
     assert first_utterance["text_with_audio_tags"] == "[calm]Hello."
     assert first_utterance["instruction"] == "Speak calmly and clearly."
+    assert first_utterance["word_alignment"][0]["type"] == "audio_tag"
+    assert first_utterance["word_alignment"][0]["start_ms"] == 150
     assert "tone" not in first_utterance
     assert "audio_tags" not in first_utterance
     assert not hasattr(repo, "failed")
@@ -327,7 +365,14 @@ def test_handler_accepts_tts_model_from_policy_without_capability_mapping(
     )
 
     outcome = Handler(
-        repo, storage, Tags(), Tts(), Publisher(), configured_policy, tmp_path
+        repo,
+        storage,
+        Tags(),
+        Tts(),
+        Publisher(),
+        configured_policy,
+        tmp_path,
+        forced_aligner=ForcedAlignment(),
     )(str(IDENTIFIER))
 
     assert outcome["outcome"] == "reconstructed"
@@ -343,7 +388,16 @@ def test_handler_reconstructs_chinese_and_publishes_extension(tmp_path, policy):
     tts = Tts()
     publisher = Publisher()
 
-    outcome = Handler(repo, storage, tags, tts, publisher, policy, tmp_path)(
+    outcome = Handler(
+        repo,
+        storage,
+        tags,
+        tts,
+        publisher,
+        policy,
+        tmp_path,
+        forced_aligner=ForcedAlignment(),
+    )(
         str(IDENTIFIER)
     )
 

@@ -23,6 +23,13 @@ def test_parse_text_with_audio_tags(tagged, plain, tags):
     assert parsed.tags == tags
 
 
+def test_parse_text_with_audio_tags_preserves_tag_offsets():
+    parsed = parse_text_with_audio_tags("[sighs]Hello [thoughtful]world.[sighs]")
+
+    assert parsed.text == "Hello world."
+    assert parsed.tag_offsets == (0, 6, 12)
+
+
 @pytest.mark.parametrize(
     ("tagged", "code"),
     [

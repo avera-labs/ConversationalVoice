@@ -41,6 +41,14 @@ OpenRouter is the only external API used for speech. The worker transcribes each
 
 The task schedules sequential utterances with the configured turn gap. Approved backchannels and paralinguistic events may overlap the immediately preceding utterance. It renders two equal-duration, 44.1 kHz mono PCM16 WAVs, with silence everywhere that the corresponding speaker is inactive. Transcript timestamps are relative to the start of the extension, so a future concatenation step can resample to its target format and apply its own offset and gap policy.
 
+Before scheduling or adding silence, every isolated TTS WAV is forced-aligned
+against its worker-derived plain `text` with the pinned
+`Qwen/Qwen3-ForcedAligner-0.6B` model. The segment-relative word timestamps are
+shifted by the final utterance start when tracks are assembled. Audio tags are
+reinserted from `text_with_audio_tags` at their exact plain-text offsets as
+`audio_tag` alignment items with `start_ms == end_ms`, so tags preserve order
+without consuming timeline duration.
+
 ## Outputs
 
 All output keys are deterministic:
@@ -53,7 +61,7 @@ All output keys are deterministic:
 └── speaker-1.wav
 ```
 
-`script.json` preserves the model-produced continuation, utterance type, placement, `instruction`, and `text_with_audio_tags`, plus worker-derived `text`. `transcript.json` adds actual synthesized start and end times. The two WAV filenames remain fixed output slots and never use diarization speaker IDs.
+`script.json` preserves the model-produced continuation, utterance type, placement, `instruction`, and `text_with_audio_tags`, plus worker-derived `text`. `transcript.json` adds actual synthesized start and end times and a `word_alignment` array to every utterance. Each array contains ordered `word` and zero-duration `audio_tag` items with global audio timestamps and plain-text character offsets. The two WAV filenames remain fixed output slots and never use diarization speaker IDs.
 
 `chunks.final_results.dialogue_extension` stores the model identities, target and actual duration, input artifact identities, reference-audio mapping, and URI/size/SHA-256 identities for all four outputs. Each speaker reference records whether it came from the DiariZen reference set or a separated-track slice, the source object identity, the source timebase and selected intervals, the exact temporary audio identity sent to Fish Audio, and the reference transcript hash. Completion commits this namespace and `status = 'completed'` atomically after every artifact is uploaded and validated.
 
@@ -69,9 +77,9 @@ S3_REGION
 OPENROUTER_API_KEY
 ```
 
-Optional variables are `S3_ENDPOINT_URL` and `EXTEND_CHUNK_CONFIG_FILE`. OpenRouter endpoints are fixed to the official API and cannot be redirected through configuration. The dialogue, reference-transcription, and TTS models, duration target, synthesis controls, retry limits, and timeline gaps are configured in `resources/default.toml`.
+Optional variables are `S3_ENDPOINT_URL` and `EXTEND_CHUNK_CONFIG_FILE`. OpenRouter endpoints are fixed to the official API and cannot be redirected through configuration. The dialogue, reference-transcription, TTS, and forced-alignment models, duration target, synthesis controls, retry limits, and timeline gaps are configured in `resources/default.toml`.
 
-The worker requires no local GPU. Both Linux x86_64 and aarch64 dependency environments are locked.
+The default forced-alignment policy requires a CUDA GPU and uses bfloat16. Both Linux x86_64 and aarch64 dependency environments are locked.
 
 ## Run
 

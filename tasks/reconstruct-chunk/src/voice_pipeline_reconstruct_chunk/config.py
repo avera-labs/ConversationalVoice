@@ -66,6 +66,21 @@ class TtsPolicy(BaseModel):
         return value
 
 
+class ForcedAlignmentPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+    repo_id: Literal["Qwen/Qwen3-ForcedAligner-0.6B"]
+    revision: str
+    device: Literal["cuda:0", "cpu"]
+    dtype: Literal["bfloat16", "float32"]
+
+    @field_validator("revision")
+    @classmethod
+    def pinned_revision(cls, value: str) -> str:
+        if re.fullmatch(r"[0-9a-f]{40}", value) is None:
+            raise ValueError("forced aligner revision must be a pinned commit")
+        return value
+
+
 class AudioPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
     input_sample_rate_hz: Literal[16000]
@@ -97,6 +112,7 @@ class Policy(BaseModel):
     config_version: Literal["source-reconstruction-v1"]
     audio_tags: AudioTagsPolicy
     tts: TtsPolicy
+    forced_alignment: ForcedAlignmentPolicy
     audio: AudioPolicy
     reference: ReferencePolicy
     task: TaskPolicy

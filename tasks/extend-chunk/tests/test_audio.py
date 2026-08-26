@@ -1,6 +1,8 @@
 import io
 import wave
 
+from voice_pipeline_chunk_contracts import AlignedTextUnit, build_segment_word_alignment
+
 from voice_pipeline_extend_chunk.audio import assemble_tracks, slice_wav_bytes
 
 
@@ -58,9 +60,30 @@ def script():
 
 def test_assembler_creates_equal_tracks_and_actual_transcript(tmp_path, policy):
     paths = (tmp_path / "speaker-0.wav", tmp_path / "speaker-1.wav")
+    value = script()
+    durations = [2000, 500, 1200]
+    alignments = [
+        build_segment_word_alignment(
+            utterance["text_with_audio_tags"],
+            [
+                AlignedTextUnit(
+                    "".join(
+                        character
+                        for character in utterance["text"]
+                        if character.isalnum()
+                    ),
+                    100,
+                    duration - 100,
+                )
+            ],
+            duration_ms=duration,
+        )
+        for utterance, duration in zip(value["utterances"], durations, strict=True)
+    ]
     transcript, tracks = assemble_tracks(
-        script(),
-        [wav_bytes(2000), wav_bytes(500), wav_bytes(1200)],
+        value,
+        [wav_bytes(duration) for duration in durations],
+        alignments,
         speaker_mapping=(4, 7),
         policy=policy.timeline,
         track_paths=paths,
@@ -69,6 +92,8 @@ def test_assembler_creates_equal_tracks_and_actual_transcript(tmp_path, policy):
     assert first["start_ms"] == 0
     assert backchannel["start_ms"] < first["end_ms"]
     assert final["start_ms"] > max(first["end_ms"], backchannel["end_ms"])
+    assert first["word_alignment"][0]["start_ms"] == 100
+    assert final["word_alignment"][0]["start_ms"] == final["start_ms"] + 100
     assert tracks[0].duration_ms == tracks[1].duration_ms == transcript["duration_ms"]
     with (
         wave.open(str(paths[0]), "rb") as left,

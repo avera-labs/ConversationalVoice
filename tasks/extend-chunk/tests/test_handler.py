@@ -7,6 +7,11 @@ from pathlib import Path
 from uuid import UUID
 
 import pytest
+from voice_pipeline_chunk_contracts import (
+    AlignedTextUnit,
+    build_segment_word_alignment,
+    parse_text_with_audio_tags,
+)
 
 from voice_pipeline_extend_chunk.repository import Claim, Disposition
 from voice_pipeline_extend_chunk.storage import ObjectStorage
@@ -430,6 +435,42 @@ class Fish:
         return wav_bytes(44100, 1000)
 
 
+class ForcedAlignment:
+    def __init__(self):
+        self.calls = []
+
+    def align(self, audio, *, text_with_audio_tags, language):
+        self.calls.append((audio, text_with_audio_tags, language))
+        tagged = parse_text_with_audio_tags(text_with_audio_tags)
+        unit = "".join(character for character in tagged.text if character.isalnum())
+        return build_segment_word_alignment(
+            text_with_audio_tags,
+            [AlignedTextUnit(unit, 100, 900)] if unit else [],
+            duration_ms=1000,
+        )
+
+
+def make_handler(
+    repository,
+    storage,
+    dialogue,
+    fish,
+    policy,
+    workspace_parent,
+    *,
+    forced_aligner=None,
+):
+    return Handler(
+        repository,
+        storage,
+        dialogue,
+        fish,
+        policy,
+        workspace_parent,
+        forced_aligner=forced_aligner or ForcedAlignment(),
+    )
+
+
 def build_objects(*, include_second_reference=True, language="en"):
     transcript_payload = canonical(transcript(language))
     references = (wav_bytes(16000, 5000), wav_bytes(16000, 5000))
@@ -453,7 +494,7 @@ def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, p
     storage = Storage(objects)
     fish = Fish()
 
-    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -480,6 +521,17 @@ def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, p
     assert first_utterance["instruction"]
     assert "tone" not in first_utterance
     assert "audio_tags" not in first_utterance
+    transcript_uri = f"{CHUNK_BASE}/results/dialogue-extension/transcript.json"
+    aligned = json.loads(dict(storage.uploads)[transcript_uri])["utterances"][0]
+    assert [item["type"] for item in aligned["word_alignment"]] == [
+        "audio_tag",
+        "word",
+    ]
+    assert aligned["word_alignment"][0]["start_ms"] == 100
+    assert (
+        result["models"]["forced_alignment"]["id"]
+        == "Qwen/Qwen3-ForcedAligner-0.6B"
+    )
     assert not hasattr(repo, "failed")
 
 
@@ -498,7 +550,7 @@ def test_handler_accepts_tts_model_from_policy_without_capability_mapping(
         }
     )
 
-    outcome = Handler(
+    outcome = make_handler(
         repo, storage, Dialogue(), Fish(), configured_policy, tmp_path
     )(str(IDENTIFIER))
 
@@ -513,7 +565,7 @@ def test_handler_generates_chinese_extension_and_preserves_language(tmp_path, po
     storage = Storage(objects)
     fish = Fish()
 
-    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -543,7 +595,7 @@ def test_handler_generates_chinese_extension_and_preserves_language(tmp_path, po
     storage.objects.clear()
     storage.uploads.clear()
     repeat_fish = Fish()
-    repeat = Handler(repo, storage, Dialogue(), repeat_fish, policy, tmp_path)(
+    repeat = make_handler(repo, storage, Dialogue(), repeat_fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
     assert repeat["outcome"] == "already_completed"
@@ -557,7 +609,7 @@ def test_missing_mapped_reference_uses_separated_track_fallback(tmp_path, policy
     storage = Storage(objects)
     fish = Fish()
 
-    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -580,7 +632,7 @@ def test_missing_mapped_reference_uses_separated_track_fallback(tmp_path, policy
         extension_result=repo.completed[1],
     )
     storage.objects.clear()
-    repeat = Handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(
+    repeat = make_handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(
         str(IDENTIFIER)
     )
     assert repeat["outcome"] == "already_completed"
@@ -604,7 +656,7 @@ def test_missing_reference_and_pure_interval_is_rejected_before_provider_calls(
     )
     fish = Fish()
 
-    outcome = Handler(repo, Storage(objects), Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, Storage(objects), Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -618,7 +670,7 @@ def test_completed_invocation_validates_without_external_io(tmp_path, policy):
     transcript_payload, objects = build_objects()
     repo = Repo(transcript_payload)
     storage = Storage(objects)
-    Handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
+    make_handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
     result = repo.completed[1]
     repo.claim_value = replace(
         repo.claim_value,
@@ -630,7 +682,7 @@ def test_completed_invocation_validates_without_external_io(tmp_path, policy):
     storage.uploads.clear()
     fish = Fish()
 
-    outcome = Handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
+    outcome = make_handler(repo, storage, Dialogue(), fish, policy, tmp_path)(
         str(IDENTIFIER)
     )
 
@@ -645,7 +697,7 @@ def test_completed_invocation_accepts_the_persisted_model_after_config_change(
     transcript_payload, objects = build_objects()
     repo = Repo(transcript_payload)
     storage = Storage(objects)
-    Handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
+    make_handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
     repo.claim_value = replace(
         repo.claim_value,
         disposition=Disposition.ALREADY_COMPLETED,
@@ -663,7 +715,9 @@ def test_completed_invocation_accepts_the_persisted_model_after_config_change(
         }
     )
 
-    outcome = Handler(repo, storage, Dialogue(), Fish(), changed_policy, tmp_path)(
+    outcome = make_handler(
+        repo, storage, Dialogue(), Fish(), changed_policy, tmp_path
+    )(
         str(IDENTIFIER)
     )
 
@@ -679,7 +733,9 @@ def test_tts_failure_marks_claimed_row_failed(tmp_path, policy):
             raise RuntimeError("provider failed")
 
     with pytest.raises(RuntimeError, match="provider failed"):
-        Handler(repo, Storage(objects), Dialogue(), FailedFish(), policy, tmp_path)(
+        make_handler(
+            repo, Storage(objects), Dialogue(), FailedFish(), policy, tmp_path
+        )(
             str(IDENTIFIER)
         )
     assert repo.failed[0] == IDENTIFIER

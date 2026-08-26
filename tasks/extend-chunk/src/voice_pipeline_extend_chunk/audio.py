@@ -5,6 +5,11 @@ import wave
 from dataclasses import dataclass
 from pathlib import Path
 
+from voice_pipeline_chunk_contracts import (
+    fit_segment_word_alignment,
+    offset_word_alignment,
+)
+
 from .artifacts import ArtifactIdentity, file_identity
 
 
@@ -111,12 +116,16 @@ def write_wav(path: Path, frames: bytes, sample_rate_hz: int) -> None:
 def assemble_tracks(
     script: dict,
     utterance_payloads: list[bytes],
+    segment_alignments: list[list[dict]],
     *,
     speaker_mapping: tuple[int, int],
     policy,
     track_paths: tuple[Path, Path],
 ) -> tuple[dict, tuple[TrackArtifact, TrackArtifact]]:
-    if len(utterance_payloads) != len(script["utterances"]):
+    if (
+        len(utterance_payloads) != len(script["utterances"])
+        or len(segment_alignments) != len(script["utterances"])
+    ):
         raise ValueError("TTS output count is invalid")
     audio = [read_wav_bytes(payload) for payload in utterance_payloads]
     sample_rate_hz = 44100
@@ -185,9 +194,22 @@ def assemble_tracks(
                 **utterance,
                 "start_ms": round(start * 1000 / sample_rate_hz),
                 "end_ms": round(end * 1000 / sample_rate_hz),
+                "word_alignment": offset_word_alignment(
+                    fit_segment_word_alignment(
+                        utterance["text_with_audio_tags"],
+                        alignment,
+                        duration_ms=round(end * 1000 / sample_rate_hz)
+                        - round(start * 1000 / sample_rate_hz),
+                    ),
+                    round(start * 1000 / sample_rate_hz),
+                ),
             }
-            for utterance, start, end in zip(
-                script["utterances"], start_frames, end_frames, strict=True
+            for utterance, alignment, start, end in zip(
+                script["utterances"],
+                segment_alignments,
+                start_frames,
+                end_frames,
+                strict=True,
             )
         ],
     }

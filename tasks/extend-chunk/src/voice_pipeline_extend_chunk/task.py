@@ -44,11 +44,14 @@ class Handler:
         fish_client,
         policy,
         workspace_parent=None,
+        *,
+        forced_aligner,
     ):
         self.repository = repository
         self.storage = storage
         self.dialogue_client = dialogue_client
         self.fish_client = fish_client
+        self.forced_aligner = forced_aligner
         self.policy = policy
         self.workspace_parent = workspace_parent
 
@@ -113,18 +116,26 @@ class Handler:
             script_metadata = write_canonical_json(script, workspace.script)
 
             synthesized = []
+            segment_alignments = []
             for utterance in script["utterances"]:
                 speaker_id = utterance["speaker_id"]
-                synthesized.append(
-                    self.fish_client.synthesize(
-                        utterance,
-                        references[speaker_id]["bytes"],
-                        reference_texts[speaker_id],
+                generated = self.fish_client.synthesize(
+                    utterance,
+                    references[speaker_id]["bytes"],
+                    reference_texts[speaker_id],
+                )
+                synthesized.append(generated)
+                segment_alignments.append(
+                    self.forced_aligner.align(
+                        generated,
+                        text_with_audio_tags=utterance["text_with_audio_tags"],
+                        language=claim.lang,
                     )
                 )
             transcript_output, tracks = assemble_tracks(
                 script,
                 synthesized,
+                segment_alignments,
                 speaker_mapping=mapping,
                 policy=self.policy.timeline,
                 track_paths=(workspace.track(0), workspace.track(1)),
@@ -465,6 +476,12 @@ class Handler:
                     "id": self.policy.fish_audio.model,
                     "config_version": self.policy.config_version,
                 },
+                "forced_alignment": {
+                    "backend": "huggingface",
+                    "id": self.policy.forced_alignment.repo_id,
+                    "revision": self.policy.forced_alignment.revision,
+                    "config_version": self.policy.config_version,
+                },
             },
             "language": claim.lang,
             "target_duration_ms": self.policy.dialogue.target_duration_ms,
@@ -541,7 +558,9 @@ class Handler:
         ):
             raise ValueError("extension result identity is invalid")
         models = self._exact(
-            root["models"], {"dialogue", "reference_asr", "tts"}, "models"
+            root["models"],
+            {"dialogue", "reference_asr", "tts", "forced_alignment"},
+            "models",
         )
         dialogue = self._exact(
             models["dialogue"], {"backend", "id", "config_version"}, "dialogue model"
@@ -556,6 +575,11 @@ class Handler:
             {"backend", "id", "config_version"},
             "TTS model",
         )
+        forced_alignment = self._exact(
+            models["forced_alignment"],
+            {"backend", "id", "revision", "config_version"},
+            "forced-alignment model",
+        )
         if (
             dialogue["backend"] != "openrouter"
             or not self._model_id(dialogue["id"])
@@ -566,6 +590,12 @@ class Handler:
             or tts["backend"] != "openrouter"
             or not self._canonical_string(tts["id"])
             or tts["config_version"] != "dialogue-extension-v1"
+            or forced_alignment["backend"] != "huggingface"
+            or forced_alignment["id"] != "Qwen/Qwen3-ForcedAligner-0.6B"
+            or not isinstance(forced_alignment["revision"], str)
+            or re.fullmatch(r"[0-9a-f]{40}", forced_alignment["revision"])
+            is None
+            or forced_alignment["config_version"] != "dialogue-extension-v1"
         ):
             raise ValueError("extension model identity is invalid")
         if current_policy and (
@@ -576,6 +606,9 @@ class Handler:
             or reference_asr["config_version"] != self.policy.config_version
             or tts["id"] != self.policy.fish_audio.model
             or tts["config_version"] != self.policy.config_version
+            or forced_alignment["id"] != self.policy.forced_alignment.repo_id
+            or forced_alignment["revision"] != self.policy.forced_alignment.revision
+            or forced_alignment["config_version"] != self.policy.config_version
         ):
             raise ValueError("extension result disagrees with current policy")
         inputs = self._exact(

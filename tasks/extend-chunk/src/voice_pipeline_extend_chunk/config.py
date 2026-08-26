@@ -66,6 +66,21 @@ class FishAudioPolicy(BaseModel):
         return value
 
 
+class ForcedAlignmentPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+    repo_id: Literal["Qwen/Qwen3-ForcedAligner-0.6B"]
+    revision: str
+    device: Literal["cuda:0", "cpu"]
+    dtype: Literal["bfloat16", "float32"]
+
+    @field_validator("revision")
+    @classmethod
+    def pinned_revision(cls, value: str) -> str:
+        if re.fullmatch(r"[0-9a-f]{40}", value) is None:
+            raise ValueError("forced aligner revision must be a pinned commit")
+        return value
+
+
 class DialoguePolicy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
     target_duration_seconds: int = Field(ge=10, le=1800)
@@ -115,6 +130,7 @@ class Policy(BaseModel):
     config_version: Literal["dialogue-extension-v1"]
     openrouter: OpenRouterPolicy
     fish_audio: FishAudioPolicy
+    forced_alignment: ForcedAlignmentPolicy
     dialogue: DialoguePolicy
     timeline: TimelinePolicy
     task: TaskPolicy

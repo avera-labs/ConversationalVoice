@@ -156,7 +156,9 @@ class OutputArtifacts:
         if (
             not isinstance(models, Mapping)
             or set(models) != {"audio_tags", "tts"}
-            or models["tts"] != "fish-audio/s2.1-pro"
+            or not isinstance(models["tts"], str)
+            or not models["tts"]
+            or models["tts"] != models["tts"].strip()
         ):
             raise ValueError("reconstruction models are invalid")
         if current_policy and models != {

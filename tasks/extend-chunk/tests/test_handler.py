@@ -483,6 +483,30 @@ def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, p
     assert not hasattr(repo, "failed")
 
 
+def test_handler_accepts_tts_model_from_policy_without_capability_mapping(
+    tmp_path, policy
+):
+    transcript_payload, objects = build_objects()
+    repo = Repo(transcript_payload)
+    storage = Storage(objects)
+    configured_model = "provider/plain-tts"
+    configured_policy = policy.model_copy(
+        update={
+            "fish_audio": policy.fish_audio.model_copy(
+                update={"model": configured_model}
+            )
+        }
+    )
+
+    outcome = Handler(
+        repo, storage, Dialogue(), Fish(), configured_policy, tmp_path
+    )(str(IDENTIFIER))
+
+    assert outcome["outcome"] == "completed"
+    assert repo.completed[1]["models"]["tts"]["id"] == configured_model
+    assert not hasattr(repo, "failed")
+
+
 def test_handler_generates_chinese_extension_and_preserves_language(tmp_path, policy):
     transcript_payload, objects = build_objects(language="zh")
     repo = Repo(transcript_payload, "zh")

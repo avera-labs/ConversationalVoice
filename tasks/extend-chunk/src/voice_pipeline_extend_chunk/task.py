@@ -564,7 +564,7 @@ class Handler:
             or reference_asr["id"] != "fish-audio/transcribe-1"
             or reference_asr["config_version"] != "dialogue-extension-v1"
             or tts["backend"] != "openrouter"
-            or tts["id"] != "fish-audio/s2.1-pro"
+            or not self._canonical_string(tts["id"])
             or tts["config_version"] != "dialogue-extension-v1"
         ):
             raise ValueError("extension model identity is invalid")

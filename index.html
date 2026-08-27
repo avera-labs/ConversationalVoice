@@ -70,10 +70,10 @@
               <p class="pipeline-stage-label"><span class="en">Source-Grounded Expansion</span></p>
               <div class="pipeline-lane">
                 <div class="pipeline-node"><strong><span class="en">Persona Extraction</span></strong><span><span class="en">Use multimodal analysis to profile the scene and both speakers.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Script Generation</span></strong><span><span class="en">Generate dialogue from source audio, transcript, and prior context; plan turns, pauses, overlap, and audio tags.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Script Generation</span></strong><span><span class="en">Generate dialogue from source audio, transcript, and context; plan turns, pauses, overlap, and audio tags.</span></span></div>
                 <div class="pipeline-node"><strong><span class="en">Voice Cloning</span></strong><span><span class="en">Synthesize each utterance from speaker reference audio and audio-tagged text.</span></span></div>
                 <div class="pipeline-node"><strong><span class="en">Dialogue Assembly</span></strong><span><span class="en">Assemble synthesized utterances into two tracks using planned turns, pauses, and overlap.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Forced Alignment</span></strong><span><span class="en">Align synthesized audio with dialogue text to produce word-level timestamps.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Forced Alignment</span></strong><span><span class="en">Align audio and text for word timestamps; retain audio tags and director instructions in the final transcript.</span></span></div>
               </div>
             </section>
           </div>
@@ -246,6 +246,18 @@
               </div>
             </section>
           </div>
+          <div class="finding-list">
+            <div class="finding"><strong><span class="en">Source grounding</span></strong><span class="en">Each expansion retains the source exchange's context and interaction structure.</span></div>
+            <div class="finding"><strong><span class="en">Interaction control</span></strong><span class="en">Turn-taking, pauses, overlap, and paralinguistic cues can be targeted for specific training needs.</span></div>
+            <div class="finding"><strong><span class="en">Scalable expansion</span></strong><span class="en">A single source exchange can yield longer and more varied training examples.</span></div>
+          </div>
+        </article>
+
+        <article class="step" id="transcription-with-audio-tags">
+          <h3><span class="en">Transcription with Audio Tags</span></h3>
+          <div class="step-intro">
+            <p class="en">ConversationalVoice produces speaker-attributed transcripts with utterance-level and word-level timestamps. Expressive audio tags capture delivery cues such as emotion, prosody, and paralinguistic events, preserving information that plain text alone cannot represent.</p>
+          </div>
           <div class="comparison-grid">
             <section class="method-panel video-panel" aria-label="Source in-car video clip">
               <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">In-Car Video Clip</span></h4></header>
@@ -257,9 +269,9 @@
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue expansion for the in-car clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Expansion</span></h4></header>
-              <p class="sample-context"><span class="en">This example reconstructs a two-speaker in-car exchange as separate, time-aligned speaker tracks.</span></p>
+            <section class="method-panel our" aria-label="ConversationalVoice transcription with audio tags for the in-car clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Transcription with Audio Tags</span></h4></header>
+              <p class="sample-context"><span class="en">This example presents a two-speaker in-car exchange as separate, time-aligned tracks with synchronized speaker-attributed transcription.</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
                   <div class="audio-case-head"><h5><span class="en">Expanded speaker tracks</span></h5><span class="audio-format">24 kHz</span></div>
@@ -286,11 +298,6 @@
                 </div>
               </div>
             </section>
-          </div>
-          <div class="finding-list">
-            <div class="finding"><strong><span class="en">Source grounding</span></strong><span class="en">Each expansion retains the source exchange's context and interaction structure.</span></div>
-            <div class="finding"><strong><span class="en">Interaction control</span></strong><span class="en">Turn-taking, pauses, overlap, and paralinguistic cues can be targeted for specific training needs.</span></div>
-            <div class="finding"><strong><span class="en">Scalable expansion</span></strong><span class="en">A single source exchange can yield longer and more varied training examples.</span></div>
           </div>
         </article>
 

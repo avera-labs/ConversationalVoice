@@ -409,6 +409,9 @@ p {
 #regeneration .step-intro + .comparison-grid {
   margin-top: 30px;
 }
+#transcription-with-audio-tags .step-intro + .comparison-grid {
+  margin-top: 30px;
+}
 #regeneration .comparison-grid + .comparison-grid {
   margin-top: 20px;
 }

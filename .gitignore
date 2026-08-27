@@ -1,5 +1,54 @@
-.env
+# Byte-compiled files and Python caches
+__pycache__/
+*.py[codz]
+*$py.class
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
 .env.test
 .envrc
-.venv
-__pycache__/
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+# Packaging and build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+wheels/
+# Test, coverage, and type-checking caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+.mypy_cache/
+.pyright/
+.ruff_cache/
+.hypothesis/
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Documentation builds
+docs/_build/
+site/
+# IDE and editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+# Operating system files
+.DS_Store
+Thumbs.db
+# Logs and local databases
+*.log
+*.sqlite
+*.sqlite3
+# Temporary files
+*.tmp
+*.bak

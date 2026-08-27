@@ -108,6 +108,7 @@ class Handler:
                         normalize_words(
                             decoded,
                             offset_ms=speech_slice.start_ms,
+                            slice_end_ms=speech_slice.end_ms,
                             duration_ms=claim.duration_ms,
                             policy=self.policy.utterance,
                         )

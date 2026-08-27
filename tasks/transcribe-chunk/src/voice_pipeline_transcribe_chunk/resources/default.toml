@@ -25,6 +25,8 @@ emergency_min_ms = 20000
 emergency_gap_ms = 80
 word_max_duration_ms = 2000
 word_capped_duration_ms = 300
+# The pinned TDT model predicts durations up to four 80 ms encoder frames.
+timestamp_end_tolerance_ms = 320
 
 [task]
 workspace_prefix = "voice-pipeline-transcribe-chunk-"

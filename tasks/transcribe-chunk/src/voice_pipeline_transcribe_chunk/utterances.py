@@ -93,9 +93,14 @@ def normalize_words(
     decoded: list[DecodedWord],
     *,
     offset_ms: int,
+    slice_end_ms: int,
     duration_ms: int,
     policy: UtterancePolicy,
 ) -> list[Word]:
+    if not 0 <= offset_ms < slice_end_ms <= duration_ms:
+        raise ValueError("word normalization bounds are invalid")
+    slice_duration_ms = slice_end_ms - offset_ms
+    end_tolerance_ms = policy.timestamp_end_tolerance_ms
     words: list[Word] = []
     for item in decoded:
         text = item.text.strip()
@@ -107,12 +112,29 @@ def normalize_words(
             or not 0 <= item.confidence <= 1
         ):
             raise ValueError("decoded word is invalid")
-        start = offset_ms + round(item.start_seconds * 1000)
-        end = offset_ms + round(item.end_seconds * 1000)
+        local_start = round(item.start_seconds * 1000)
+        local_end = round(item.end_seconds * 1000)
+        if (
+            not 0 <= local_start < local_end
+            or local_start >= slice_duration_ms
+            or local_end > slice_duration_ms + end_tolerance_ms
+        ):
+            raise ValueError(
+                "decoded word timestamp is out of bounds "
+                f"(start_ms={local_start}, end_ms={local_end}, "
+                f"slice_duration_ms={slice_duration_ms})"
+            )
+        local_end = min(local_end, slice_duration_ms)
+        start = offset_ms + local_start
+        end = offset_ms + local_end
         if end - start > policy.word_max_duration_ms:
             end = start + policy.word_capped_duration_ms
-        if not 0 <= start < end <= duration_ms:
-            raise ValueError("decoded word timestamp is out of bounds")
+        if not offset_ms <= start < end <= slice_end_ms:
+            raise ValueError(
+                "decoded word timestamp is out of bounds after boundary normalization "
+                f"(start_ms={start}, end_ms={end}, "
+                f"slice_start_ms={offset_ms}, slice_end_ms={slice_end_ms})"
+            )
         if words and (start, end) < (words[-1].start_ms, words[-1].end_ms):
             raise ValueError("decoded words are not in canonical order")
         words.append(Word(start, end, text, item.confidence))

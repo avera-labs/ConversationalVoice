@@ -59,6 +59,7 @@ class UtterancePolicy(BaseModel):
     emergency_gap_ms: int = Field(gt=0)
     word_max_duration_ms: int = Field(gt=0)
     word_capped_duration_ms: int = Field(gt=0)
+    timestamp_end_tolerance_ms: int = Field(default=320, ge=0)
 
     @model_validator(mode="after")
     def duration_bounds(self):

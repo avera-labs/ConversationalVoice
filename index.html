@@ -12,7 +12,7 @@
     <meta name="description" content="ConversationalVoice curates speaker-separated and expanded full-duplex speech data from real conversations." />
     <title>ConversationalVoice: Full-Duplex Speech Data from Real Conversations</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="assets/css/main.css?v=20260821aj" />
+    <link rel="stylesheet" href="assets/css/main.css?v=20260827c" />
   </head>
   <body>
     <div class="container utility">
@@ -30,7 +30,23 @@
       </nav>
     </header>
 
-    <main class="container">
+    <div class="page-shell">
+      <aside class="section-navigation">
+        <p class="section-navigation-title">On this page</p>
+        <nav class="section-navigation-links" aria-label="Page sections">
+          <a href="#introduction">Introduction</a>
+          <a href="#pipeline">Pipeline</a>
+          <span class="section-navigation-group">Examples</span>
+          <a class="section-navigation-subitem" href="#separation">Speaker Separation</a>
+          <a class="section-navigation-subitem" href="#regeneration">Dialogue Reconstruction and Expansion</a>
+          <a class="section-navigation-subitem" href="#transcription-with-audio-tags">Transcription with Audio Tags and Director Instructions</a>
+          <a class="section-navigation-subitem" href="#multilingual">Multilingual</a>
+          <a href="#license">License</a>
+          <a href="#references">References</a>
+        </nav>
+      </aside>
+
+      <main class="container">
       <section id="introduction">
         <h2><span class="en">Introduction</span></h2>
         <p class="lead en">ConversationalVoice converts a broad range of real-world recordings into curated training data for full-duplex speech models. The pipeline identifies two-speaker exchanges, separates the speakers into individual tracks, validates speaker consistency, annotates timing and speaker attributes, and uses each exchange as the basis for new dialogue while preserving its turn-taking, pauses, overlap, and paralinguistic cues.</p>
@@ -70,10 +86,10 @@
               <p class="pipeline-stage-label"><span class="en">Source-Grounded Expansion</span></p>
               <div class="pipeline-lane">
                 <div class="pipeline-node"><strong><span class="en">Persona Extraction</span></strong><span><span class="en">Use multimodal analysis to profile the scene and both speakers.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Script Generation</span></strong><span><span class="en">Generate dialogue from source audio, transcript, and prior context; plan turns, pauses, overlap, and audio tags.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Script Generation</span></strong><span><span class="en">Generate dialogue from source audio, transcript, and context; plan turns, pauses, overlap, and audio tags.</span></span></div>
                 <div class="pipeline-node"><strong><span class="en">Voice Cloning</span></strong><span><span class="en">Synthesize each utterance from speaker reference audio and audio-tagged text.</span></span></div>
                 <div class="pipeline-node"><strong><span class="en">Dialogue Assembly</span></strong><span><span class="en">Assemble synthesized utterances into two tracks using planned turns, pauses, and overlap.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Forced Alignment</span></strong><span><span class="en">Align synthesized audio with dialogue text to produce word-level timestamps.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Forced Alignment</span></strong><span><span class="en">Align audio and text for word timestamps; retain audio tags and director instructions in the final transcript.</span></span></div>
               </div>
             </section>
           </div>
@@ -175,12 +191,11 @@
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue expansion for the film clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Expansion</span></h4></header>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the film clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
               <p class="sample-context"><span class="en">This example reconstructs the source voices and extends the scene while preserving vocal identity, character relationships, and narrative continuity.</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
-                  <div class="audio-case-head"><h5><span class="en">Expanded speaker tracks</span></h5><span class="audio-format">24 kHz</span></div>
                   <div class="dual-track-player" data-caption-source="regeneration" data-caption-prefix="regen" data-reconstruction-end="24.3" data-transcript-url="assets/regeneration/old-movie/transcript.json?v=20260811a" data-alignment-url="assets/regeneration/old-movie/word-alignment.json?v=20260811a">
                     <audio preload="metadata" data-mix-audio src="assets/regeneration/old-movie/combined.wav?v=20260821a"></audio>
                     <audio preload="metadata" data-track-audio="speaker0" src="assets/regeneration/old-movie/speaker-0.wav?v=20260811a"></audio>
@@ -216,12 +231,11 @@
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue expansion for the TV talk show clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Expansion</span></h4></header>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the TV talk show clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
               <p class="sample-context"><span class="en">After removing background music, the pipeline expands a brief source exchange into a longer conversation with natural pacing while preserving speaker identity and context.</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
-                  <div class="audio-case-head"><h5><span class="en">Expanded speaker tracks</span></h5><span class="audio-format">24 kHz</span></div>
                   <div class="dual-track-player" data-caption-source="regeneration" data-caption-prefix="regen-our-1" data-reconstruction-end="18.3" data-transcript-url="assets/regeneration/tv-talk-show/transcript.json?v=20260811b" data-alignment-url="assets/regeneration/tv-talk-show/word-alignment.json?v=20260811b">
                     <audio preload="metadata" data-mix-audio src="assets/regeneration/tv-talk-show/combined.wav?v=20260821a"></audio>
                     <audio preload="metadata" data-track-audio="speaker0" src="assets/regeneration/tv-talk-show/speaker-0.wav?v=20260811b"></audio>
@@ -246,6 +260,18 @@
               </div>
             </section>
           </div>
+          <div class="finding-list">
+            <div class="finding"><strong><span class="en">Source grounding</span></strong><span class="en">Each expansion retains the source exchange's context and interaction structure.</span></div>
+            <div class="finding"><strong><span class="en">Interaction control</span></strong><span class="en">Turn-taking, pauses, overlap, and paralinguistic cues can be targeted for specific training needs.</span></div>
+            <div class="finding"><strong><span class="en">Scalable expansion</span></strong><span class="en">A single source exchange can yield longer and more varied training examples.</span></div>
+          </div>
+        </article>
+
+        <article class="step" id="transcription-with-audio-tags">
+          <h3><span class="en">Transcription with Audio Tags and Director Instructions</span></h3>
+          <div class="step-intro">
+            <p class="en">ConversationalVoice produces speaker-attributed transcripts with Audio Tags and Director Instructions alongside utterance-level and word-level timestamps, preserving the expressive and temporal details of each exchange. These annotations guide expressive, context-faithful TTS generation while providing valuable supervision labels for training.</p>
+          </div>
           <div class="comparison-grid">
             <section class="method-panel video-panel" aria-label="Source in-car video clip">
               <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">In-Car Video Clip</span></h4></header>
@@ -257,13 +283,12 @@
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue expansion for the in-car clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Expansion</span></h4></header>
-              <p class="sample-context"><span class="en">This example reconstructs a two-speaker in-car exchange as separate, time-aligned speaker tracks.</span></p>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the in-car clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
+              <p class="sample-context"><span class="en">This example presents a two-speaker in-car exchange as separate, time-aligned tracks with synchronized speaker-attributed transcription.</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
-                  <div class="audio-case-head"><h5><span class="en">Expanded speaker tracks</span></h5><span class="audio-format">24 kHz</span></div>
-                  <div class="dual-track-player" data-caption-source="regeneration" data-caption-prefix="regen-car" data-reconstruction-end="32.725" data-transcript-url="assets/regeneration/youtube-car-video/transcript.json?v=20260813a" data-alignment-url="assets/regeneration/youtube-car-video/word-alignment.json?v=20260813a">
+                  <div class="dual-track-player" data-caption-source="regeneration" data-caption-prefix="regen-car" data-reconstruction-end="32.725" data-transcript-url="assets/regeneration/youtube-car-video/transcript.json?v=20260827a" data-alignment-url="assets/regeneration/youtube-car-video/word-alignment.json?v=20260813a">
                     <audio preload="metadata" data-mix-audio src="assets/regeneration/youtube-car-video/combined.wav?v=20260821a"></audio>
                     <audio preload="metadata" data-track-audio="speaker0" src="assets/regeneration/youtube-car-video/speaker-0.wav?v=20260813b"></audio>
                     <audio preload="metadata" data-track-audio="speaker1" src="assets/regeneration/youtube-car-video/speaker-1.wav?v=20260813b"></audio>
@@ -287,11 +312,6 @@
               </div>
             </section>
           </div>
-          <div class="finding-list">
-            <div class="finding"><strong><span class="en">Source grounding</span></strong><span class="en">Each expansion retains the source exchange's context and interaction structure.</span></div>
-            <div class="finding"><strong><span class="en">Interaction control</span></strong><span class="en">Turn-taking, pauses, overlap, and paralinguistic cues can be targeted for specific training needs.</span></div>
-            <div class="finding"><strong><span class="en">Scalable expansion</span></strong><span class="en">A single source exchange can yield longer and more varied training examples.</span></div>
-          </div>
         </article>
 
         <article class="step" id="multilingual">
@@ -311,12 +331,11 @@
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue expansion for the Chinese drama clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Expansion</span></h4></header>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the Chinese drama clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
               <p class="sample-context"><span class="en">This example reconstructs a Mandarin two-speaker exchange and expands it into a longer scene while preserving speaker identity, expressive delivery, and conversational context.</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
-                  <div class="audio-case-head"><h5><span class="en">Expanded speaker tracks</span></h5><span class="audio-format">24 kHz</span></div>
                   <div class="dual-track-player" data-reconstruction-end="95.813">
                     <audio preload="metadata" data-mix-audio src="assets/regeneration/huaqiang-zh/combined.wav?v=20260825a"></audio>
                     <audio preload="metadata" data-track-audio="speaker0" src="assets/regeneration/huaqiang-zh/speaker-0.wav?v=20260825a"></audio>
@@ -325,6 +344,44 @@
                       <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
                       <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
                       <span class="dual-time">0:00 / 2:54</span>
+                    </div>
+                    <div class="phase-legend" aria-label="Dialogue phases">
+                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span></span>
+                      <span class="phase-transition" aria-hidden="true">→</span>
+                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span></span>
+                    </div>
+                    <div class="dual-tracks">
+                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <div class="comparison-grid">
+            <section class="method-panel video-panel" aria-label="Source Chinese dialogue show clip">
+              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">Chinese Dialogue Show Clip</span></h4></header>
+              <div class="video-case">
+                <video controls playsinline preload="metadata" poster="assets/regeneration/dialog-show-zh/poster.jpg?v=20260827a" aria-label="Source Chinese dialogue show clip">
+                  <source src="assets/regeneration/dialog-show-zh/source.mp4?v=20260827a" type="video/mp4" />
+                  <span class="en">Your browser does not support MP4 video playback.</span>
+                </video>
+              </div>
+            </section>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the Chinese dialogue show clip">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
+              <p class="sample-context"><span class="en">This example reconstructs a Mandarin two-speaker exchange and expands it into a longer dialogue while preserving speaker identity, expressive delivery, and conversational context.</span></p>
+              <div class="audio-list">
+                <div class="audio-case dual-track-case">
+                  <div class="dual-track-player" data-reconstruction-end="71.06">
+                    <audio preload="metadata" data-mix-audio src="assets/regeneration/dialog-show-zh/combined.wav?v=20260827a"></audio>
+                    <audio preload="metadata" data-track-audio="speaker0" src="assets/regeneration/dialog-show-zh/speaker-0.wav?v=20260827a"></audio>
+                    <audio preload="metadata" data-track-audio="speaker1" src="assets/regeneration/dialog-show-zh/speaker-1.wav?v=20260827a"></audio>
+                    <div class="dual-toolbar">
+                      <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
+                      <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
+                      <span class="dual-time">0:00 / 3:26</span>
                     </div>
                     <div class="phase-legend" aria-label="Dialogue phases">
                       <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span></span>
@@ -365,7 +422,8 @@
         </ol>
       </section>
 
-    </main>
+      </main>
+    </div>
 
 
 
@@ -381,6 +439,6 @@
     <script id="transcript-data" type="application/json">{"0":[{"s":0.0,"e":1.76,"text":"It's my first language and I couldn't read it."},{"s":1.84,"e":4.32,"text":"That's when I was like, I need to go back in touch."},{"s":5.12,"e":8.8,"text":"Yeah, I, I have to give it to my dad to translate it for me."},{"s":9.04,"e":11.76,"text":"And my dad's reading my childhood diary just laughing."},{"s":11.84,"e":14.0,"text":"Like, haha, haha"}],"1":[{"s":3.685,"e":5.445,"text":"and get somebody to read it to you."},{"s":5.685,"e":5.925,"text":"Yeah."},{"s":8.689,"e":9.409,"text":"It's you."}]}</script>
 
     <script src="assets/js/waveform-peaks.js?v=20260821b"></script>
-    <script src="assets/js/main.js?v=20260821d"></script>
+    <script src="assets/js/main.js?v=20260827d"></script>
   </body>
 </html>

@@ -412,6 +412,9 @@ p {
 #regeneration .comparison-grid + .comparison-grid {
   margin-top: 20px;
 }
+#multilingual .comparison-grid + .comparison-grid {
+  margin-top: 20px;
+}
 .method-panel {
   min-width: 0;
   border: 1px solid var(--border);

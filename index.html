@@ -12,7 +12,7 @@
     <meta name="description" content="ConversationalVoice curates speaker-separated and expanded full-duplex speech data from real conversations." />
     <title>ConversationalVoice: Full-Duplex Speech Data from Real Conversations</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="assets/css/main.css?v=20260827b" />
+    <link rel="stylesheet" href="assets/css/main.css?v=20260827c" />
   </head>
   <body>
     <div class="container utility">
@@ -30,7 +30,23 @@
       </nav>
     </header>
 
-    <main class="container">
+    <div class="page-shell">
+      <aside class="section-navigation">
+        <p class="section-navigation-title">On this page</p>
+        <nav class="section-navigation-links" aria-label="Page sections">
+          <a href="#introduction">Introduction</a>
+          <a href="#pipeline">Pipeline</a>
+          <span class="section-navigation-group">Examples</span>
+          <a class="section-navigation-subitem" href="#separation">Speaker Separation</a>
+          <a class="section-navigation-subitem" href="#regeneration">Dialogue Reconstruction and Expansion</a>
+          <a class="section-navigation-subitem" href="#transcription-with-audio-tags">Transcription with Audio Tags</a>
+          <a class="section-navigation-subitem" href="#multilingual">Multilingual</a>
+          <a href="#license">License</a>
+          <a href="#references">References</a>
+        </nav>
+      </aside>
+
+      <main class="container">
       <section id="introduction">
         <h2><span class="en">Introduction</span></h2>
         <p class="lead en">ConversationalVoice converts a broad range of real-world recordings into curated training data for full-duplex speech models. The pipeline identifies two-speaker exchanges, separates the speakers into individual tracks, validates speaker consistency, annotates timing and speaker attributes, and uses each exchange as the basis for new dialogue while preserving its turn-taking, pauses, overlap, and paralinguistic cues.</p>
@@ -406,7 +422,8 @@
         </ol>
       </section>
 
-    </main>
+      </main>
+    </div>
 
 
 
@@ -422,6 +439,6 @@
     <script id="transcript-data" type="application/json">{"0":[{"s":0.0,"e":1.76,"text":"It's my first language and I couldn't read it."},{"s":1.84,"e":4.32,"text":"That's when I was like, I need to go back in touch."},{"s":5.12,"e":8.8,"text":"Yeah, I, I have to give it to my dad to translate it for me."},{"s":9.04,"e":11.76,"text":"And my dad's reading my childhood diary just laughing."},{"s":11.84,"e":14.0,"text":"Like, haha, haha"}],"1":[{"s":3.685,"e":5.445,"text":"and get somebody to read it to you."},{"s":5.685,"e":5.925,"text":"Yeah."},{"s":8.689,"e":9.409,"text":"It's you."}]}</script>
 
     <script src="assets/js/waveform-peaks.js?v=20260821b"></script>
-    <script src="assets/js/main.js?v=20260827c"></script>
+    <script src="assets/js/main.js?v=20260827d"></script>
   </body>
 </html>

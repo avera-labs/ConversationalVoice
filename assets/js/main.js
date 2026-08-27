@@ -956,10 +956,46 @@
     await loadWaveform(audio, waveform, 48);
   }
 
+  /** Keeps the page navigation synchronized with the section nearest the reading position. */
+  function initializeSectionNavigation() {
+    const links = Array.from(document.querySelectorAll('.section-navigation-links a[href^="#"]'));
+    const navigationItems = links.map((link) => ({
+      link,
+      target: document.getElementById(link.getAttribute('href').slice(1)),
+    })).filter(({ target }) => target instanceof HTMLElement);
+    if (navigationItems.length === 0) return;
+
+    let navigationFrame = null;
+    const updateCurrentSection = () => {
+      const readingLine = Math.min(180, window.innerHeight * 0.28);
+      let currentItem = navigationItems[0];
+      navigationItems.forEach((item) => {
+        if (item.target.getBoundingClientRect().top <= readingLine) currentItem = item;
+      });
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        currentItem = navigationItems[navigationItems.length - 1];
+      }
+      navigationItems.forEach(({ link }) => {
+        if (link === currentItem.link) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+      navigationFrame = null;
+    };
+    const scheduleNavigationUpdate = () => {
+      if (navigationFrame !== null) return;
+      navigationFrame = requestAnimationFrame(updateCurrentSection);
+    };
+
+    window.addEventListener('scroll', scheduleNavigationUpdate, { passive: true });
+    window.addEventListener('resize', scheduleNavigationUpdate);
+    updateCurrentSection();
+  }
+
   // Page initialization
 
   /** Loads file-backed captions before player construction so the first frame is correct. */
   async function initializePage() {
+    initializeSectionNavigation();
     await Promise.all(Array.from(dualPlayerElements, async (element) => {
       try {
         await loadExternalCaptionData(element);

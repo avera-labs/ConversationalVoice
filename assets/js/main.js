@@ -16,7 +16,8 @@
   const WAVEFORM_MAXIMUM_BAR_COUNT = 320;
   const WAVEFORM_MINIMUM_BAR_COUNT = 72;
   /** @typedef {{w: string, s: number, e: number}} AlignedWord */
-  /** @typedef {{s: number, e: number, text: string}} Utterance */
+  /** @typedef {{value: string, offset: number}} AudioTag */
+  /** @typedef {{s: number, e: number, text: string, audioTags: AudioTag[]}} Utterance */
   /** @typedef {'speaker0' | 'speaker1'} SpeakerTrack */
 
   /**
@@ -75,6 +76,25 @@
   }
 
   /**
+   * Removes square-bracket audio tags while preserving their plain-text offsets.
+   * @param {string} taggedText
+   * @returns {{text: string, audioTags: AudioTag[]}}
+   */
+  function parseTaggedTranscriptText(taggedText) {
+    const audioTags = [];
+    let text = '';
+    let sourceOffset = 0;
+    const tagPattern = /\[[^\[\]]+\]/g;
+    for (const match of taggedText.matchAll(tagPattern)) {
+      text += taggedText.slice(sourceOffset, match.index);
+      audioTags.push({ value: match[0], offset: text.length });
+      sourceOffset = match.index + match[0].length;
+    }
+    text += taggedText.slice(sourceOffset);
+    return { text, audioTags };
+  }
+
+  /**
    * Loads JSON through HTTP so the rendered captions always reflect the source files.
    * Opening index.html through file:// is intentionally unsupported because browsers block fetch there.
    * @param {string} url
@@ -105,7 +125,20 @@
           || typeof utterance.text !== 'string') {
           throw new TypeError(`Invalid transcript entry in ${speakerKey}`);
         }
-        return { s: utterance.t0, e: utterance.t1, text: utterance.text };
+        const tagged = utterance.text_with_audio_tags === undefined
+          ? { text: utterance.text, audioTags: [] }
+          : (typeof utterance.text_with_audio_tags === 'string'
+            ? parseTaggedTranscriptText(utterance.text_with_audio_tags)
+            : null);
+        if (tagged === null || tagged.text !== utterance.text) {
+          throw new TypeError(`Tagged transcript text does not match plain text in ${speakerKey}`);
+        }
+        return {
+          s: utterance.t0,
+          e: utterance.t1,
+          text: utterance.text,
+          audioTags: tagged.audioTags,
+        };
       })];
     }));
   }
@@ -718,15 +751,33 @@
         label.className = 'caption-speaker';
         label.textContent = speaker;
         row.appendChild(label);
-        alignments
-          .filter(({ s, e }) => e >= activeUtterance.s && s <= activeUtterance.e)
-          .forEach((word) => {
-            const token = document.createElement('span');
-            token.className = 'caption-word';
-            if (this.isPlaying && captionTime >= word.s && captionTime <= word.e) token.classList.add('active');
-            token.textContent = word.w;
-            row.appendChild(token);
-          });
+        const sentenceWords = alignments
+          .filter(({ s, e }) => e >= activeUtterance.s && s <= activeUtterance.e);
+        const activeAudioTags = Array.isArray(activeUtterance.audioTags) ? activeUtterance.audioTags : [];
+        row.classList.toggle('has-audio-tags', activeAudioTags.length > 0);
+        let textOffset = 0;
+        let audioTagIndex = 0;
+        const appendAudioTagsThrough = (offset) => {
+          while (audioTagIndex < activeAudioTags.length
+            && activeAudioTags[audioTagIndex].offset <= offset) {
+            const audioTag = document.createElement('span');
+            audioTag.className = 'caption-audio-tag';
+            audioTag.textContent = activeAudioTags[audioTagIndex].value;
+            row.appendChild(audioTag);
+            audioTagIndex += 1;
+          }
+        };
+        sentenceWords.forEach((word) => {
+          const wordOffset = activeUtterance.text.indexOf(word.w, textOffset);
+          appendAudioTagsThrough(wordOffset >= 0 ? wordOffset : textOffset);
+          const token = document.createElement('span');
+          token.className = 'caption-word';
+          if (this.isPlaying && captionTime >= word.s && captionTime <= word.e) token.classList.add('active');
+          token.textContent = word.w;
+          row.appendChild(token);
+          textOffset = wordOffset >= 0 ? wordOffset + word.w.length : textOffset;
+        });
+        appendAudioTagsThrough(Number.POSITIVE_INFINITY);
         fragment.appendChild(row);
       });
       this.captionPanel.replaceChildren(fragment);

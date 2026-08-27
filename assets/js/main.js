@@ -95,6 +95,23 @@
   }
 
   /**
+   * Restores audio tags at their plain-text offsets for accessible caption text.
+   * @param {string} text
+   * @param {AudioTag[]} audioTags
+   * @returns {string}
+   */
+  function restoreTaggedTranscriptText(text, audioTags) {
+    let taggedText = '';
+    let textOffset = 0;
+    audioTags.forEach(({ value, offset }) => {
+      taggedText += text.slice(textOffset, offset);
+      taggedText += value;
+      textOffset = offset;
+    });
+    return taggedText + text.slice(textOffset);
+  }
+
+  /**
    * Loads JSON through HTTP so the rendered captions always reflect the source files.
    * Opening index.html through file:// is intentionally unsupported because browsers block fetch there.
    * @param {string} url
@@ -741,19 +758,22 @@
       const isChinese = document.documentElement.lang === 'zh-CN';
 
       captionData.forEach(({ speakerId, transcripts, alignments }) => {
-        const activeUtterance = transcripts.find(({ s, e }) => captionTime >= s && captionTime <= e);
+        const activeUtterance = transcripts.find(({ s, e }, utteranceIndex) => (
+          captionTime >= s
+          && (captionTime < e || (utteranceIndex === transcripts.length - 1 && captionTime === e))
+        ));
         if (!activeUtterance) return;
         const speaker = isChinese ? `说话人 ${speakerId}` : `Speaker ${speakerId}`;
+        const activeAudioTags = Array.isArray(activeUtterance.audioTags) ? activeUtterance.audioTags : [];
         const row = document.createElement('div');
         row.className = 'caption-row';
-        row.setAttribute('aria-label', `${speaker}: ${activeUtterance.text}`);
+        row.setAttribute('aria-label', `${speaker}: ${restoreTaggedTranscriptText(activeUtterance.text, activeAudioTags)}`);
         const label = document.createElement('span');
         label.className = 'caption-speaker';
         label.textContent = speaker;
         row.appendChild(label);
         const sentenceWords = alignments
-          .filter(({ s, e }) => e >= activeUtterance.s && s <= activeUtterance.e);
-        const activeAudioTags = Array.isArray(activeUtterance.audioTags) ? activeUtterance.audioTags : [];
+          .filter(({ s, e }) => e > activeUtterance.s && s < activeUtterance.e);
         row.classList.toggle('has-audio-tags', activeAudioTags.length > 0);
         let textOffset = 0;
         let audioTagIndex = 0;

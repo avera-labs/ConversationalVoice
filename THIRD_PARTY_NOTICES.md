@@ -159,6 +159,30 @@ license and notices of the actual revision it downloads.
 - Project changes: the project downloads and runs the upstream weights without
   modifying the weight files
 
+### NISQA v2.0
+
+- Model: NISQA v2.0 `nisqa.tar`
+- Upstream: <https://github.com/gabrielmittag/NISQA>
+- Revision: `fe84f0f252abec382b24367d5b22498a7ce34dbb`
+- Used by: `tools/score-completed-chunks`
+- Code license: MIT
+- Model-weights license: Creative Commons Attribution-NonCommercial-ShareAlike
+  4.0 International (`CC-BY-NC-SA-4.0`)
+- License text: <https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode>
+- Distribution: downloaded at runtime after SHA-256 verification; weights are
+  not stored in this source repository
+
+### Microsoft DNSMOS
+
+- Models: DNSMOS P.835 `sig_bak_ovr.onnx` and P.808 `model_v8.onnx`
+- Upstream: <https://github.com/microsoft/DNS-Challenge/tree/master/DNSMOS>
+- Revision: `591184a9fcb2cbdec02520fed81a32bbbf9d73ff`
+- Used by: `tools/score-completed-chunks`
+- Copyright and license: Microsoft Corporation; see the upstream DNS Challenge
+  repository license and notices
+- Distribution: downloaded at runtime after SHA-256 verification; model files
+  are not stored in this source repository
+
 ### pyannote Segmentation 3.0
 
 - Model: `pyannote/segmentation-3.0`

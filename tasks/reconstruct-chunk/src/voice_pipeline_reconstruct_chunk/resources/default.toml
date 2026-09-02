@@ -1,9 +1,9 @@
 config_version = "source-reconstruction-v1"
 
 [audio_tags]
-model = "xiaomi/mimo-v2.5"
-reasoning_effort = "none"
-max_tokens = 256
+model = "google/gemini-3.7-flash"
+reasoning_effort = "low"
+max_tokens = 2048
 timeout_seconds = 90
 max_attempts = 3
 retry_backoff_seconds = 1.0

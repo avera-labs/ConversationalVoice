@@ -10,6 +10,7 @@ class Workspace:
         self._temporary = tempfile.TemporaryDirectory(prefix=prefix, dir=parent)
         self.root = Path(self._temporary.name)
         self.transcript = self.root / "input-transcript.json"
+        self.reconstruction_transcript = self.root / "reconstruction-transcript.json"
         self.reference_manifest = self.root / "references.json"
         self.script = self.root / "script.json"
         self.output_transcript = self.root / "transcript.json"

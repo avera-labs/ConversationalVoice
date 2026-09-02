@@ -10,6 +10,7 @@ import pytest
 from voice_pipeline_chunk_contracts import (
     AlignedTextUnit,
     build_segment_word_alignment,
+    offset_word_alignment,
     parse_text_with_audio_tags,
 )
 
@@ -182,6 +183,55 @@ def transcription_result(sep, transcript_payload, language="en"):
     }
 
 
+def reconstruction_transcript(language="en"):
+    source = transcript(language)
+    flattened = [
+        (0, source["speakers"][0]["utterances"][0]),
+        (1, source["speakers"][1]["utterances"][0]),
+    ]
+    starts = (0, 800)
+    result = []
+    for index, ((speaker_id, item), start) in enumerate(zip(flattened, starts)):
+        tagged = item["text"]
+        unit = "".join(character for character in tagged if character.isalnum())
+        alignment = build_segment_word_alignment(
+            tagged,
+            [AlignedTextUnit(unit, 100, 900)],
+            duration_ms=1000,
+        )
+        result.append(
+            {
+                "utterance_index": index,
+                "speaker_id": speaker_id,
+                "diarization_speaker_id": (4, 7)[speaker_id],
+                "speaker_utterance_index": 0,
+                "text": item["text"],
+                "text_with_audio_tags": tagged,
+                "instruction": "Speak naturally.",
+                "confidence": item["confidence"],
+                "source_start_ms": item["start_ms"],
+                "source_end_ms": item["end_ms"],
+                "start_ms": start,
+                "end_ms": start + 1000,
+                "word_alignment": offset_word_alignment(alignment, start),
+                "relation": "leading" if index == 0 else "overlap",
+                "anchor_utterance_index": None if index == 0 else 0,
+            }
+        )
+    return {
+        "schema_version": 1,
+        "language": language,
+        "timebase": "reconstruction",
+        "source_duration_ms": 3000,
+        "duration_ms": 1800,
+        "speaker_mapping": [
+            {"speaker_id": 0, "diarization_speaker_id": 4},
+            {"speaker_id": 1, "diarization_speaker_id": 7},
+        ],
+        "utterances": result,
+    }
+
+
 def persona(language="en"):
     chinese = language == "zh"
     base = {
@@ -285,7 +335,7 @@ def reference_manifest(reference_payloads):
 
 
 class Repo:
-    def __init__(self, transcript_payload, language="en"):
+    def __init__(self, transcript_payload, reconstruction_payload, language="en"):
         sep = separation()
         document = persona(language)
         self.claim_value = Claim(
@@ -302,7 +352,15 @@ class Repo:
             transcription_result(sep, transcript_payload, language),
             document,
             persona_result(document, transcript_payload, language),
-            {"reconstruction": "valid"},
+            {
+                "artifacts": {
+                    "transcript": {
+                        "uri": f"{CHUNK_BASE}/results/reconstruction/transcript.json",
+                        "size_bytes": identity(reconstruction_payload)[0],
+                        "sha256": identity(reconstruction_payload)[1],
+                    }
+                }
+            },
         )
 
     def claim(self, _identifier):
@@ -338,11 +396,20 @@ class Storage:
 
 
 class Dialogue:
-    def extend(self, persona_document, transcript_document, _policy, language="en"):
+    def extend(
+        self,
+        persona_document,
+        transcript_document,
+        _policy,
+        language="en",
+        interaction_targets=None,
+    ):
         assert persona_document["language"] == language
         assert transcript_document["language"] == language
         assert persona_document["speaker_mapping"][0]["diarization_speaker_id"] == 4
         assert transcript_document["speakers"][1]["diarization_speaker_id"] == 7
+        assert interaction_targets is not None
+        assert interaction_targets.reconstruction_overlap_event_count == 1
         chinese = language == "zh"
         utterances = [
             {
@@ -473,24 +540,26 @@ def make_handler(
 
 def build_objects(*, include_second_reference=True, language="en"):
     transcript_payload = canonical(transcript(language))
+    reconstruction_payload = canonical(reconstruction_transcript(language))
     references = (wav_bytes(16000, 5000), wav_bytes(16000, 5000))
     manifest = reference_manifest(references)
     if not include_second_reference:
         manifest["speakers"] = manifest["speakers"][:1]
     objects = {
         f"{CHUNK_BASE}/results/transcript.json": transcript_payload,
+        f"{CHUNK_BASE}/results/reconstruction/transcript.json": reconstruction_payload,
         f"{PART_BASE}/speaker-references/references.json": canonical(manifest),
         f"{PART_BASE}/speaker-references/speaker-4.wav": references[0],
         f"{PART_BASE}/speaker-references/speaker-7.wav": references[1],
         f"{CHUNK_BASE}/results/separated/speaker-0.wav": SEPARATED_PAYLOADS[0],
         f"{CHUNK_BASE}/results/separated/speaker-1.wav": SEPARATED_PAYLOADS[1],
     }
-    return transcript_payload, objects
+    return transcript_payload, reconstruction_payload, objects
 
 
 def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, policy):
-    transcript_payload, objects = build_objects()
-    repo = Repo(transcript_payload)
+    transcript_payload, reconstruction_payload, objects = build_objects()
+    repo = Repo(transcript_payload, reconstruction_payload)
     storage = Storage(objects)
     fish = Fish()
 
@@ -538,8 +607,8 @@ def test_handler_generates_extension_only_tracks_with_stable_mapping(tmp_path, p
 def test_handler_accepts_tts_model_from_policy_without_capability_mapping(
     tmp_path, policy
 ):
-    transcript_payload, objects = build_objects()
-    repo = Repo(transcript_payload)
+    transcript_payload, reconstruction_payload, objects = build_objects()
+    repo = Repo(transcript_payload, reconstruction_payload)
     storage = Storage(objects)
     configured_model = "provider/plain-tts"
     configured_policy = policy.model_copy(
@@ -560,8 +629,8 @@ def test_handler_accepts_tts_model_from_policy_without_capability_mapping(
 
 
 def test_handler_generates_chinese_extension_and_preserves_language(tmp_path, policy):
-    transcript_payload, objects = build_objects(language="zh")
-    repo = Repo(transcript_payload, "zh")
+    transcript_payload, reconstruction_payload, objects = build_objects(language="zh")
+    repo = Repo(transcript_payload, reconstruction_payload, "zh")
     storage = Storage(objects)
     fish = Fish()
 
@@ -604,8 +673,8 @@ def test_handler_generates_chinese_extension_and_preserves_language(tmp_path, po
 
 
 def test_handler_passes_arbitrary_language_to_each_provider(tmp_path, policy):
-    transcript_payload, objects = build_objects(language="es")
-    repo = Repo(transcript_payload, "es")
+    transcript_payload, reconstruction_payload, objects = build_objects(language="es")
+    repo = Repo(transcript_payload, reconstruction_payload, "es")
     storage = Storage(objects)
     fish = Fish()
     alignment = ForcedAlignment()
@@ -627,8 +696,10 @@ def test_handler_passes_arbitrary_language_to_each_provider(tmp_path, policy):
 
 
 def test_missing_mapped_reference_uses_separated_track_fallback(tmp_path, policy):
-    transcript_payload, objects = build_objects(include_second_reference=False)
-    repo = Repo(transcript_payload)
+    transcript_payload, reconstruction_payload, objects = build_objects(
+        include_second_reference=False
+    )
+    repo = Repo(transcript_payload, reconstruction_payload)
     storage = Storage(objects)
     fish = Fish()
 
@@ -664,8 +735,10 @@ def test_missing_mapped_reference_uses_separated_track_fallback(tmp_path, policy
 def test_missing_reference_and_pure_interval_is_rejected_before_provider_calls(
     tmp_path, policy
 ):
-    transcript_payload, objects = build_objects(include_second_reference=False)
-    repo = Repo(transcript_payload)
+    transcript_payload, reconstruction_payload, objects = build_objects(
+        include_second_reference=False
+    )
+    repo = Repo(transcript_payload, reconstruction_payload)
     repo.claim_value = replace(
         repo.claim_value,
         diarizations={
@@ -690,8 +763,8 @@ def test_missing_reference_and_pure_interval_is_rejected_before_provider_calls(
 
 
 def test_completed_invocation_validates_without_external_io(tmp_path, policy):
-    transcript_payload, objects = build_objects()
-    repo = Repo(transcript_payload)
+    transcript_payload, reconstruction_payload, objects = build_objects()
+    repo = Repo(transcript_payload, reconstruction_payload)
     storage = Storage(objects)
     make_handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
     result = repo.completed[1]
@@ -717,8 +790,8 @@ def test_completed_invocation_validates_without_external_io(tmp_path, policy):
 def test_completed_invocation_accepts_the_persisted_model_after_config_change(
     tmp_path, policy
 ):
-    transcript_payload, objects = build_objects()
-    repo = Repo(transcript_payload)
+    transcript_payload, reconstruction_payload, objects = build_objects()
+    repo = Repo(transcript_payload, reconstruction_payload)
     storage = Storage(objects)
     make_handler(repo, storage, Dialogue(), Fish(), policy, tmp_path)(str(IDENTIFIER))
     repo.claim_value = replace(
@@ -748,8 +821,8 @@ def test_completed_invocation_accepts_the_persisted_model_after_config_change(
 
 
 def test_tts_failure_marks_claimed_row_failed(tmp_path, policy):
-    transcript_payload, objects = build_objects()
-    repo = Repo(transcript_payload)
+    transcript_payload, reconstruction_payload, objects = build_objects()
+    repo = Repo(transcript_payload, reconstruction_payload)
 
     class FailedFish(Fish):
         def synthesize(self, *_args):

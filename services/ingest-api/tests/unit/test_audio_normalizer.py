@@ -15,8 +15,8 @@ from voice_pipeline_ingest_api.services.audio_normalizer import (
 )
 
 
-def test_production_pydub_timeout_is_thirty_seconds() -> None:
-    assert PYDUB_TIMEOUT_SECONDS == 30.0
+def test_production_pydub_timeout_is_five_minutes() -> None:
+    assert PYDUB_TIMEOUT_SECONDS == 300.0
 
 
 def _write_partial_output_and_wait(source_path: str, destination_path: str) -> None:

@@ -11,7 +11,7 @@ from typing import Literal
 from .pydub_worker import normalize_with_pydub
 from .wav_validation import WavMetadata, WavValidationError, validate_normalized_wav
 
-PYDUB_TIMEOUT_SECONDS = 30.0
+PYDUB_TIMEOUT_SECONDS = 300.0
 WORKER_START_TIMEOUT_SECONDS = 10.0
 WORKER_TERMINATION_GRACE_SECONDS = 1.0
 

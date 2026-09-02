@@ -62,6 +62,11 @@ class ObjectStorage:
         key = PurePosixPath(self._key(chunk_audio_uri))
         return f"s3://{self.bucket}/{key.parent / 'results' / 'persona.json'}"
 
+    def reconstruction_transcript_uri(self, chunk_audio_uri: str) -> str:
+        key = PurePosixPath(self._key(chunk_audio_uri))
+        path = key.parent / "results" / "reconstruction" / "transcript.json"
+        return f"s3://{self.bucket}/{path}"
+
     def reference_manifest_uri(self, audio_part_uri: str) -> str:
         key = PurePosixPath(self._key(audio_part_uri))
         path = key.parent / "speaker-references" / "references.json"

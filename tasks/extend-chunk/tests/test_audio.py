@@ -1,6 +1,8 @@
 import io
 import wave
 
+import pytest
+
 from voice_pipeline_chunk_contracts import AlignedTextUnit, build_segment_word_alignment
 
 from voice_pipeline_extend_chunk.audio import assemble_tracks, slice_wav_bytes
@@ -91,6 +93,8 @@ def test_assembler_creates_equal_tracks_and_actual_transcript(tmp_path, policy):
     first, backchannel, final = transcript["utterances"]
     assert first["start_ms"] == 0
     assert backchannel["start_ms"] < first["end_ms"]
+    assert backchannel["start_ms"] >= 1200
+    assert backchannel["end_ms"] == first["end_ms"]
     assert final["start_ms"] > max(first["end_ms"], backchannel["end_ms"])
     assert first["word_alignment"][0]["start_ms"] == 100
     assert final["word_alignment"][0]["start_ms"] == final["start_ms"] + 100
@@ -100,6 +104,50 @@ def test_assembler_creates_equal_tracks_and_actual_transcript(tmp_path, policy):
         wave.open(str(paths[1]), "rb") as right,
     ):
         assert left.getnframes() == right.getnframes()
+
+
+def test_assembler_accepts_exactly_eighty_milliseconds_of_overlap(
+    tmp_path, policy
+):
+    value = script()
+    value["utterances"] = value["utterances"][:2]
+    durations = [1000, 80]
+    alignments = [
+        build_segment_word_alignment(
+            utterance["text_with_audio_tags"],
+            [AlignedTextUnit(utterance["text"], 0, duration)],
+            duration_ms=duration,
+        )
+        for utterance, duration in zip(value["utterances"], durations, strict=True)
+    ]
+    transcript, _tracks = assemble_tracks(
+        value,
+        [wav_bytes(duration) for duration in durations],
+        alignments,
+        speaker_mapping=(4, 7),
+        policy=policy.timeline,
+        track_paths=(tmp_path / "speaker-0.wav", tmp_path / "speaker-1.wav"),
+    )
+
+    anchor, overlap = transcript["utterances"]
+    assert anchor["end_ms"] - overlap["start_ms"] == 80
+
+
+def test_assembler_rejects_less_than_eighty_milliseconds_of_overlap(
+    tmp_path, policy
+):
+    value = script()
+    value["utterances"] = value["utterances"][:2]
+
+    with pytest.raises(ValueError, match="overlap is too short"):
+        assemble_tracks(
+            value,
+            [wav_bytes(1000), wav_bytes(79)],
+            [[], []],
+            speaker_mapping=(4, 7),
+            policy=policy.timeline,
+            track_paths=(tmp_path / "speaker-0.wav", tmp_path / "speaker-1.wav"),
+        )
 
 
 def test_slice_wav_bytes_extracts_the_requested_16khz_range():

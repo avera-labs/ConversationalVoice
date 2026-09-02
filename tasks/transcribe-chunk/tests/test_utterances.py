@@ -41,9 +41,26 @@ def test_normalize_clamps_tdt_duration_overflow_at_slice_end(policy):
     assert words == [Word(4900, 5000, "hello", 0.9)]
 
 
+def test_normalize_expands_tdt_point_timestamp(policy):
+    words = normalize_words(
+        [DecodedWord("a", 0.64, 0.64, 0.9)],
+        offset_ms=0,
+        slice_end_ms=780,
+        duration_ms=780,
+        policy=policy.utterance,
+    )
+    assert words == [Word(640, 641, "a", 0.9)]
+
+
 @pytest.mark.parametrize(
     ("start_seconds", "end_seconds"),
-    [(-0.001, 0.1), (0.4, 0.821), (0.501, 0.6), (0.1, -0.001)],
+    [
+        (-0.001, 0.1),
+        (0.4, 0.821),
+        (0.501, 0.6),
+        (0.1, -0.001),
+        (0.4004, 0.4001),
+    ],
 )
 def test_normalize_rejects_timestamp_beyond_boundary_tolerance(
     policy, start_seconds, end_seconds

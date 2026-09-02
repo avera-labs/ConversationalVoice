@@ -156,7 +156,10 @@ def _timestamp_tolerance_ms(model: object) -> int:
         or value <= 0
     ):
         raise RuntimeError("Qwen3 forced aligner timestamp resolution is invalid")
-    return math.ceil(value)
+    # The aligner quantizes both the detected acoustic boundary and the returned
+    # timestamp. At a clipped TTS segment tail those two rounding errors can add,
+    # so accept at most two model timestamp steps and clamp to the WAV boundary.
+    return math.ceil(value * 2)
 
 
 def _wav_duration_ms(payload: bytes) -> int:

@@ -1,0 +1,43 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "voice-pipeline-score-chunk"
+version = "0.1.0"
+description = "CPU-only Celery worker for scoring completed chunks"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "boto3>=1.35,<2",
+  "celery[redis]>=5.4,<6",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic>=2.10,<3",
+  "python-dotenv>=1.0,<2",
+  "voice-pipeline-score-completed-chunks",
+  "voice-pipeline-task-contracts",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.3,<9"]
+
+[project.scripts]
+score-chunk-worker = "voice_pipeline_score_chunk.worker:main"
+
+[tool.uv.sources]
+voice-pipeline-score-completed-chunks = { path = "../../tools/score-completed-chunks" }
+voice-pipeline-task-contracts = { path = "../../packages/task-contracts" }
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.uv]
+required-environments = [
+  "sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "sys_platform == 'linux' and platform_machine == 'aarch64'",
+]
+
+[tool.uv.build-backend]
+module-name = "voice_pipeline_score_chunk"
+module-root = "src"

@@ -16,10 +16,24 @@
 \usepackage{float}
 \usepackage{amsmath}
 \usepackage{xspace}
+\usepackage{fancyhdr}
 
 \hypersetup{colorlinks=true,allcolors=blue!55!black}
 \setlist{nosep,leftmargin=*}
 \captionsetup{font=small,labelfont=bf}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\footnotesize Preprint}
+\fancyfoot[R]{\footnotesize\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\footnotesize Preprint}%
+  \fancyfoot[R]{\footnotesize\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+}
 \makeatletter
 \renewcommand\@seccntformat[1]{\csname the#1\endcsname\hspace{0.65em}}
 \renewcommand\subsection{%
@@ -39,7 +53,12 @@
   {\fontsize{15.5}{18.5}\selectfont\bfseries through Source-Faithful Reconstruction}\\[-0.04em]
   {\fontsize{15.5}{18.5}\selectfont\bfseries and Conversation-Grounded Expansion}
 }
-\author{Richard Yucheng He, Baodong Cao, Chen Xu, Yihang Liu, Tairan Chen}
+\author{%
+  Richard Yucheng He, Baodong Cao, Chen Xu, Yihang Liu, Tairan Chen\\[0.65em]
+  {\large\bfseries AveraLabs}\\[0.2em]
+  {\small\ttfamily\{richard, baodong.cao, chen.xu, robbie.liu,
+  terrence.chen\}@averalabs.com}%
+}
 \date{}
 
 \begin{document}

@@ -17,6 +17,7 @@ workers. It has no Celery dependency and does not import task implementations.
 | `PERSONA_CHUNK` | `persona_chunk` | `persona_chunk` | `chunk_id`: UUID string |
 | `RECONSTRUCT_CHUNK` | `reconstruct_chunk` | `reconstruct_chunk` | `chunk_id`: UUID string |
 | `EXTEND_CHUNK` | `extend_chunk` | `extend_chunk` | `chunk_id`: UUID string |
+| `SCORE_CHUNK` | `score_chunk` | `score_chunk` | `chunk_id`: UUID string |
 
 The diarization task publishes `QUALITY_FILTER_AUDIO_PART` only after its
 durable artifact URI and `diarized` status commit successfully.
@@ -26,6 +27,8 @@ durable completion commit.
 Transcription publishes `PERSONA_CHUNK` after its durable completion commit.
 Persona publishes `RECONSTRUCT_CHUNK` after its durable completion commit.
 Reconstruction publishes `EXTEND_CHUNK` after its durable completion commit.
+`SCORE_CHUNK` is an independently scheduled terminal evaluation task and does
+not publish a successor.
 
 Publishers use `voice-pipeline-task-client`, which applies the registered
 queue, UUID serialization, bounded retry policy, publish confirmation, and safe

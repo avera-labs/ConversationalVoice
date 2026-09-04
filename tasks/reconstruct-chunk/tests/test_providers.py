@@ -12,11 +12,10 @@ from voice_pipeline_reconstruct_chunk.providers import (
 
 
 class Response:
-    status_code = 200
-
-    def __init__(self, *, data=None, content=b""):
+    def __init__(self, *, data=None, content=b"", status_code=200):
         self.data = data
         self.content = content
+        self.status_code = status_code
 
     def json(self):
         return self.data
@@ -42,7 +41,7 @@ class SequenceTransport:
         return self.responses.pop(0)
 
 
-def test_audio_tags_uses_configured_mimo_model_and_wav(policy):
+def test_audio_tags_uses_configured_gemini_model_and_wav(policy):
     transport = Transport(
         Response(
             data={
@@ -64,7 +63,7 @@ def test_audio_tags_uses_configured_mimo_model_and_wav(policy):
         policy.audio_tags, "key", transport=transport
     ).analyze(b"wav", "hello")
     payload = transport.calls[0][1]["json"]
-    assert payload["model"] == "xiaomi/mimo-v2.5"
+    assert payload["model"] == "google/gemini-3.7-flash"
     schema = payload["response_format"]["json_schema"]["schema"]
     schema_json = json.dumps(schema, sort_keys=True, separators=(",", ":"))
     assert set(schema["properties"]) == {
@@ -77,7 +76,8 @@ def test_audio_tags_uses_configured_mimo_model_and_wav(policy):
         json.dumps(sorted(AUDIO_TAGS), ensure_ascii=False, separators=(",", ":"))
         in payload["messages"][0]["content"]
     )
-    assert payload["reasoning"] == {"effort": "none"}
+    assert payload["reasoning"] == {"effort": "low"}
+    assert payload["max_tokens"] == 2048
     assert payload["provider"] == {
         "require_parameters": True,
         "allow_fallbacks": True,
@@ -91,6 +91,60 @@ def test_audio_tags_uses_configured_mimo_model_and_wav(policy):
         "text_with_audio_tags": "[sighs]hello",
         "instruction": "Speak with audible fatigue.",
     }
+
+
+@pytest.mark.parametrize(
+    ("source_text", "provider_text", "repaired_text"),
+    [
+        (
+            "我想拍你我说好导演就坐在那边想了很久，",
+            "[calm]我想拍你，我说好，导演就坐在那边想了很久，",
+            "[calm]我想拍你我说好导演就坐在那边想了很久，",
+        ),
+        ("你好 世界", "你好， [calm]世界", "你好 [calm]世界"),
+    ],
+)
+def test_audio_annotation_auto_repairs_punctuation_and_whitespace(
+    policy, caplog, source_text, provider_text, repaired_text
+):
+    transport = Transport(
+        Response(
+            data={
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps(
+                                {
+                                    "text_with_audio_tags": provider_text,
+                                    "instruction": "Speak calmly.",
+                                }
+                            )
+                        }
+                    }
+                ],
+                "usage": {},
+            }
+        )
+    )
+
+    annotation, _usage = AudioTagsClient(
+        policy.audio_tags, "key", transport=transport
+    ).analyze(b"wav", source_text)
+
+    assert len(transport.calls) == 1
+    assert annotation["text"] == source_text
+    assert annotation["text_with_audio_tags"] == repaired_text
+    repair_log = next(
+        record
+        for record in caplog.records
+        if record.getMessage().startswith(
+            "openrouter_audio_tags.derived_text_auto_repaired"
+        )
+    )
+    assert repair_log.levelname == "WARNING"
+    assert f"expected_text={source_text!r}" in repair_log.getMessage()
+    assert f"original_text_with_audio_tags={provider_text!r}" in repair_log.getMessage()
+    assert f"repaired_text_with_audio_tags={repaired_text!r}" in repair_log.getMessage()
 
 
 def test_audio_tags_reports_safe_empty_content_shape(policy):
@@ -119,7 +173,49 @@ def test_audio_tags_reports_safe_empty_content_shape(policy):
         )
 
 
-def test_audio_annotation_retries_with_derived_text_failure_reason(policy):
+def test_audio_tags_logs_openrouter_400_message(policy, caplog):
+    transport = Transport(
+        Response(
+            status_code=400,
+            data={
+                "error": {
+                    "message": "Invalid reasoning effort",
+                    "metadata": {
+                        "raw": json.dumps(
+                            {
+                                "error": {
+                                    "message": "effort none is not supported"
+                                }
+                            }
+                        )
+                    },
+                }
+            },
+        )
+    )
+
+    with pytest.raises(
+        OpenRouterProviderError,
+        match="^openrouter_audio_tags_http_400$",
+    ):
+        AudioTagsClient(policy.audio_tags, "key", transport=transport).analyze(
+            b"wav", "hello"
+        )
+
+    error_log = next(
+        record
+        for record in caplog.records
+        if record.getMessage().startswith("openrouter_audio_tags.http_error")
+    )
+    assert error_log.levelname == "ERROR"
+    assert "status=400" in error_log.getMessage()
+    assert (
+        "provider_message='Invalid reasoning effort | effort none is not supported'"
+        in error_log.getMessage()
+    )
+
+
+def test_audio_annotation_retries_with_derived_text_failure_reason(policy, caplog):
     invalid = Response(
         data={
             "choices": [
@@ -161,9 +257,67 @@ def test_audio_annotation_retries_with_derived_text_failure_reason(policy):
     ).analyze(b"wav", "hello")
 
     assert annotation["text_with_audio_tags"] == "[sighs]hello"
+    assert len(transport.calls) == 2
     retry_text = transport.calls[1][1]["json"]["messages"][1]["content"][1]["text"]
     assert "CORRECTION_REQUIRED" in retry_text
     assert "reason_code: derived_text_mismatch" in retry_text
+    mismatch = next(
+        record
+        for record in caplog.records
+        if record.getMessage().startswith(
+            "openrouter_audio_tags.derived_text_mismatch"
+        )
+    )
+    assert mismatch.levelname == "WARNING"
+    assert "attempt=1/3" in mismatch.getMessage()
+    assert "difference_index=0" in mismatch.getMessage()
+    assert "expected_character='h'(U+0068)" in mismatch.getMessage()
+    assert "actual_character='c'(U+0063)" in mismatch.getMessage()
+    assert "expected_text='hello'" in mismatch.getMessage()
+    assert "actual_derived_text='changed'" in mismatch.getMessage()
+    assert "text_with_audio_tags='[sighs]changed'" in mismatch.getMessage()
+
+
+def test_final_derived_text_mismatch_is_logged_as_error(policy, caplog):
+    invalid = Response(
+        data={
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "text_with_audio_tags": "hallo[calm]",
+                                "instruction": "Speak calmly.",
+                            }
+                        )
+                    }
+                }
+            ],
+            "usage": {},
+        }
+    )
+    one_attempt = policy.audio_tags.model_copy(update={"max_attempts": 1})
+
+    with pytest.raises(
+        OpenRouterProviderError,
+        match="^openrouter_audio_tags_derived_text_mismatch$",
+    ):
+        AudioTagsClient(one_attempt, "key", transport=Transport(invalid)).analyze(
+            b"wav", "hello"
+        )
+
+    mismatch = next(
+        record
+        for record in caplog.records
+        if record.getMessage().startswith(
+            "openrouter_audio_tags.derived_text_mismatch"
+        )
+    )
+    assert mismatch.levelname == "ERROR"
+    assert "attempt=1/1" in mismatch.getMessage()
+    assert "difference_index=1" in mismatch.getMessage()
+    assert "expected_character='e'(U+0065)" in mismatch.getMessage()
+    assert "actual_character='a'(U+0061)" in mismatch.getMessage()
 
 
 def test_tts_uses_fish_audio_with_audio_reference_and_no_asr(policy):

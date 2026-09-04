@@ -1,0 +1,53 @@
+[build-system]
+requires = ["uv_build>=0.11.0,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "voice-pipeline-score-completed-chunks"
+version = "0.3.0"
+description = "Acoustic, speaker, audio-tag, and interaction scoring for completed chunks"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "boto3>=1.35,<2",
+  "librosa>=0.11,<0.12",
+  "numpy>=1.26,<3",
+  "onnxruntime>=1.20,<2",
+  "psycopg[binary]>=3.2,<4",
+  "python-dotenv>=1.0,<2",
+  "requests>=2.32,<3",
+  "soundfile>=0.13,<1",
+  "torch>=2.9,<2.10",
+  "torchaudio>=2.9,<2.10",
+  "torchmetrics>=1.8,<1.9",
+  "transformers==4.57.6",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.3,<9"]
+
+[project.scripts]
+score-completed-chunks = "voice_pipeline_score_completed_chunks.cli:main"
+score-conversation-quality = "voice_pipeline_score_completed_chunks.conversation_quality_cli:main"
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchaudio = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+markers = [
+  "integration: requires PostgreSQL and S3-compatible object storage",
+  "model_smoke: downloads and runs the real metric models",
+  "provider_smoke: sends a paid OpenRouter ASR request",
+]
+
+[tool.uv.build-backend]
+module-name = "voice_pipeline_score_completed_chunks"
+module-root = "src"

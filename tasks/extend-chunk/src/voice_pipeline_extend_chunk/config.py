@@ -109,6 +109,8 @@ class TimelinePolicy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
     turn_gap_ms: int = Field(ge=0, le=5000)
     overlap_ms: int = Field(gt=0, le=5000)
+    overlap_min_anchor_ms: int = Field(ge=0, le=5000)
+    overlap_min_anchor_fraction: float = Field(ge=0.5, lt=1.0)
     same_speaker_gap_ms: int = Field(ge=0, le=1000)
 
 
@@ -127,7 +129,7 @@ class TaskPolicy(BaseModel):
 
 class Policy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
-    config_version: Literal["dialogue-extension-v1"]
+    config_version: Literal["dialogue-extension-v3-duration-aware-overlap"]
     openrouter: OpenRouterPolicy
     fish_audio: FishAudioPolicy
     forced_alignment: ForcedAlignmentPolicy

@@ -1,0 +1,14 @@
+config_version = "chunk-score-v2"
+
+[asr]
+model = "qwen/qwen3-asr-1.7b"
+timeout_seconds = 120
+max_attempts = 3
+
+[audio_tag]
+model = "google/gemini-3.7-flash"
+timeout_seconds = 120
+workers = 4
+
+[task]
+model_cache_dir = "~/.cache/conversational-voice/metrics"

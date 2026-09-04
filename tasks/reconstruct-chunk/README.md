@@ -15,12 +15,12 @@ a two-speaker chunk carrying any canonical language identifier before dialogue e
 For every utterance in the canonical chunk transcript, the worker slices the
 mapped separated track and builds an audio reference from a fixed clean speaker
 sample, exactly one second of PCM silence, and that separated utterance. It does
-not call ASR. The existing transcript supplies immutable source text. MiMo
+not call ASR. The existing transcript supplies immutable source text. Gemini
 inserts approved tags at their audible positions in `text_with_audio_tags` and
 produces one actor-facing `instruction`; removing the tags must reproduce the
 source text exactly.
 
-The default audio-tag model is `xiaomi/mimo-v2.5`; the default voice-cloning
+The default audio-tag model is `google/gemini-3.7-flash`; the default voice-cloning
 model is `fish-audio/s2.1-pro`. These and the forced aligner are configured in
 `resources/default.toml`.
 
@@ -41,10 +41,17 @@ automatically selects only endpoints that support the requested parameters,
 including structured output. Provider fallbacks remain enabled. Runtime
 validation remains authoritative as a final contract check.
 
-MiMo reasoning is disabled by default for this bounded extraction request so
-the completion budget is reserved for the JSON result. Invalid-response errors
-report only categorical response shape, finish reason, and whether reasoning
-was present; response content is never included.
+Gemini uses its lowest supported reasoning effort for this bounded extraction
+request. HTTP errors log OpenRouter's error message while the raised exception
+remains a stable status code. Invalid-response errors report only categorical
+response shape, finish reason, and whether reasoning was present. When otherwise
+valid tagged text does not reproduce the canonical source text, the worker logs
+the attempt number, first differing character, and the full expected, derived,
+and tagged text. Differences limited to Unicode
+punctuation and whitespace are repaired against the canonical source text while
+preserving tag order and corresponding boundaries. Other differences are sent
+back to the model for correction. The raised provider error remains a
+content-free categorical code.
 
 Outputs are deterministic:
 

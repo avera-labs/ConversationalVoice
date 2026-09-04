@@ -67,6 +67,12 @@ EXTEND_CHUNK = TaskContract(
     uuid_argument="chunk_id",
 )
 
+SCORE_CHUNK = TaskContract(
+    name="score_chunk",
+    queue="score_chunk",
+    uuid_argument="chunk_id",
+)
+
 ALL_TASKS = (
     SPLIT_RAW_AUDIO_INTO_PARTS,
     DIARIZE_AUDIO_PART,
@@ -77,6 +83,7 @@ ALL_TASKS = (
     PERSONA_CHUNK,
     RECONSTRUCT_CHUNK,
     EXTEND_CHUNK,
+    SCORE_CHUNK,
 )
 
 

@@ -74,6 +74,7 @@ current queue has the same name as its task.
 | `persona_chunk` | `chunk_id` | `reconstruct_chunk` for `en` and `zh` |
 | `reconstruct_chunk` | `chunk_id` | `extend_chunk` for `en` and `zh` |
 | `extend_chunk` | `chunk_id` | terminal |
+| `score_chunk` | `chunk_id` | terminal evaluation; no successor |
 
 ## Persistence ownership
 
@@ -88,6 +89,7 @@ current queue has the same name as its task.
 | persona | `chunks` | Persist the persona document and `final_results.persona`. |
 | reconstruction | `chunks` | Persist `final_results.reconstruction` and publish extension. |
 | extension | `chunks` | Persist `final_results.dialogue_extension` and complete the chunk. |
+| evaluation | `chunks` | Preserve `completed`; persist only the `final_results.evaluation` artifact descriptor. |
 
 Workers claim eligible rows transactionally before expensive work. Technical
 errors use `failed`; separation, reconstruction, and extension may instead use terminal
@@ -101,7 +103,7 @@ delivery converge on the same state.
 ## Reconstruction and dialogue extension stages
 
 `RECONSTRUCT_CHUNK` rebuilds each source utterance from the separated speaker
-track. Its default audio-tag model is `xiaomi/mimo-v2.5`, and its default TTS
+track. Its default audio-tag model is `google/gemini-3.7-flash`, and its default TTS
 model is `fish-audio/s2.1-pro`. It conditions TTS on a fixed speaker sample,
 one second of silence, and the matching separated utterance without using ASR.
 It then adapts source-relative pauses and overlap to generated durations and
@@ -118,6 +120,15 @@ It writes deterministic `script.json`, `transcript.json`, `speaker-0.wav`, and
 `speaker-1.wav` extension artifacts without concatenating the source chunk.
 Their identities and generation metadata are committed in
 `chunks.final_results.dialogue_extension` with status `completed`.
+
+`SCORE_CHUNK` is a terminal, independently dispatched evaluation task for an
+already `completed` chunk. It never changes the pipeline status and never
+publishes a successor. NISQA, DNSMOS, WavLM speaker embeddings, VAD, and event
+metrics run locally on CPU. CER/WER transcription uses OpenRouter's dedicated
+speech-to-text endpoint (default `qwen/qwen3-asr-1.7b`) and does not load local
+ASR model weights. Full reports remain in object storage; the database stores
+only their content identities and reproducibility fingerprints under
+`final_results.evaluation`.
 
 ## Project layout principles
 

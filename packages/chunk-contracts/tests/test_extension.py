@@ -166,16 +166,15 @@ def test_script_rejects_invalid_utterance_values(field, value):
         )
 
 
-def test_script_rejects_dialogue_overlap():
+def test_script_accepts_brief_dialogue_overlap_for_interruption():
     document = script()
     document["utterances"][1]["type"] = "dialogue"
-    with pytest.raises(ChunkContractError):
-        parse_dialogue_extension_document(
-            document,
-            speaker_mapping=(4, 7),
-            model_id="xiaomi/mimo-v2.5",
-            target_duration_ms=120000,
-        )
+    assert parse_dialogue_extension_document(
+        document,
+        speaker_mapping=(4, 7),
+        model_id="xiaomi/mimo-v2.5",
+        target_duration_ms=120000,
+    )["utterances"][1]["placement"] == "overlap_previous"
 
 
 def test_script_enforces_configured_utterance_count():

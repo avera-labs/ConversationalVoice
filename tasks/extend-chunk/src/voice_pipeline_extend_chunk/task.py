@@ -14,6 +14,7 @@ from voice_pipeline_chunk_contracts import (
     parse_dialogue_extension_transcript,
     parse_persona_document,
     parse_persona_result,
+    parse_reconstruction_transcript,
     parse_separation_result,
     parse_transcription_artifact,
     parse_transcription_result,
@@ -23,6 +24,7 @@ from voice_pipeline_task_contracts import EXTEND_CHUNK
 from .artifacts import canonical_json_bytes, write_canonical_json
 from .audio import assemble_tracks, read_wav_bytes, slice_wav_bytes
 from .errors import safe_error
+from .interaction import derive_interaction_targets
 from .reference import (
     SpeakerReferenceUnavailable,
     longest_pure_interval,
@@ -83,9 +85,16 @@ class Handler:
                 mapping,
                 transcript_identity,
                 persona_identity,
+                reconstruction_identity,
             ) = self._validate_upstream(claim)
             transcript = self._download_transcript(
                 claim, transcript_identity, mapping, workspace
+            )
+            reconstruction_transcript = self._download_reconstruction_transcript(
+                claim, reconstruction_identity, mapping, workspace
+            )
+            interaction_targets = derive_interaction_targets(
+                reconstruction_transcript, self.policy.dialogue
             )
             references, manifest_identity = self._download_references(
                 claim, snapshot, separation, mapping, workspace
@@ -101,6 +110,7 @@ class Handler:
                 transcript,
                 self.policy.dialogue,
                 language=claim.lang,
+                interaction_targets=interaction_targets,
             )
             script = self._build_script(wire, usage, mapping, claim.lang)
             parse_dialogue_extension_document(
@@ -290,7 +300,25 @@ class Handler:
             artifact=persona_identity,
             expected_language=claim.lang,
         )
-        return snapshot, separation, mapping, transcript_identity, persona_identity
+        reconstruction_artifacts = claim.reconstruction.get("artifacts")
+        if not isinstance(reconstruction_artifacts, dict):
+            raise TypeError("invalid_reconstruction_input")
+        reconstruction_artifact = reconstruction_artifacts.get("transcript")
+        reconstruction_identity = self._identity_tuple(
+            reconstruction_artifact, "reconstruction transcript"
+        )
+        if reconstruction_identity[0] != self.storage.reconstruction_transcript_uri(
+            claim.chunk_audio_uri
+        ):
+            raise ValueError("reconstruction transcript URI is invalid")
+        return (
+            snapshot,
+            separation,
+            mapping,
+            transcript_identity,
+            persona_identity,
+            reconstruction_identity,
+        )
 
     def _download_transcript(self, claim, identity, mapping, workspace):
         self.storage.download(identity[0], workspace.transcript)
@@ -309,6 +337,26 @@ class Handler:
         )
         if canonical_json_bytes(document) != payload:
             raise RuntimeError("input_transcript_is_not_canonical")
+        return document
+
+    def _download_reconstruction_transcript(
+        self, claim, identity, mapping, workspace
+    ):
+        self.storage.download(identity[0], workspace.reconstruction_transcript)
+        payload = workspace.reconstruction_transcript.read_bytes()
+        if (
+            len(payload) != identity[1]
+            or hashlib.sha256(payload).hexdigest() != identity[2]
+        ):
+            raise RuntimeError("reconstruction_transcript_identity_mismatch")
+        document = parse_reconstruction_transcript(
+            json.loads(payload),
+            speaker_mapping=mapping,
+            source_duration_ms=claim.duration_ms,
+            expected_language=claim.lang,
+        )
+        if canonical_json_bytes(document) != payload:
+            raise RuntimeError("reconstruction_transcript_is_not_canonical")
         return document
 
     def _download_references(self, claim, snapshot, separation, mapping, workspace):
@@ -583,19 +631,39 @@ class Handler:
         if (
             dialogue["backend"] != "openrouter"
             or not self._model_id(dialogue["id"])
-            or dialogue["config_version"] != "dialogue-extension-v1"
+            or dialogue["config_version"]
+            not in {
+                "dialogue-extension-v1",
+                "dialogue-extension-v2-interaction-matched",
+                "dialogue-extension-v3-duration-aware-overlap",
+            }
             or reference_asr["backend"] != "openrouter"
             or reference_asr["id"] != "fish-audio/transcribe-1"
-            or reference_asr["config_version"] != "dialogue-extension-v1"
+            or reference_asr["config_version"]
+            not in {
+                "dialogue-extension-v1",
+                "dialogue-extension-v2-interaction-matched",
+                "dialogue-extension-v3-duration-aware-overlap",
+            }
             or tts["backend"] != "openrouter"
             or not self._canonical_string(tts["id"])
-            or tts["config_version"] != "dialogue-extension-v1"
+            or tts["config_version"]
+            not in {
+                "dialogue-extension-v1",
+                "dialogue-extension-v2-interaction-matched",
+                "dialogue-extension-v3-duration-aware-overlap",
+            }
             or forced_alignment["backend"] != "huggingface"
             or forced_alignment["id"] != "Qwen/Qwen3-ForcedAligner-0.6B"
             or not isinstance(forced_alignment["revision"], str)
             or re.fullmatch(r"[0-9a-f]{40}", forced_alignment["revision"])
             is None
-            or forced_alignment["config_version"] != "dialogue-extension-v1"
+            or forced_alignment["config_version"]
+            not in {
+                "dialogue-extension-v1",
+                "dialogue-extension-v2-interaction-matched",
+                "dialogue-extension-v3-duration-aware-overlap",
+            }
         ):
             raise ValueError("extension model identity is invalid")
         if current_policy and (

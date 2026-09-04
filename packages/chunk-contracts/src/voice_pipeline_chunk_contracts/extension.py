@@ -448,8 +448,6 @@ def _utterance(value: object, index: int, *, timed: bool) -> dict[str, Any]:
             raise ChunkContractError("paralinguistic utterance requires an audio tag")
     elif not text:
         raise ChunkContractError("spoken utterance text must not be empty")
-    if placement == "overlap_previous" and utterance_type == "dialogue":
-        raise ChunkContractError("ordinary dialogue must not overlap")
     result = dict(item)
     if timed:
         start = _integer(item["start_ms"], "start_ms")

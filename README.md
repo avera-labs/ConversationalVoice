@@ -176,6 +176,7 @@ under deterministic keys in the configured bucket.
 | Speaker profile (`persona_chunk`) | Transcribed chunk | Structured scene and speaker-profile document |
 | Source reconstruction (`reconstruct_chunk`) | Profile-complete chunk | Reconstructed transcript and two source-faithful speaker tracks |
 | Dialogue expansion (`extend_chunk`) | Reconstruction-complete chunk | New dialogue script, transcript, and two synthesized tracks |
+| Terminal evaluation (`score_chunk`) | Completed chunk | CPU-only metric artifacts and `final_results.evaluation` descriptor |
 
 Task names, queue names, UUID arguments, and successor relationships are
 defined centrally in

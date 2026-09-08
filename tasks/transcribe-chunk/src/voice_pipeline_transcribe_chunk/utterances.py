@@ -115,7 +115,8 @@ def normalize_words(
         local_start = round(item.start_seconds * 1000)
         local_end = round(item.end_seconds * 1000)
         if (
-            not 0 <= local_start < local_end
+            not 0 <= item.start_seconds <= item.end_seconds
+            or not 0 <= local_start <= local_end
             or local_start >= slice_duration_ms
             or local_end > slice_duration_ms + end_tolerance_ms
         ):
@@ -125,6 +126,10 @@ def normalize_words(
                 f"slice_duration_ms={slice_duration_ms})"
             )
         local_end = min(local_end, slice_duration_ms)
+        # TDT may emit a point timestamp for a short word. Preserve it as the
+        # smallest interval accepted by the transcription artifact contract.
+        if local_end == local_start:
+            local_end += 1
         start = offset_ms + local_start
         end = offset_ms + local_end
         if end - start > policy.word_max_duration_ms:

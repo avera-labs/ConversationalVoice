@@ -1,4 +1,4 @@
-config_version = "dialogue-extension-v1"
+config_version = "dialogue-extension-v3-duration-aware-overlap"
 
 [openrouter]
 model = "google/gemini-3.7-flash"
@@ -41,6 +41,8 @@ max_utterances = 40
 [timeline]
 turn_gap_ms = 250
 overlap_ms = 400
+overlap_min_anchor_ms = 600
+overlap_min_anchor_fraction = 0.60
 same_speaker_gap_ms = 80
 
 [task]

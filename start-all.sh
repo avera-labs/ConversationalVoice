@@ -14,6 +14,7 @@ TRANSCRIBE_CHUNK_ZH_TASK_DIR="${PROJECT_ROOT}/tasks/transcribe-chunk-zh"
 PERSONA_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/persona-chunk"
 RECONSTRUCT_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/reconstruct-chunk"
 EXTEND_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/extend-chunk"
+SCORE_CHUNK_TASK_DIR="${PROJECT_ROOT}/tasks/score-chunk"
 
 HTTP_HOST="${HTTP_HOST:-0.0.0.0}"
 HTTP_PORT="${HTTP_PORT:-8000}"
@@ -50,7 +51,7 @@ ensure_known_task_directories() {
     [[ -d "${task_dir}" ]] || continue
     task_name="${task_dir##*/}"
     case "${task_name}" in
-      split-raw-audio-into-parts | diarize-audio-part | quality-filter-audio-part | separate-chunk | transcribe-chunk | transcribe-chunk-zh | persona-chunk | reconstruct-chunk | extend-chunk) ;;
+      split-raw-audio-into-parts | diarize-audio-part | quality-filter-audio-part | separate-chunk | transcribe-chunk | transcribe-chunk-zh | persona-chunk | reconstruct-chunk | extend-chunk | score-chunk) ;;
       *) die "No start command is registered for tasks/${task_name}." ;;
     esac
   done
@@ -103,6 +104,7 @@ expected = {
     "persona_chunk",
     "reconstruct_chunk",
     "extend_chunk",
+    "score_chunk",
 }
 actual = {contract.name for contract in ALL_TASKS}
 if actual != expected:
@@ -154,7 +156,7 @@ fi
 command -v uv >/dev/null 2>&1 || die "uv is not installed or is not on PATH."
 [[ -f "${ROOT_ENV}" ]] || die "Missing OSS root environment file: ${ROOT_ENV}"
 
-for workdir in "${INGEST_API_DIR}" "${SPLIT_TASK_DIR}" "${DIARIZATION_TASK_DIR}" "${QUALITY_FILTER_TASK_DIR}" "${SEPARATE_CHUNK_TASK_DIR}" "${TRANSCRIBE_CHUNK_TASK_DIR}" "${TRANSCRIBE_CHUNK_ZH_TASK_DIR}" "${PERSONA_CHUNK_TASK_DIR}" "${RECONSTRUCT_CHUNK_TASK_DIR}" "${EXTEND_CHUNK_TASK_DIR}"; do
+for workdir in "${INGEST_API_DIR}" "${SPLIT_TASK_DIR}" "${DIARIZATION_TASK_DIR}" "${QUALITY_FILTER_TASK_DIR}" "${SEPARATE_CHUNK_TASK_DIR}" "${TRANSCRIBE_CHUNK_TASK_DIR}" "${TRANSCRIBE_CHUNK_ZH_TASK_DIR}" "${PERSONA_CHUNK_TASK_DIR}" "${RECONSTRUCT_CHUNK_TASK_DIR}" "${EXTEND_CHUNK_TASK_DIR}" "${SCORE_CHUNK_TASK_DIR}"; do
   [[ -d "${workdir}" ]] || die "Missing service directory: ${workdir}"
 done
 ensure_known_task_directories
@@ -169,6 +171,7 @@ ensure_env_link "${TRANSCRIBE_CHUNK_ZH_TASK_DIR}"
 ensure_env_link "${PERSONA_CHUNK_TASK_DIR}"
 ensure_env_link "${RECONSTRUCT_CHUNK_TASK_DIR}"
 ensure_env_link "${EXTEND_CHUNK_TASK_DIR}"
+ensure_env_link "${SCORE_CHUNK_TASK_DIR}"
 
 sync_local_packages \
   "${INGEST_API_DIR}" \
@@ -227,6 +230,10 @@ sync_local_packages \
   "${EXTEND_CHUNK_TASK_DIR}" \
   voice-pipeline-chunk-contracts \
   voice-pipeline-models \
+  voice-pipeline-task-contracts
+sync_local_packages \
+  "${SCORE_CHUNK_TASK_DIR}" \
+  voice-pipeline-score-completed-chunks \
   voice-pipeline-task-contracts
 verify_task_registry
 
@@ -369,6 +376,20 @@ start_process \
   --without-mingle \
   --queues=extend_chunk \
   --hostname=extend-chunk@%h
+
+start_process \
+  "score_chunk worker" \
+  "${SCORE_CHUNK_TASK_DIR}" \
+  celery \
+  -A voice_pipeline_score_chunk.worker:app \
+  worker \
+  --loglevel="${CELERY_LOG_LEVEL}" \
+  --pool=solo \
+  --concurrency=1 \
+  --without-gossip \
+  --without-mingle \
+  --queues=score_chunk \
+  --hostname=score-chunk@%h
 
 printf 'All services are running. Press Ctrl-C to stop them.\n'
 

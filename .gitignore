@@ -52,3 +52,12 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+output/
+outputs/
+tmp/
+paper/paper.aux
+paper/paper.fdb_latexmk
+paper/paper.fls
+paper/paper.out
+paper/paper.pdf
+paper/paper.synctex.gz

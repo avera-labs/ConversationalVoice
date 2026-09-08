@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from typing import Any
 
 import httpx
-from voice_pipeline_chunk_contracts import TaggedTextError, parse_text_with_audio_tags
 
 from .prompt import build_response_schema, build_system_prompt, build_user_prompt
+from .response import CorrectionNeeded, normalize_response
 
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
+logger = logging.getLogger(__name__)
 
 
 class OpenRouterError(RuntimeError):
@@ -25,13 +27,23 @@ class OpenRouterClient:
         self.sleeper = sleeper
 
     def extend(
-        self, persona: dict, transcript: dict, dialogue_policy, language: str = "en"
+        self,
+        persona: dict,
+        transcript: dict,
+        dialogue_policy,
+        language: str = "en",
+        interaction_targets=None,
     ):
         last_error: Exception | None = None
         correction = None
         for attempt in range(1, self.policy.max_attempts + 1):
             payload = self._payload(
-                persona, transcript, dialogue_policy, language, correction=correction
+                persona,
+                transcript,
+                dialogue_policy,
+                language,
+                correction=correction,
+                interaction_targets=interaction_targets,
             )
             try:
                 response = self.transport.post(
@@ -56,7 +68,9 @@ class OpenRouterClient:
                 except (json.JSONDecodeError, ValueError) as exc:
                     raise _InvalidResponse("openrouter_response_not_json") from exc
                 wire, usage = self._parse_response(data)
-                return _normalize_wire(wire, dialogue_policy), usage
+                return normalize_response(
+                    wire, dialogue_policy, interaction_targets=interaction_targets
+                ), usage
             except _Retryable as exc:
                 last_error = exc.error
                 correction = _correction(exc.error.args[0], "response")
@@ -66,8 +80,16 @@ class OpenRouterClient:
             except _InvalidResponse as exc:
                 last_error = OpenRouterError(exc.code)
                 correction = _correction(exc.code, "response")
-            except _CorrectionNeeded as exc:
+            except CorrectionNeeded as exc:
                 last_error = OpenRouterError(exc.code)
+                logger.warning(
+                    "OpenRouter dialogue response rejected: reason=%s location=%s "
+                    "attempt=%d/%d",
+                    exc.code,
+                    exc.location,
+                    attempt,
+                    self.policy.max_attempts,
+                )
                 correction = {
                     "reason_code": exc.code,
                     "location": exc.location,
@@ -84,8 +106,11 @@ class OpenRouterClient:
         dialogue_policy,
         language: str,
         correction: dict[str, str] | None = None,
+        interaction_targets=None,
     ):
-        schema = build_response_schema(dialogue_policy.min_utterances)
+        schema = build_response_schema(
+            dialogue_policy.min_utterances, dialogue_policy.max_utterances
+        )
         return {
             "model": self.policy.model,
             "messages": [
@@ -98,7 +123,11 @@ class OpenRouterClient:
                 {
                     "role": "user",
                     "content": build_user_prompt(
-                        persona, transcript, language=language, correction=correction
+                        persona,
+                        transcript,
+                        language=language,
+                        correction=correction,
+                        interaction_targets=interaction_targets,
                     ),
                 },
             ],
@@ -236,137 +265,6 @@ class _Retryable(Exception):
 class _InvalidResponse(Exception):
     def __init__(self, code: str):
         self.code = code
-
-
-class _CorrectionNeeded(Exception):
-    def __init__(self, code: str, location: str, requirement: str):
-        self.code = code
-        self.location = location
-        self.requirement = requirement
-
-
-_WIRE_FIELDS = {
-    "utterance_index",
-    "speaker_id",
-    "text_with_audio_tags",
-    "instruction",
-    "type",
-    "placement",
-}
-
-
-def _normalize_wire(wire: object, policy) -> dict:
-    if not isinstance(wire, dict) or set(wire) != {"utterances"}:
-        raise _CorrectionNeeded(
-            "response_shape_invalid",
-            "response",
-            "Return exactly one object containing only the utterances array.",
-        )
-    utterances = wire["utterances"]
-    if (
-        not isinstance(utterances, list)
-        or not policy.min_utterances <= len(utterances) <= policy.max_utterances
-    ):
-        raise _CorrectionNeeded(
-            "utterance_count_invalid",
-            "utterances",
-            f"Return between {policy.min_utterances} and {policy.max_utterances} utterances.",
-        )
-    normalized = []
-    for index, raw in enumerate(utterances):
-        location = f"utterance_index={index}"
-        if not isinstance(raw, dict):
-            raise _CorrectionNeeded(
-                "response_shape_invalid", location, "Every utterance must be an object."
-            )
-        if "text" in raw:
-            raise _CorrectionNeeded(
-                "forbidden_text_field",
-                location,
-                "Do not output text; output text_with_audio_tags and let the application derive text.",
-            )
-        missing = _WIRE_FIELDS - set(raw)
-        if missing:
-            raise _CorrectionNeeded(
-                "required_field_missing",
-                location,
-                "Include every required utterance field.",
-            )
-        if set(raw) != _WIRE_FIELDS:
-            raise _CorrectionNeeded(
-                "response_shape_invalid",
-                location,
-                "Do not include fields outside the required utterance schema.",
-            )
-        if (
-            isinstance(raw["utterance_index"], bool)
-            or not isinstance(raw["utterance_index"], int)
-            or raw["utterance_index"] != index
-        ):
-            raise _CorrectionNeeded(
-                "utterance_index_invalid",
-                location,
-                "utterance_index must start at zero and increase by one without gaps.",
-            )
-        try:
-            tagged = parse_text_with_audio_tags(raw["text_with_audio_tags"])
-        except TaggedTextError as exc:
-            raise _CorrectionNeeded(exc.code, location, exc.requirement) from exc
-        instruction = raw["instruction"]
-        if (
-            not isinstance(instruction, str)
-            or not instruction
-            or instruction != instruction.strip()
-            or "[" in instruction
-            or "]" in instruction
-        ):
-            raise _CorrectionNeeded(
-                "instruction_invalid",
-                location,
-                "instruction must be one non-empty concise sentence with no square-bracket tags.",
-            )
-        utterance_type = raw["type"]
-        placement = raw["placement"]
-        speaker_id = raw["speaker_id"]
-        if (
-            isinstance(speaker_id, bool)
-            or not isinstance(speaker_id, int)
-            or speaker_id not in {0, 1}
-            or utterance_type not in {"dialogue", "backchannel", "paralinguistic"}
-            or placement not in {"sequential", "overlap_previous"}
-            or (utterance_type == "dialogue" and placement != "sequential")
-            or (utterance_type != "paralinguistic" and not tagged.text)
-            or (utterance_type == "paralinguistic" and not tagged.tags)
-        ):
-            raise _CorrectionNeeded(
-                "speaker_or_placement_invalid",
-                location,
-                "Use a valid speaker, type, placement, and non-empty derived dialogue text.",
-            )
-        normalized.append({**raw, "text": tagged.text})
-    if {item["speaker_id"] for item in normalized} != {0, 1}:
-        raise _CorrectionNeeded(
-            "speaker_or_placement_invalid",
-            "utterances",
-            "Both fixed speakers 0 and 1 must appear.",
-        )
-    if normalized[0]["placement"] != "sequential":
-        raise _CorrectionNeeded(
-            "speaker_or_placement_invalid",
-            "utterance_index=0",
-            "The first utterance must be sequential.",
-        )
-    for previous, current in zip(normalized, normalized[1:]):
-        if (
-            current["placement"] == "overlap_previous"
-            and current["speaker_id"] == previous["speaker_id"]
-        ):
-            raise _CorrectionNeeded(
-                "speaker_or_placement_invalid",
-                f"utterance_index={current['utterance_index']}",
-                "A speaker must not overlap its own previous utterance.",
-            )
-    return {"utterances": normalized}
 
 
 def _correction(code: str, location: str) -> dict[str, str]:

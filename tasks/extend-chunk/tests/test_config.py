@@ -12,6 +12,8 @@ def test_default_policy_targets_two_minutes(settings):
     assert settings.policy.openrouter.max_attempts == 3
     assert settings.policy.dialogue.target_duration_seconds == 120
     assert settings.policy.dialogue.target_words == 300
+    assert settings.policy.config_version == "dialogue-extension-v3-duration-aware-overlap"
+    assert settings.policy.timeline.overlap_min_anchor_fraction == 0.6
     assert settings.policy.fish_audio.model == "fish-audio/s2.1-pro"
     assert settings.policy.fish_audio.transcription_model == "fish-audio/transcribe-1"
     assert (

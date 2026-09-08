@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import math
 import wave
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,6 +12,8 @@ from voice_pipeline_chunk_contracts import (
 )
 
 from .artifacts import ArtifactIdentity, file_identity
+
+_MINIMUM_ASSEMBLED_OVERLAP_MS = 80
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,6 +134,9 @@ def assemble_tracks(
     sample_rate_hz = 44100
     turn_gap_frames = round(policy.turn_gap_ms * sample_rate_hz / 1000)
     overlap_frames = round(policy.overlap_ms * sample_rate_hz / 1000)
+    minimum_overlap_frames = math.ceil(
+        _MINIMUM_ASSEMBLED_OVERLAP_MS * sample_rate_hz / 1000
+    )
     same_speaker_gap_frames = round(policy.same_speaker_gap_ms * sample_rate_hz / 1000)
     speaker_ends = [0, 0]
     start_frames: list[int] = []
@@ -145,14 +151,29 @@ def assemble_tracks(
         elif utterance["placement"] == "sequential":
             start = global_end + turn_gap_frames
         else:
+            previous_start = start_frames[-1]
             previous_end = end_frames[-1]
+            previous_duration = previous_end - previous_start
+            minimum_lead_frames = min(
+                round(policy.overlap_min_anchor_ms * sample_rate_hz / 1000),
+                max(0, previous_duration - 1),
+            )
+            minimum_progress_frame = previous_start + math.ceil(
+                previous_duration * policy.overlap_min_anchor_fraction
+            )
+            requested_overlap_frames = (
+                generated.frame_count
+                if utterance["type"] == "backchannel"
+                else overlap_frames
+            )
             start = max(
-                start_frames[-1],
-                previous_end - overlap_frames,
+                previous_start + minimum_lead_frames,
+                minimum_progress_frame,
+                previous_end - requested_overlap_frames,
                 speaker_ends[speaker_id] + same_speaker_gap_frames,
             )
-            if start >= previous_end:
-                raise ValueError("requested overlap cannot be scheduled")
+            if previous_end - start < minimum_overlap_frames:
+                raise ValueError("requested overlap is too short after assembly")
         end = start + generated.frame_count
         start_frames.append(start)
         end_frames.append(end)

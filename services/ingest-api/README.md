@@ -142,7 +142,7 @@ is never an S3 artifact.
 pydub does not provide streaming decode and normalization. It decodes one
 complete input inside an isolated child process, with channel and sample-rate
 reductions applied before later conversions to limit peak memory where
-possible. The child process has a fixed 30-second execution timeout. On a
+possible. The child process has a fixed five-minute execution timeout. On a
 timeout, its process group is terminated so that the decoder started by pydub
 cannot remain behind, and any incomplete WAV is removed.
 

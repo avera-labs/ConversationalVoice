@@ -89,7 +89,7 @@ class Tags:
             "text_with_audio_tags": "[calm]" + text,
             "instruction": "Speak calmly and clearly.",
         }, {
-            "model": "xiaomi/mimo-v2.5",
+            "model": "google/gemini-3.7-flash",
             "in_tokens": 1,
             "out_tokens": 1,
             "total_tokens": 2,
@@ -324,7 +324,7 @@ def test_handler_reconstructs_without_asr_and_publishes_extension(tmp_path, poli
     assert all(call[1].startswith(b"RIFF") for call in tts.calls)
     result = repo.completed[1]
     assert result["models"] == {
-        "audio_tags": "xiaomi/mimo-v2.5",
+        "audio_tags": "google/gemini-3.7-flash",
         "tts": "fish-audio/s2.1-pro",
         "forced_alignment": {
             "id": "Qwen/Qwen3-ForcedAligner-0.6B",

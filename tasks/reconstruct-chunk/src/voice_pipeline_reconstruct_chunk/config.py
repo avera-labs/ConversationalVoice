@@ -25,7 +25,7 @@ class ConfigurationError(RuntimeError):
 class AudioTagsPolicy(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
     model: str
-    reasoning_effort: Literal["none"]
+    reasoning_effort: Literal["low"]
     max_tokens: int = Field(gt=0, le=4096)
     timeout_seconds: int = Field(gt=0, le=600)
     max_attempts: int = Field(gt=0, le=3)

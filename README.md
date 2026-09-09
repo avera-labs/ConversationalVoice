@@ -11,7 +11,8 @@ speaker consistency, annotates timing and speaker attributes, and uses each
 exchange as the basis for new dialogue while preserving its turn-taking, pauses,
 overlap, and paralinguistic cues.
 
-**[Explore the project page, pipeline, and method comparisons →][project-page]**
+**[Project Page →][project-page]**<br>
+**[Paper →](https://arxiv.org/abs/2609.08147)**
 
 ## What it produces
 
@@ -215,6 +216,22 @@ uv run pytest
 Default test suites are self-contained. Integration, model smoke, and capacity
 tests are opt-in and document their external prerequisites in the corresponding
 project README.
+
+## Citation
+
+If you use ConversationalVoice in your research, please cite
+[our paper](https://arxiv.org/abs/2609.08147):
+
+```bibtex
+@article{he2026conversationalvoice,
+  title={{ConversationalVoice}: Full-Duplex Speech Data from Real Conversations through Source-Faithful Reconstruction and Conversation-Grounded Expansion},
+  author={He, Richard Yucheng and Cao, Baodong and Xu, Chen and Liu, Yihang and Chen, Tairan},
+  journal={arXiv preprint arXiv:2609.08147},
+  year={2026},
+  doi={10.48550/arXiv.2609.08147},
+  url={https://arxiv.org/abs/2609.08147}
+}
+```
 
 ## License
 

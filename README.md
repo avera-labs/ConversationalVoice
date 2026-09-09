@@ -252,5 +252,6 @@ attributions. The project license does not replace or override those terms.
 - **2026-08-21** — Added an explanation of the dialogue reconstruction task's underlying approach and its source-code implementation.
 - **2026-08-25** — Added Chinese-language support.
 - **2026-08-26** — Added audio-tag support to reconstruction and expansion transcripts, including utterance-level and word-level timestamps.
+- **2026-09-09** — Released the [ConversationalVoice paper on arXiv](https://arxiv.org/abs/2609.08147).
 
 [project-page]: //avera-labs.github.io/ConversationalVoice/

@@ -1065,6 +1065,57 @@ p {
   margin-bottom: 3px;
 }
 
+/* Citation */
+
+.citation-card {
+  overflow: hidden;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.citation-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 0;
+  font-size: var(--font-size-ui);
+}
+.citation-format {
+  margin-right: auto;
+  color: var(--muted);
+  font-weight: 600;
+}
+.citation-copy-status {
+  color: var(--muted);
+}
+.citation-copy {
+  padding: 4px 10px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.citation-copy:hover {
+  background: var(--soft);
+}
+.citation-copy:focus-visible {
+  outline: 2px solid var(--our);
+  outline-offset: 2px;
+}
+.citation-code {
+  margin: 0;
+  padding: 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-ui);
+  line-height: 1.75;
+}
+.citation-code code {
+  font: inherit;
+}
+
 /* References */
 
 .reference-list {

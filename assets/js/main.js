@@ -991,11 +991,39 @@
     updateCurrentSection();
   }
 
+  /** Copies the displayed BibTeX, or selects it for manual copying if access is denied. */
+  function initializeCitation() {
+    const button = document.getElementById('copy-citation');
+    const citation = document.getElementById('citation-bibtex');
+    const status = document.getElementById('citation-copy-status');
+    if (!button || !citation || !status) return;
+
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      status.textContent = '';
+      try {
+        await navigator.clipboard.writeText(citation.textContent.trim());
+        status.textContent = 'Copied!';
+      } catch {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(citation);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        status.textContent = 'Select and copy the citation manually.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
   // Page initialization
 
   /** Loads file-backed captions before player construction so the first frame is correct. */
   async function initializePage() {
     initializeSectionNavigation();
+    initializeCitation();
     await Promise.all(Array.from(dualPlayerElements, async (element) => {
       try {
         await loadExternalCaptionData(element);

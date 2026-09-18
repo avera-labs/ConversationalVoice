@@ -13,85 +13,85 @@
     <meta name="google-site-verification" content="yPnfE85efHIPIBCUbUphGhMp64JSZEEFNcwJmmVP_sY" />
     <title>ConversationalVoice: Full-Duplex Speech Data from Real Conversations</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="assets/css/main.css?v=20260909a" />
+    <link rel="stylesheet" href="assets/css/main.css?v=20260918a" />
   </head>
   <body>
     <div class="container utility">
-      <a class="brand-mark" href="https://averalabs.com/" aria-label="AveraLabs website"><img src="assets/averalabs-logo.png" alt="AveraLabs" width="348" height="83" /></a>
-      <button class="language-toggle" type="button" aria-label="Language toggle" hidden><span class="en">ZH</span></button>
+      <a class="brand-mark" href="https://averalabs.com/" aria-label="AveraLabs website" data-en-aria-label="AveraLabs website" data-zh-aria-label="AveraLabs 网站"><img src="assets/averalabs-logo.png" alt="AveraLabs" width="348" height="83" /></a>
+      <button class="language-toggle" type="button" aria-label="切换为中文" hidden><span class="en" lang="zh-CN">中文</span><span class="zh" lang="en">English</span></button>
     </div>
 
     <header class="container project-header">
       <h1><span class="title-line">ConversationalVoice</span></h1>
-      <p class="tagline"><span class="en">Full-Duplex Speech Data from Real Conversations</span></p>
-      <p class="meta">Richard Yucheng He, Baodong Cao, Chen Xu, Yihang Liu, Tairan Chen · Aug 20, 2026</p>
-      <nav class="project-nav" aria-label="Project sections">
-        <a href="//github.com/avera-labs/ConversationalVoice" target="_blank" rel="noopener noreferrer"><span class="en">Project Code</span></a>
-        <a href="https://arxiv.org/abs/2609.08147" target="_blank" rel="noopener noreferrer"><span class="en">Paper</span></a>
+      <p class="tagline"><span class="en">Full-Duplex Speech Data from Real Conversations</span><span class="zh" lang="zh-CN">源自真实对话的全双工语音数据</span></p>
+      <p class="meta">Richard Yucheng He, Baodong Cao, Chen Xu, Yihang Liu, Tairan Chen · <span class="en">Aug 20, 2026</span><span class="zh" lang="zh-CN">2026 年 8 月 20 日</span></p>
+      <nav class="project-nav" aria-label="Project sections" data-en-aria-label="Project sections" data-zh-aria-label="项目链接">
+        <a href="//github.com/avera-labs/ConversationalVoice" target="_blank" rel="noopener noreferrer"><span class="en">Project Code</span><span class="zh" lang="zh-CN">项目代码</span></a>
+        <a href="https://arxiv.org/abs/2609.08147" target="_blank" rel="noopener noreferrer"><span class="en">Paper</span><span class="zh" lang="zh-CN">论文</span></a>
       </nav>
     </header>
 
     <div class="page-shell">
       <aside class="section-navigation">
-        <p class="section-navigation-title">On this page</p>
-        <nav class="section-navigation-links" aria-label="Page sections">
-          <a href="#introduction">Introduction</a>
-          <a href="#pipeline">Pipeline</a>
-          <span class="section-navigation-group">Examples</span>
-          <a class="section-navigation-subitem" href="#separation">Speaker Separation</a>
-          <a class="section-navigation-subitem" href="#regeneration">Dialogue Reconstruction and Expansion</a>
-          <a class="section-navigation-subitem" href="#transcription-with-audio-tags">Transcription with Audio Tags and Director Instructions</a>
-          <a class="section-navigation-subitem" href="#multilingual">Multilingual</a>
-          <a href="#citation">Citation</a>
-          <a href="#license">License</a>
-          <a href="#references">References</a>
+        <p class="section-navigation-title"><span class="en">On this page</span><span class="zh" lang="zh-CN">本页目录</span></p>
+        <nav class="section-navigation-links" aria-label="Page sections" data-en-aria-label="Page sections" data-zh-aria-label="页面章节">
+          <a href="#introduction"><span class="en">Introduction</span><span class="zh" lang="zh-CN">项目介绍</span></a>
+          <a href="#pipeline"><span class="en">Pipeline</span><span class="zh" lang="zh-CN">处理流程</span></a>
+          <span class="section-navigation-group"><span class="en">Examples</span><span class="zh" lang="zh-CN">示例</span></span>
+          <a class="section-navigation-subitem" href="#separation"><span class="en">Speaker Separation</span><span class="zh" lang="zh-CN">说话人语音分离</span></a>
+          <a class="section-navigation-subitem" href="#regeneration"><span class="en">Dialogue Reconstruction and Expansion</span><span class="zh" lang="zh-CN">对话重建与扩展</span></a>
+          <a class="section-navigation-subitem" href="#transcription-with-audio-tags"><span class="en">Transcription with Audio Tags and Director Instructions</span><span class="zh" lang="zh-CN">包含音频标签与导演指令的转录</span></a>
+          <a class="section-navigation-subitem" href="#multilingual"><span class="en">Multilingual</span><span class="zh" lang="zh-CN">多语言支持</span></a>
+          <a href="#citation"><span class="en">Citation</span><span class="zh" lang="zh-CN">引用</span></a>
+          <a href="#license"><span class="en">License</span><span class="zh" lang="zh-CN">许可协议</span></a>
+          <a href="#references"><span class="en">References</span><span class="zh" lang="zh-CN">参考文献</span></a>
         </nav>
       </aside>
 
       <main class="container">
       <section id="introduction">
-        <h2><span class="en">Introduction</span></h2>
-        <p class="lead en">ConversationalVoice converts a broad range of real-world recordings into curated training data for full-duplex speech models. The pipeline identifies two-speaker exchanges, separates the speakers into individual tracks, validates speaker consistency, annotates timing and speaker attributes, and uses each exchange as the basis for new dialogue while preserving its turn-taking, pauses, overlap, and paralinguistic cues.</p>
+        <h2><span class="en">Introduction</span><span class="zh" lang="zh-CN">项目介绍</span></h2>
+        <p class="lead en">ConversationalVoice converts a broad range of real-world recordings into curated training data for full-duplex speech models. The pipeline identifies two-speaker exchanges, separates the speakers into individual tracks, validates speaker consistency, annotates timing and speaker attributes, and uses each exchange as the basis for new dialogue while preserving its turn-taking, pauses, overlap, and paralinguistic cues.</p><p class="lead zh" lang="zh-CN">ConversationalVoice 对各类真实场景中的录音进行筛选和整理，将其转化为用于训练全双工语音模型的数据。整个流程先从录音中识别双人对话，将双方的语音分离为独立音轨，检查说话人身份是否一致，并标注时间信息和说话人属性，再以每段原始对话为基础生成新对话，同时保留原有的话轮交替、停顿、语音重叠和副语言线索。</p>
       </section>
 
       <section id="pipeline">
-        <h2><span class="en">Pipeline</span></h2>
-        <p class="pipeline-output-intro lead"><span class="en">Each validated conversation produces three complementary datasets.</span></p>
+        <h2><span class="en">Pipeline</span><span class="zh" lang="zh-CN">处理流程</span></h2>
+        <p class="pipeline-output-intro lead"><span class="en">Each validated conversation produces three complementary datasets.</span><span class="zh" lang="zh-CN">每段通过验证的对话都会生成三类互为补充的数据集。</span></p>
         <div class="pipeline-results">
-          <div class="pipeline-result"><strong><span class="en">Quality-Verified Separation</span></strong><span><span class="en">Screened two-speaker audio, separated into one quality-verified track per speaker.</span></span></div>
-          <div class="pipeline-result reconstruction-result"><strong><span class="en">Source-Faithful Reconstruction</span></strong><span><span class="en">High-fidelity speaker tracks preserving the source tone, prosody, intonation, and paralinguistic cues.</span></span></div>
-          <div class="pipeline-result"><strong><span class="en">Source-Grounded Expansion</span></strong><span><span class="en">Controllable new dialogue derived from the source audio's voices, context, and interaction patterns.</span></span></div>
+          <div class="pipeline-result"><strong><span class="en">Quality-Verified Separation</span><span class="zh" lang="zh-CN">经质量验证的语音分离</span></strong><span><span class="en">Screened two-speaker audio, separated into one quality-verified track per speaker.</span><span class="zh" lang="zh-CN">筛选双人对话音频，为每位说话人分离出一条经过质量验证的音轨。</span></span></div>
+          <div class="pipeline-result reconstruction-result"><strong><span class="en">Source-Faithful Reconstruction</span><span class="zh" lang="zh-CN">忠于原音的对话重建</span></strong><span><span class="en">High-fidelity speaker tracks preserving the source tone, prosody, intonation, and paralinguistic cues.</span><span class="zh" lang="zh-CN">生成高保真的说话人音轨，保留原音的语气、韵律、语调和副语言线索。</span></span></div>
+          <div class="pipeline-result"><strong><span class="en">Source-Grounded Expansion</span><span class="zh" lang="zh-CN">基于原始对话的扩展</span></strong><span><span class="en">Controllable new dialogue derived from the source audio's voices, context, and interaction patterns.</span><span class="zh" lang="zh-CN">以原始音频中的声音、语境和互动模式为基础，生成可控的新对话。</span></span></div>
         </div>
         <figure class="pipeline-figure">
           <div class="pipeline-stages">
-            <section class="pipeline-stage separation-stage" aria-label="Quality-Verified Separation pipeline">
-              <p class="pipeline-stage-label"><span class="en">Quality-Verified Separation</span></p>
+            <section class="pipeline-stage separation-stage" aria-label="Quality-Verified Separation pipeline" data-en-aria-label="Quality-Verified Separation pipeline" data-zh-aria-label="经质量验证的语音分离流程">
+              <p class="pipeline-stage-label"><span class="en">Quality-Verified Separation</span><span class="zh" lang="zh-CN">经质量验证的语音分离</span></p>
               <div class="pipeline-lane">
-                <div class="pipeline-node"><strong><span class="en">Source Screening</span></strong><span><span class="en">Segment recordings with VAD; filter music and low-SNR regions.</span></span><code class="model-name"><a class="model-link" href="https://huggingface.co/pyannote/segmentation-3.0" target="_blank" rel="noopener noreferrer">pyannote/segmentation-3.0</a></code></div>
-                <div class="pipeline-node"><strong><span class="en">Diarization</span></strong><span><span class="en">Diarize segments; select high-quality two-speaker exchanges and sample audio per speaker.</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2506.18623" target="_blank" rel="noopener noreferrer">BUT-FIT/diarizen</a></code></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Separation</span></strong><span><span class="en">Run DialogueSidon on dynamically selected windows for more reliable separation.</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a></code></div>
-                <div class="pipeline-node"><strong><span class="en">Quality Verification</span></strong><span><span class="en">Use RMS and speaker similarity to reject leakage, identity splits, and merges.</span></span><code class="model-name"><a class="model-link" href="https://huggingface.co/microsoft/wavlm-base-plus-sv" target="_blank" rel="noopener noreferrer">microsoft/wavlm-base-plus-sv</a></code></div>
-                <div class="pipeline-node"><strong><span class="en">ASR</span></strong><span><span class="en">Produce word-level transcriptions with timestamps.</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2509.14128" target="_blank" rel="noopener noreferrer">nvidia/parakeet-tdt-0.6b-v3</a></code></div>
+                <div class="pipeline-node"><strong><span class="en">Source Screening</span><span class="zh" lang="zh-CN">原始音频筛选</span></strong><span><span class="en">Segment recordings with VAD; filter music and low-SNR regions.</span><span class="zh" lang="zh-CN">利用语音活动检测（VAD）切分录音，过滤音乐和低信噪比片段。</span></span><code class="model-name"><a class="model-link" href="https://huggingface.co/pyannote/segmentation-3.0" target="_blank" rel="noopener noreferrer">pyannote/segmentation-3.0</a></code></div>
+                <div class="pipeline-node"><strong><span class="en">Diarization</span><span class="zh" lang="zh-CN">说话人日志标注</span></strong><span><span class="en">Diarize segments; select high-quality two-speaker exchanges and sample audio per speaker.</span><span class="zh" lang="zh-CN">标注片段中各说话人的发言时段，筛选高质量双人对话，并为每位说话人提取音频样本。</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2506.18623" target="_blank" rel="noopener noreferrer">BUT-FIT/diarizen</a></code></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Separation</span><span class="zh" lang="zh-CN">对话语音分离</span></strong><span><span class="en">Run DialogueSidon on dynamically selected windows for more reliable separation.</span><span class="zh" lang="zh-CN">在动态选取的窗口上运行 DialogueSidon，提高分离的可靠性。</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a></code></div>
+                <div class="pipeline-node"><strong><span class="en">Quality Verification</span><span class="zh" lang="zh-CN">质量验证</span></strong><span><span class="en">Use RMS and speaker similarity to reject leakage, identity splits, and merges.</span><span class="zh" lang="zh-CN">根据均方根（RMS）和说话人相似度，剔除串音、同一说话人被拆分或不同说话人被合并的结果。</span></span><code class="model-name"><a class="model-link" href="https://huggingface.co/microsoft/wavlm-base-plus-sv" target="_blank" rel="noopener noreferrer">microsoft/wavlm-base-plus-sv</a></code></div>
+                <div class="pipeline-node"><strong><span class="en">ASR</span><span class="zh" lang="zh-CN">自动语音识别（ASR）</span></strong><span><span class="en">Produce word-level transcriptions with timestamps.</span><span class="zh" lang="zh-CN">生成带有词级时间戳的转录文本。</span></span><code class="model-name"><a class="model-link" href="https://arxiv.org/abs/2509.14128" target="_blank" rel="noopener noreferrer">nvidia/parakeet-tdt-0.6b-v3</a></code></div>
               </div>
             </section>
-            <section class="pipeline-stage reconstruction-stage" aria-label="Source-Faithful Reconstruction pipeline">
-              <p class="pipeline-stage-label"><span class="en">Source-Faithful Reconstruction</span></p>
+            <section class="pipeline-stage reconstruction-stage" aria-label="Source-Faithful Reconstruction pipeline" data-en-aria-label="Source-Faithful Reconstruction pipeline" data-zh-aria-label="忠于原音的对话重建流程">
+              <p class="pipeline-stage-label"><span class="en">Source-Faithful Reconstruction</span><span class="zh" lang="zh-CN">忠于原音的对话重建</span></p>
               <div class="pipeline-lane">
-                <div class="pipeline-node"><strong><span class="en">Utterance Segmentation</span></strong><span><span class="en">Cut speaker tracks into utterances using ASR timestamps.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Audio-Tag Analysis</span></strong><span><span class="en">Use multimodal listening to extract expressive audio tags; embed them in text for faithful TTS.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Reference Building</span></strong><span><span class="en">Combine each utterance with a fixed speaker sample to preserve delivery and stabilize timbre.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Voice Cloning</span></strong><span><span class="en">Generate high-fidelity utterances from reference audio and audio-tagged text.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Reconstruction</span></strong><span><span class="en">Adapt source-relative turns, pauses, and overlap to new TTS durations; assemble two speaker tracks.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Utterance Segmentation</span><span class="zh" lang="zh-CN">话语切分</span></strong><span><span class="en">Cut speaker tracks into utterances using ASR timestamps.</span><span class="zh" lang="zh-CN">依据 ASR 时间戳，将说话人音轨切分为独立片段。</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Audio-Tag Analysis</span><span class="zh" lang="zh-CN">音频标签分析</span></strong><span><span class="en">Use multimodal listening to extract expressive audio tags; embed them in text for faithful TTS.</span><span class="zh" lang="zh-CN">通过多模态听觉分析提取表达性音频标签，并将其嵌入文本，使语音合成（TTS）忠于原音。</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Reference Building</span><span class="zh" lang="zh-CN">参考音频构建</span></strong><span><span class="en">Combine each utterance with a fixed speaker sample to preserve delivery and stabilize timbre.</span><span class="zh" lang="zh-CN">将每条话语与固定的说话人样本组合，保留表达方式并稳定音色。</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Voice Cloning</span><span class="zh" lang="zh-CN">声音克隆</span></strong><span><span class="en">Generate high-fidelity utterances from reference audio and audio-tagged text.</span><span class="zh" lang="zh-CN">根据参考音频和带有音频标签的文本，生成高保真话语。</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Reconstruction</span><span class="zh" lang="zh-CN">对话重建</span></strong><span><span class="en">Adapt source-relative turns, pauses, and overlap to new TTS durations; assemble two speaker tracks.</span><span class="zh" lang="zh-CN">依据原始对话中的相对时序，调整话轮、停顿和重叠以适配合成时长，组装为两条说话人音轨。</span></span></div>
               </div>
             </section>
-            <section class="pipeline-stage expansion-stage" aria-label="Source-Grounded Expansion pipeline">
-              <p class="pipeline-stage-label"><span class="en">Source-Grounded Expansion</span></p>
+            <section class="pipeline-stage expansion-stage" aria-label="Source-Grounded Expansion pipeline" data-en-aria-label="Source-Grounded Expansion pipeline" data-zh-aria-label="基于原始对话的扩展流程">
+              <p class="pipeline-stage-label"><span class="en">Source-Grounded Expansion</span><span class="zh" lang="zh-CN">基于原始对话的扩展</span></p>
               <div class="pipeline-lane">
-                <div class="pipeline-node"><strong><span class="en">Persona Extraction</span></strong><span><span class="en">Use multimodal analysis to profile the scene and both speakers.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Script Generation</span></strong><span><span class="en">Generate dialogue from source audio, transcript, and context; plan turns, pauses, overlap, and audio tags.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Voice Cloning</span></strong><span><span class="en">Synthesize each utterance from speaker reference audio and audio-tagged text.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Dialogue Assembly</span></strong><span><span class="en">Assemble synthesized utterances into two tracks using planned turns, pauses, and overlap.</span></span></div>
-                <div class="pipeline-node"><strong><span class="en">Forced Alignment</span></strong><span><span class="en">Align audio and text for word timestamps; retain audio tags and director instructions in the final transcript.</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Persona Extraction</span><span class="zh" lang="zh-CN">人物特征提取</span></strong><span><span class="en">Use multimodal analysis to profile the scene and both speakers.</span><span class="zh" lang="zh-CN">通过多模态分析，描绘场景及两位说话人的特征。</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Script Generation</span><span class="zh" lang="zh-CN">对话脚本生成</span></strong><span><span class="en">Generate dialogue from source audio, transcript, and context; plan turns, pauses, overlap, and audio tags.</span><span class="zh" lang="zh-CN">根据原始音频、转录文本和语境生成对话，规划话轮、停顿、重叠和音频标签。</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Voice Cloning</span><span class="zh" lang="zh-CN">声音克隆</span></strong><span><span class="en">Synthesize each utterance from speaker reference audio and audio-tagged text.</span><span class="zh" lang="zh-CN">根据说话人参考音频和带有音频标签的文本，逐条合成话语。</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Dialogue Assembly</span><span class="zh" lang="zh-CN">对话组装</span></strong><span><span class="en">Assemble synthesized utterances into two tracks using planned turns, pauses, and overlap.</span><span class="zh" lang="zh-CN">按照规划的话轮、停顿和重叠，将合成话语组装为两条音轨。</span></span></div>
+                <div class="pipeline-node"><strong><span class="en">Forced Alignment</span><span class="zh" lang="zh-CN">强制对齐</span></strong><span><span class="en">Align audio and text for word timestamps; retain audio tags and director instructions in the final transcript.</span><span class="zh" lang="zh-CN">对齐音频与文本，获得词级时间戳，并在最终转录中保留音频标签和导演指令。</span></span></div>
               </div>
             </section>
           </div>
@@ -100,67 +100,67 @@
 
       <section id="examples">
         <article class="step" id="separation">
-          <h3><span class="en">Speaker Separation</span></h3>
+          <h3><span class="en">Speaker Separation</span><span class="zh" lang="zh-CN">说话人语音分离</span></h3>
           <div class="step-intro">
-            <p class="en">Several available models perform speaker separation, but they remain prone to characteristic speaker-assignment errors: speech from one speaker may be split across multiple tracks, while speech from multiple speakers may be assigned to the same track. Either failure compromises training data for full-duplex speech models, which depend on consistent speaker identity, clean signals, and accurate time alignment.</p>
-            <p class="en">Following an evaluation of several candidate models, we developed an end-to-end separation workflow. VAD first partitions hour-scale recordings at natural boundaries into segments of roughly 15 minutes. In our evaluation, applying <a class="model-link" href="https://arxiv.org/abs/2506.18623" target="_blank" rel="noopener noreferrer">Diarizen</a> to these shorter inputs improved speaker attribution. After removing music and low-SNR regions, a greedy dynamic-window search selects the longest eligible segments that contain exactly two speakers, sustain reciprocal interaction without extended monologues, and provide sufficient speech from each participant for reliable <a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> separation. Speaker-consistency checks then identify identity splits and merges. Segments that fail the quality gate are either reprocessed or excluded.</p>
+            <p class="en">Several available models perform speaker separation, but they remain prone to characteristic speaker-assignment errors: speech from one speaker may be split across multiple tracks, while speech from multiple speakers may be assigned to the same track. Either failure compromises training data for full-duplex speech models, which depend on consistent speaker identity, clean signals, and accurate time alignment.</p><p class="zh" lang="zh-CN">目前已有多种模型能够进行说话人语音分离，但仍容易出现典型的说话人归属错误：同一说话人的语音可能被分散到多条音轨中，而不同说话人的语音也可能被分配到同一条音轨。全双工语音模型依赖一致的说话人身份、干净的信号和准确的时间对齐，因此上述任一错误都会损害训练数据的质量。</p>
+            <p class="en">Following an evaluation of several candidate models, we developed an end-to-end separation workflow. VAD first partitions hour-scale recordings at natural boundaries into segments of roughly 15 minutes. In our evaluation, applying <a class="model-link" href="https://arxiv.org/abs/2506.18623" target="_blank" rel="noopener noreferrer">Diarizen</a> to these shorter inputs improved speaker attribution. After removing music and low-SNR regions, a greedy dynamic-window search selects the longest eligible segments that contain exactly two speakers, sustain reciprocal interaction without extended monologues, and provide sufficient speech from each participant for reliable <a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> separation. Speaker-consistency checks then identify identity splits and merges. Segments that fail the quality gate are either reprocessed or excluded.</p><p class="zh" lang="zh-CN">在评估多种候选模型后，我们开发了一套端到端的语音分离流程。首先，语音活动检测（VAD）沿自然边界将小时级录音切分为约 15 分钟的片段。在我们的评估中，将 <a class="model-link" href="https://arxiv.org/abs/2506.18623" target="_blank" rel="noopener noreferrer">Diarizen</a> 应用于这些较短的输入，改善了说话人归属的准确性。去除音乐和低信噪比区域后，贪心式动态窗口搜索会选取满足条件的最长片段：仅包含两位说话人，双方持续互动且没有长时间的独白，并且每位参与者都有足够的语音，供 <a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> 可靠地完成分离。随后，说话人一致性检查会识别同一说话人被拆分或不同说话人被合并的情况。未通过质量检查的片段会被重新处理或剔除。</p>
           </div>
           <div class="strategy-note">
-            <div><strong><span class="en">Baseline</span></strong><p><span class="en"><a class="model-link" href="https://arxiv.org/abs/2010.13154" target="_blank" rel="noopener noreferrer">SepFormer</a> operates directly on each selected chunk, with no downstream check for speaker-identity consistency.</span></p></div>
-            <div><strong><span class="en">ConversationalVoice</span></strong><p><span class="en">ConversationalVoice couples dynamic two-speaker windowing with <a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> separation, speaker-consistency checks, selective retries, and light background-noise suppression.</span></p></div>
+            <div><strong><span class="en">Baseline</span><span class="zh" lang="zh-CN">基线方法</span></strong><p><span class="en"><a class="model-link" href="https://arxiv.org/abs/2010.13154" target="_blank" rel="noopener noreferrer">SepFormer</a> operates directly on each selected chunk, with no downstream check for speaker-identity consistency.</span><span class="zh" lang="zh-CN"><a class="model-link" href="https://arxiv.org/abs/2010.13154" target="_blank" rel="noopener noreferrer">SepFormer</a> 直接处理每个选定的音频块，后续不检查说话人身份的一致性。</span></p></div>
+            <div><strong><span class="en">ConversationalVoice</span><span class="zh" lang="zh-CN">ConversationalVoice</span></strong><p><span class="en">ConversationalVoice couples dynamic two-speaker windowing with <a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> separation, speaker-consistency checks, selective retries, and light background-noise suppression.</span><span class="zh" lang="zh-CN">ConversationalVoice 将动态双人窗口选取与 <a class="model-link" href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon</a> 分离、说话人一致性检查、选择性重试及轻度背景噪声抑制相结合。</span></p></div>
           </div>
 
           <div class="comparison-grid">
-            <section class="method-panel" aria-label="SepFormer baseline">
+            <section class="method-panel" aria-label="SepFormer baseline" data-en-aria-label="SepFormer baseline" data-zh-aria-label="SepFormer 基线方法">
               <header class="method-header">
-                <div class="method-kicker"><span class="en">Baseline</span></div>
+                <div class="method-kicker"><span class="en">Baseline</span><span class="zh" lang="zh-CN">基线方法</span></div>
                 <h4><a class="model-link" href="https://arxiv.org/abs/2010.13154" target="_blank" rel="noopener noreferrer">SepFormer</a></h4>
                 <div class="source-path">assets/separation/separation-sepformer/</div>
               </header>
               <div class="audio-list">
-                <div class="audio-case"><div class="audio-case-head"><h5><span class="en">1 · Original recording</span></h5><span class="audio-format">16 kHz</span></div><div class="wave-player"><audio preload="metadata" src="assets/chunk.wav" data-en-label="SepFormer input: original recording"></audio><div class="wave-controls"><button class="wave-play" type="button">▶</button><div class="waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><span class="wave-time">0:00 / 0:15</span></div></div><div class="source-path">assets/chunk.wav</div></div>
+                <div class="audio-case"><div class="audio-case-head"><h5><span class="en">1 · Original recording</span><span class="zh" lang="zh-CN">1 · 原始录音</span></h5><span class="audio-format">16 kHz</span></div><div class="wave-player"><audio preload="metadata" src="assets/chunk.wav" data-en-label="SepFormer input: original recording" data-zh-label="SepFormer 输入：原始录音"></audio><div class="wave-controls"><button class="wave-play" type="button">▶</button><div class="waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><span class="wave-time">0:00 / 0:15</span></div></div><div class="source-path">assets/chunk.wav</div></div>
                 <div class="audio-case dual-track-case">
-                  <div class="audio-case-head"><h5><span class="en">2 · Speaker tracks</span></h5><span class="audio-format">8 kHz</span></div>
+                  <div class="audio-case-head"><h5><span class="en">2 · Speaker tracks</span><span class="zh" lang="zh-CN">2 · 说话人音轨</span></h5><span class="audio-format">8 kHz</span></div>
                   <div class="dual-track-player">
                     <audio preload="metadata" data-mix-audio src="assets/separation/separation-sepformer/seperated-and-mixed.wav?v=20260821a"></audio>
                     <audio preload="metadata" data-track-audio="speaker0" src="assets/separation/separation-sepformer/s0.wav"></audio>
                     <audio preload="metadata" data-track-audio="speaker1" src="assets/separation/separation-sepformer/s1.wav"></audio>
                     <div class="dual-toolbar">
                       <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
-                      <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
+                      <span class="dual-default-hint"><span class="en">Default · both tracks</span><span class="zh" lang="zh-CN">默认播放双轨</span></span>
                       <span class="dual-time">0:00 / 0:15</span>
                     </div>
                     <div class="dual-tracks">
-                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span><span class="zh" lang="zh-CN">说话人 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span><span class="zh" lang="zh-CN">说话人 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
                     </div>
                   </div>
                 </div>
               </div>
             </section>
 
-            <section class="method-panel our" aria-label="ConversationalVoice separation result">
+            <section class="method-panel our" aria-label="ConversationalVoice separation result" data-en-aria-label="ConversationalVoice separation result" data-zh-aria-label="ConversationalVoice 分离结果">
               <header class="method-header">
-                <div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div>
+                <div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh" lang="zh-CN">我们的方法</span></span><span>ConversationalVoice</span></div>
                 <h4>ConversationalVoice</h4>
                 <div class="source-path">assets/separation/separation-sidon-our/</div>
               </header>
               <div class="audio-list">
-                <div class="audio-case"><div class="audio-case-head"><h5><span class="en">1 · Original recording</span></h5><span class="audio-format">16 kHz</span></div><div class="wave-player"><audio preload="metadata" src="assets/chunk.wav" data-en-label="ConversationalVoice input: original recording"></audio><div class="wave-controls"><button class="wave-play" type="button">▶</button><div class="waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><span class="wave-time">0:00 / 0:15</span></div></div><div class="source-path">assets/chunk.wav</div></div>
+                <div class="audio-case"><div class="audio-case-head"><h5><span class="en">1 · Original recording</span><span class="zh" lang="zh-CN">1 · 原始录音</span></h5><span class="audio-format">16 kHz</span></div><div class="wave-player"><audio preload="metadata" src="assets/chunk.wav" data-en-label="ConversationalVoice input: original recording" data-zh-label="ConversationalVoice 输入：原始录音"></audio><div class="wave-controls"><button class="wave-play" type="button">▶</button><div class="waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div><span class="wave-time">0:00 / 0:15</span></div></div><div class="source-path">assets/chunk.wav</div></div>
                 <div class="audio-case dual-track-case">
-                  <div class="audio-case-head"><h5><span class="en">2 · Speaker tracks</span></h5><span class="audio-format">16 kHz</span></div>
+                  <div class="audio-case-head"><h5><span class="en">2 · Speaker tracks</span><span class="zh" lang="zh-CN">2 · 说话人音轨</span></h5><span class="audio-format">16 kHz</span></div>
                   <div class="dual-track-player" data-caption-source="separation">
                     <audio preload="metadata" data-mix-audio src="assets/separation/separation-sidon-our/seperated-and-mixed.wav?v=20260821a"></audio>
                     <audio preload="metadata" data-track-audio="speaker0" src="assets/separation/separation-sidon-our/s0.wav"></audio>
                     <audio preload="metadata" data-track-audio="speaker1" src="assets/separation/separation-sidon-our/s1.wav"></audio>
                     <div class="dual-toolbar">
                       <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
-                      <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
+                      <span class="dual-default-hint"><span class="en">Default · both tracks</span><span class="zh" lang="zh-CN">默认播放双轨</span></span>
                       <span class="dual-time">0:00 / 0:15</span>
                     </div>
                     <div class="dual-tracks">
-                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span><span class="zh" lang="zh-CN">说话人 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span><span class="zh" lang="zh-CN">说话人 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
                     </div>
                     <div class="live-caption dual-caption" aria-live="off"></div>
                   </div>
@@ -169,33 +169,33 @@
             </section>
           </div>
           <div class="finding-list">
-            <div class="finding"><strong><span class="en">Speaker identity</span></strong><span class="en">Each speaker remains assigned to a consistent track.</span></div>
-            <div class="finding"><strong><span class="en">Signal quality</span></strong><span class="en">The separated tracks contain clear, intelligible speech with limited audible separation artifacts.</span></div>
-            <div class="finding"><strong><span class="en">Residual noise</span></strong><span class="en">Light suppression reduces background noise without aggressive denoising.</span></div>
+            <div class="finding"><strong><span class="en">Speaker identity</span><span class="zh" lang="zh-CN">说话人身份</span></strong><span class="en">Each speaker remains assigned to a consistent track.</span><span class="zh" lang="zh-CN">每位说话人的语音始终对应同一条音轨。</span></div>
+            <div class="finding"><strong><span class="en">Signal quality</span><span class="zh" lang="zh-CN">信号质量</span></strong><span class="en">The separated tracks contain clear, intelligible speech with limited audible separation artifacts.</span><span class="zh" lang="zh-CN">分离后的音轨语音清晰易懂，可听辨的分离伪影较少。</span></div>
+            <div class="finding"><strong><span class="en">Residual noise</span><span class="zh" lang="zh-CN">残留噪声</span></strong><span class="en">Light suppression reduces background noise without aggressive denoising.</span><span class="zh" lang="zh-CN">采用轻度抑制来降低背景噪声，避免过度降噪。</span></div>
           </div>
         </article>
 
         <article class="step" id="regeneration">
-          <h3><span class="en">Dialogue Reconstruction and Expansion</span></h3>
+          <h3><span class="en">Dialogue Reconstruction and Expansion</span><span class="zh" lang="zh-CN">对话重建与扩展</span></h3>
           <div class="step-intro">
-            <p class="en">Reconstruction synthesizes clean, high-fidelity dialogue from separated speaker tracks while preserving the expressive character of the original performance. A multimodal model analyzes each utterance and generates audio tags that describe its prosody, emotional tone, and other vocal cues. For TTS, the reference audio is formed by concatenating two complementary sources: a fixed, clean speaker sample that anchors speaker identity and the corresponding utterance from the separated track, which provides utterance-specific guidance for delivery and paralinguistic expression. The reconstructed utterances are then reassembled to preserve the source conversation’s turn order, pauses, and overlap, with timing adjusted to accommodate their synthesized durations while maintaining natural conversational pacing.</p>
-            <p class="en">Scripts generated from prompts alone can be fluent but often lack the intent, cadence, and context of a real exchange. Template-based dialogue TTS compounds the problem by imposing regular pauses and mechanically scheduled overlap.</p>
-            <p class="en">ConversationalVoice uses a real exchange as its structural and contextual reference. The observed content, speaker profiles, pauses, and overlap serve as reference points, while up to five minutes of preceding dialogue provides broader context. The expansion stage can increase the volume and diversity of training data or target specific interaction patterns, including turn-taking, pause structure, overlap, and paralinguistic cues.</p>
+            <p class="en">Reconstruction synthesizes clean, high-fidelity dialogue from separated speaker tracks while preserving the expressive character of the original performance. A multimodal model analyzes each utterance and generates audio tags that describe its prosody, emotional tone, and other vocal cues. For TTS, the reference audio is formed by concatenating two complementary sources: a fixed, clean speaker sample that anchors speaker identity and the corresponding utterance from the separated track, which provides utterance-specific guidance for delivery and paralinguistic expression. The reconstructed utterances are then reassembled to preserve the source conversation’s turn order, pauses, and overlap, with timing adjusted to accommodate their synthesized durations while maintaining natural conversational pacing.</p><p class="zh" lang="zh-CN">重建阶段以分离后的说话人音轨为基础，合成干净、高保真的对话，同时保留原始演绎的表达特点。多模态模型进行逐句分析，生成描述其韵律、情感基调和其他声音线索的音频标签。用于语音合成（TTS）的参考音频由两类互补素材拼接而成：一段固定、干净的说话人样本，用于锚定说话人身份；以及分离音轨后对应的说话人片段，为该话语的表达方式和副语言表现提供具体指导。随后，将重建的话语重新组装，保留原始对话的话轮顺序、停顿和重叠，并根据合成后的时长调整时序，以维持自然的对话节奏。</p>
+            <p class="en">Scripts generated from prompts alone can be fluent but often lack the intent, cadence, and context of a real exchange. Template-based dialogue TTS compounds the problem by imposing regular pauses and mechanically scheduled overlap.</p><p class="zh" lang="zh-CN">仅凭提示词生成的脚本虽然可以很流畅，却往往缺少真实交流中的意图、节奏和语境。基于模板的对话语音合成会引入规律化的停顿和机械安排的重叠。</p>
+            <p class="en">ConversationalVoice uses a real exchange as its structural and contextual reference. The observed content, speaker profiles, pauses, and overlap serve as reference points, while up to five minutes of preceding dialogue provides broader context. The expansion stage can increase the volume and diversity of training data or target specific interaction patterns, including turn-taking, pause structure, overlap, and paralinguistic cues.</p><p class="zh" lang="zh-CN">ConversationalVoice 以真实交流作为结构和语境的参照。实际对话内容、说话人特征、停顿和重叠都是生成时的参考依据，而此前最长五分钟的对话则提供更广泛的上下文。扩展阶段既可增加训练数据的规模和多样性，也可针对特定互动模式生成数据，包括话轮交替、停顿结构、重叠和副语言线索。</p>
           </div>
           <div class="comparison-grid">
-            <section class="method-panel video-panel" aria-label="Source film clip">
-              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">Film Clip</span></h4></header>
+            <section class="method-panel video-panel" aria-label="Source film clip" data-en-aria-label="Source film clip" data-zh-aria-label="原始老电影片段">
+              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span><span class="zh" lang="zh-CN">原始音频</span></div><h4><span class="en">Film Clip</span><span class="zh" lang="zh-CN">老电影片段</span></h4></header>
               <div class="video-case">
-                <video controls playsinline preload="metadata" poster="assets/regeneration/old-movie/poster.jpg?v=20260822a" aria-label="Source film clip">
+                <video controls playsinline preload="metadata" poster="assets/regeneration/old-movie/poster.jpg?v=20260822a" aria-label="Source film clip" data-en-aria-label="Source film clip" data-zh-aria-label="原始老电影片段">
                   <source src="assets/regeneration/old-movie/source.mp4" type="video/mp4" />
-                  <span class="en">Your browser does not support MP4 video playback.</span>
+                  <span class="en">Your browser does not support MP4 video playback.</span><span class="zh" lang="zh-CN">您的浏览器不支持播放 MP4 视频。</span>
 
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the film clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
-              <p class="sample-context"><span class="en">This example reconstructs the source voices and extends the scene while preserving vocal identity, character relationships, and narrative continuity.</span></p>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the film clip" data-en-aria-label="ConversationalVoice dialogue reconstruction and expansion for the film clip" data-zh-aria-label="ConversationalVoice 对老电影片段的对话重建与扩展">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh" lang="zh-CN">我们的方法</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span><span class="zh" lang="zh-CN">对话重建与扩展</span></h4></header>
+              <p class="sample-context"><span class="en">This example reconstructs the source voices and extends the scene while preserving vocal identity, character relationships, and narrative continuity.</span><span class="zh" lang="zh-CN">本示例重建原始声音并延展场景，同时保留声音身份、人物关系和叙事连贯性。</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
                   <div class="dual-track-player" data-caption-source="regeneration" data-caption-prefix="regen" data-reconstruction-end="24.3" data-transcript-url="assets/regeneration/old-movie/transcript.json?v=20260811a" data-alignment-url="assets/regeneration/old-movie/word-alignment.json?v=20260811a">
@@ -204,17 +204,17 @@
                     <audio preload="metadata" data-track-audio="speaker1" src="assets/regeneration/old-movie/speaker-1.wav?v=20260811a"></audio>
                     <div class="dual-toolbar">
                       <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
-                      <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
+                      <span class="dual-default-hint"><span class="en">Default · both tracks</span><span class="zh" lang="zh-CN">默认播放双轨</span></span>
                       <span class="dual-time">0:00 / 0:19</span>
                     </div>
-                    <div class="phase-legend" aria-label="Dialogue phases">
-                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span></span>
+                    <div class="phase-legend" aria-label="Dialogue phases" data-en-aria-label="Dialogue phases" data-zh-aria-label="对话阶段">
+                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span><span class="zh" lang="zh-CN">声音重建</span></span>
                       <span class="phase-transition" aria-hidden="true">→</span>
-                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span></span>
+                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span><span class="zh" lang="zh-CN">对话扩展</span></span>
                     </div>
                     <div class="dual-tracks">
-                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span><span class="zh" lang="zh-CN">说话人 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span><span class="zh" lang="zh-CN">说话人 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
                     </div>
                     <div class="live-caption dual-caption" aria-live="off"></div>
                   </div>
@@ -223,19 +223,19 @@
             </section>
           </div>
           <div class="comparison-grid">
-            <section class="method-panel video-panel" aria-label="Source TV talk show clip">
-              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">TV Talk Show Clip</span></h4></header>
+            <section class="method-panel video-panel" aria-label="Source TV talk show clip" data-en-aria-label="Source TV talk show clip" data-zh-aria-label="原始电视访谈节目片段">
+              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span><span class="zh" lang="zh-CN">原始音频</span></div><h4><span class="en">TV Talk Show Clip</span><span class="zh" lang="zh-CN">电视访谈节目片段</span></h4></header>
               <div class="video-case">
-                <video controls playsinline preload="metadata" poster="assets/regeneration/tv-talk-show/poster.jpg?v=20260822a" aria-label="Source TV talk show clip">
+                <video controls playsinline preload="metadata" poster="assets/regeneration/tv-talk-show/poster.jpg?v=20260822a" aria-label="Source TV talk show clip" data-en-aria-label="Source TV talk show clip" data-zh-aria-label="原始电视访谈节目片段">
                   <source src="assets/regeneration/tv-talk-show/source.mp4?v=20260821a" type="video/mp4" />
-                  <span class="en">Your browser does not support MP4 video playback.</span>
+                  <span class="en">Your browser does not support MP4 video playback.</span><span class="zh" lang="zh-CN">您的浏览器不支持播放 MP4 视频。</span>
 
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the TV talk show clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
-              <p class="sample-context"><span class="en">After removing background music, the pipeline expands a brief source exchange into a longer conversation with natural pacing while preserving speaker identity and context.</span></p>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the TV talk show clip" data-en-aria-label="ConversationalVoice dialogue reconstruction and expansion for the TV talk show clip" data-zh-aria-label="ConversationalVoice 对电视访谈节目片段的对话重建与扩展">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh" lang="zh-CN">我们的方法</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span><span class="zh" lang="zh-CN">对话重建与扩展</span></h4></header>
+              <p class="sample-context"><span class="en">After removing background music, the pipeline expands a brief source exchange into a longer conversation with natural pacing while preserving speaker identity and context.</span><span class="zh" lang="zh-CN">去除背景音乐后，处理流程将一段简短的原始交流扩展为节奏自然的较长对话，同时保留说话人身份和语境。</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
                   <div class="dual-track-player" data-caption-source="regeneration" data-caption-prefix="regen-our-1" data-reconstruction-end="18.3" data-transcript-url="assets/regeneration/tv-talk-show/transcript.json?v=20260811b" data-alignment-url="assets/regeneration/tv-talk-show/word-alignment.json?v=20260811b">
@@ -244,17 +244,17 @@
                     <audio preload="metadata" data-track-audio="speaker1" src="assets/regeneration/tv-talk-show/speaker-1.wav?v=20260811b"></audio>
                     <div class="dual-toolbar">
                       <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
-                      <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
+                      <span class="dual-default-hint"><span class="en">Default · both tracks</span><span class="zh" lang="zh-CN">默认播放双轨</span></span>
                       <span class="dual-time">0:00 / 2:20</span>
                     </div>
-                    <div class="phase-legend" aria-label="Dialogue phases">
-                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span></span>
+                    <div class="phase-legend" aria-label="Dialogue phases" data-en-aria-label="Dialogue phases" data-zh-aria-label="对话阶段">
+                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span><span class="zh" lang="zh-CN">声音重建</span></span>
                       <span class="phase-transition" aria-hidden="true">→</span>
-                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span></span>
+                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span><span class="zh" lang="zh-CN">对话扩展</span></span>
                     </div>
                     <div class="dual-tracks">
-                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span><span class="zh" lang="zh-CN">说话人 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span><span class="zh" lang="zh-CN">说话人 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
                     </div>
                     <div class="live-caption dual-caption" aria-live="off"></div>
                   </div>
@@ -263,31 +263,31 @@
             </section>
           </div>
           <div class="finding-list">
-            <div class="finding"><strong><span class="en">Source grounding</span></strong><span class="en">Each expansion retains the source exchange's context and interaction structure.</span></div>
-            <div class="finding"><strong><span class="en">Interaction control</span></strong><span class="en">Turn-taking, pauses, overlap, and paralinguistic cues can be targeted for specific training needs.</span></div>
-            <div class="finding"><strong><span class="en">Scalable expansion</span></strong><span class="en">A single source exchange can yield longer and more varied training examples.</span></div>
+            <div class="finding"><strong><span class="en">Source grounding</span><span class="zh" lang="zh-CN">以原始对话为依据</span></strong><span class="en">Each expansion retains the source exchange's context and interaction structure.</span><span class="zh" lang="zh-CN">每次扩展都保留原始交流的语境和互动结构。</span></div>
+            <div class="finding"><strong><span class="en">Interaction control</span><span class="zh" lang="zh-CN">互动控制</span></strong><span class="en">Turn-taking, pauses, overlap, and paralinguistic cues can be targeted for specific training needs.</span><span class="zh" lang="zh-CN">可根据特定训练需求，有针对性地控制话轮交替、停顿、重叠和副语言线索。</span></div>
+            <div class="finding"><strong><span class="en">Scalable expansion</span><span class="zh" lang="zh-CN">可规模化扩展</span></strong><span class="en">A single source exchange can yield longer and more varied training examples.</span><span class="zh" lang="zh-CN">一段原始交流即可衍生出更长、更多样的训练样本。</span></div>
           </div>
         </article>
 
         <article class="step" id="transcription-with-audio-tags">
-          <h3><span class="en">Transcription with Audio Tags and Director Instructions</span></h3>
+          <h3><span class="en">Transcription with Audio Tags and Director Instructions</span><span class="zh" lang="zh-CN">包含音频标签与导演指令的转录</span></h3>
           <div class="step-intro">
-            <p class="en">ConversationalVoice produces speaker-attributed transcripts with Audio Tags and Director Instructions alongside utterance-level and word-level timestamps, preserving the expressive and temporal details of each exchange. These annotations guide expressive, context-faithful TTS generation while providing valuable supervision labels for training.</p>
+            <p class="en">ConversationalVoice produces speaker-attributed transcripts with Audio Tags and Director Instructions alongside utterance-level and word-level timestamps, preserving the expressive and temporal details of each exchange. These annotations guide expressive, context-faithful TTS generation while providing valuable supervision labels for training.</p><p class="zh" lang="zh-CN">ConversationalVoice 生成标明说话人归属的转录文本，包含音频标签（Audio Tags）、导演指令（Director Instructions），以及话语级和词级时间戳，从而保留每段交流的表达细节和时间信息。这些标注既能指导语音合成生成富有表现力、忠于语境的语音，也能为训练提供有价值的监督标签。</p>
           </div>
           <div class="comparison-grid">
-            <section class="method-panel video-panel" aria-label="Source in-car video clip">
-              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">In-Car Video Clip</span></h4></header>
+            <section class="method-panel video-panel" aria-label="Source in-car video clip" data-en-aria-label="Source in-car video clip" data-zh-aria-label="原始车内视频片段">
+              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span><span class="zh" lang="zh-CN">原始音频</span></div><h4><span class="en">In-Car Video Clip</span><span class="zh" lang="zh-CN">车内视频片段</span></h4></header>
               <div class="video-case">
-                <video controls playsinline preload="metadata" poster="assets/regeneration/youtube-car-video/poster.jpg?v=20260822a" aria-label="Source in-car video clip">
+                <video controls playsinline preload="metadata" poster="assets/regeneration/youtube-car-video/poster.jpg?v=20260822a" aria-label="Source in-car video clip" data-en-aria-label="Source in-car video clip" data-zh-aria-label="原始车内视频片段">
                   <source src="assets/regeneration/youtube-car-video/source.mp4?v=20260821a" type="video/mp4" />
-                  <span class="en">Your browser does not support MP4 video playback.</span>
+                  <span class="en">Your browser does not support MP4 video playback.</span><span class="zh" lang="zh-CN">您的浏览器不支持播放 MP4 视频。</span>
 
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the in-car clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
-              <p class="sample-context"><span class="en">This example presents a two-speaker in-car exchange as separate, time-aligned tracks with synchronized speaker-attributed transcription.</span></p>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the in-car clip" data-en-aria-label="ConversationalVoice dialogue reconstruction and expansion for the in-car clip" data-zh-aria-label="ConversationalVoice 对车内视频片段的对话重建与扩展">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh" lang="zh-CN">我们的方法</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span><span class="zh" lang="zh-CN">对话重建与扩展</span></h4></header>
+              <p class="sample-context"><span class="en">This example presents a two-speaker in-car exchange as separate, time-aligned tracks with synchronized speaker-attributed transcription.</span><span class="zh" lang="zh-CN">本示例将一段车内双人交流呈现为相互独立、时间对齐的音轨，并配有同步显示、标明说话人归属的转录文本。</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
                   <div class="dual-track-player" data-caption-source="regeneration" data-caption-prefix="regen-car" data-reconstruction-end="32.725" data-transcript-url="assets/regeneration/youtube-car-video/transcript.json?v=20260827a" data-alignment-url="assets/regeneration/youtube-car-video/word-alignment.json?v=20260813a">
@@ -296,17 +296,17 @@
                     <audio preload="metadata" data-track-audio="speaker1" src="assets/regeneration/youtube-car-video/speaker-1.wav?v=20260813b"></audio>
                     <div class="dual-toolbar">
                       <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
-                      <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
+                      <span class="dual-default-hint"><span class="en">Default · both tracks</span><span class="zh" lang="zh-CN">默认播放双轨</span></span>
                       <span class="dual-time">0:00 / 2:17</span>
                     </div>
-                    <div class="phase-legend" aria-label="Dialogue phases">
-                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span></span>
+                    <div class="phase-legend" aria-label="Dialogue phases" data-en-aria-label="Dialogue phases" data-zh-aria-label="对话阶段">
+                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span><span class="zh" lang="zh-CN">声音重建</span></span>
                       <span class="phase-transition" aria-hidden="true">→</span>
-                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span></span>
+                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span><span class="zh" lang="zh-CN">对话扩展</span></span>
                     </div>
                     <div class="dual-tracks">
-                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span><span class="zh" lang="zh-CN">说话人 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span><span class="zh" lang="zh-CN">说话人 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
                     </div>
                     <div class="live-caption dual-caption" aria-live="off"></div>
                   </div>
@@ -317,25 +317,25 @@
         </article>
 
         <article class="step" id="multilingual">
-          <h3><span class="en">Multilingual</span></h3>
+          <h3><span class="en">Multilingual</span><span class="zh" lang="zh-CN">多语言支持</span></h3>
           <div class="step-intro">
-            <p class="en">The pipeline is language-agnostic by design; its effective language coverage is determined by the capabilities of the component models. The default configuration currently supports eight languages: English, Chinese, German, Spanish, French, Italian, Portuguese, and Russian.</p>
-            <p class="en">Extending coverage does not require changes to the overall pipeline architecture. Additional languages can be enabled, subject to model availability, by substituting compatible models for the three language-dependent components: ASR, forced alignment, and TTS.</p>
+            <p class="en">The pipeline is language-agnostic by design; its effective language coverage is determined by the capabilities of the component models. The default configuration currently supports eight languages: English, Chinese, German, Spanish, French, Italian, Portuguese, and Russian.</p><p class="zh" lang="zh-CN">这套处理流程在设计上不依赖特定语言，实际覆盖哪些语言取决于各模型的能力。目前，默认配置支持八种语言：英语、中文、德语、西班牙语、法语、意大利语、葡萄牙语和俄语。</p>
+            <p class="en">Extending coverage does not require changes to the overall pipeline architecture. Additional languages can be enabled, subject to model availability, by substituting compatible models for the three language-dependent components: ASR, forced alignment, and TTS.</p><p class="zh" lang="zh-CN">扩展语言覆盖范围无需改变整体流程架构。在有相应模型可用的前提下，只需为自动语音识别（ASR）、强制对齐和语音合成（TTS）这三个依赖语言的组件替换兼容模型，即可支持更多语言。</p>
           </div>
           <div class="comparison-grid">
-            <section class="method-panel video-panel" aria-label="Source Chinese drama clip">
-              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">Chinese Drama Clip</span></h4></header>
+            <section class="method-panel video-panel" aria-label="Source Chinese drama clip" data-en-aria-label="Source Chinese drama clip" data-zh-aria-label="原始中文电视剧片段">
+              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span><span class="zh" lang="zh-CN">原始音频</span></div><h4><span class="en">Chinese Drama Clip</span><span class="zh" lang="zh-CN">中文电视剧片段</span></h4></header>
               <div class="video-case">
-                <video controls playsinline preload="metadata" poster="assets/regeneration/huaqiang-zh/poster.jpg?v=20260825a" aria-label="Source Chinese drama clip">
+                <video controls playsinline preload="metadata" poster="assets/regeneration/huaqiang-zh/poster.jpg?v=20260825a" aria-label="Source Chinese drama clip" data-en-aria-label="Source Chinese drama clip" data-zh-aria-label="原始中文电视剧片段">
                   <source src="assets/regeneration/huaqiang-zh/source.mp4?v=20260825a" type="video/mp4" />
-                  <span class="en">Your browser does not support MP4 video playback.</span>
+                  <span class="en">Your browser does not support MP4 video playback.</span><span class="zh" lang="zh-CN">您的浏览器不支持播放 MP4 视频。</span>
 
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the Chinese drama clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
-              <p class="sample-context"><span class="en">This example reconstructs a Mandarin two-speaker exchange and expands it into a longer scene while preserving speaker identity, expressive delivery, and conversational context.</span></p>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the Chinese drama clip" data-en-aria-label="ConversationalVoice dialogue reconstruction and expansion for the Chinese drama clip" data-zh-aria-label="ConversationalVoice 对中文电视剧片段的对话重建与扩展">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh" lang="zh-CN">我们的方法</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span><span class="zh" lang="zh-CN">对话重建与扩展</span></h4></header>
+              <p class="sample-context"><span class="en">This example reconstructs a Mandarin two-speaker exchange and expands it into a longer scene while preserving speaker identity, expressive delivery, and conversational context.</span><span class="zh" lang="zh-CN">本示例重建一段普通话双人交流，并将其扩展为更长的场景，同时保留说话人身份、富有表现力的表达方式和对话语境。</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
                   <div class="dual-track-player" data-reconstruction-end="95.813">
@@ -344,17 +344,17 @@
                     <audio preload="metadata" data-track-audio="speaker1" src="assets/regeneration/huaqiang-zh/speaker-1.wav?v=20260825a"></audio>
                     <div class="dual-toolbar">
                       <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
-                      <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
+                      <span class="dual-default-hint"><span class="en">Default · both tracks</span><span class="zh" lang="zh-CN">默认播放双轨</span></span>
                       <span class="dual-time">0:00 / 2:54</span>
                     </div>
-                    <div class="phase-legend" aria-label="Dialogue phases">
-                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span></span>
+                    <div class="phase-legend" aria-label="Dialogue phases" data-en-aria-label="Dialogue phases" data-zh-aria-label="对话阶段">
+                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span><span class="zh" lang="zh-CN">声音重建</span></span>
                       <span class="phase-transition" aria-hidden="true">→</span>
-                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span></span>
+                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span><span class="zh" lang="zh-CN">对话扩展</span></span>
                     </div>
                     <div class="dual-tracks">
-                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span><span class="zh" lang="zh-CN">说话人 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span><span class="zh" lang="zh-CN">说话人 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
                     </div>
                   </div>
                 </div>
@@ -362,18 +362,18 @@
             </section>
           </div>
           <div class="comparison-grid">
-            <section class="method-panel video-panel" aria-label="Source Chinese dialogue show clip">
-              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span></div><h4><span class="en">Chinese Dialogue Show Clip</span></h4></header>
+            <section class="method-panel video-panel" aria-label="Source Chinese dialogue show clip" data-en-aria-label="Source Chinese dialogue show clip" data-zh-aria-label="原始中文对谈节目片段">
+              <header class="method-header"><div class="method-kicker"><span class="en">Source audio</span><span class="zh" lang="zh-CN">原始音频</span></div><h4><span class="en">Chinese Dialogue Show Clip</span><span class="zh" lang="zh-CN">中文对谈节目片段</span></h4></header>
               <div class="video-case">
-                <video controls playsinline preload="metadata" poster="assets/regeneration/dialog-show-zh/poster.jpg?v=20260827a" aria-label="Source Chinese dialogue show clip">
+                <video controls playsinline preload="metadata" poster="assets/regeneration/dialog-show-zh/poster.jpg?v=20260827a" aria-label="Source Chinese dialogue show clip" data-en-aria-label="Source Chinese dialogue show clip" data-zh-aria-label="原始中文对谈节目片段">
                   <source src="assets/regeneration/dialog-show-zh/source.mp4?v=20260827a" type="video/mp4" />
-                  <span class="en">Your browser does not support MP4 video playback.</span>
+                  <span class="en">Your browser does not support MP4 video playback.</span><span class="zh" lang="zh-CN">您的浏览器不支持播放 MP4 视频。</span>
                 </video>
               </div>
             </section>
-            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the Chinese dialogue show clip">
-              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span></h4></header>
-              <p class="sample-context"><span class="en">This example reconstructs a Mandarin two-speaker exchange and expands it into a longer dialogue while preserving speaker identity, expressive delivery, and conversational context.</span></p>
+            <section class="method-panel our" aria-label="ConversationalVoice dialogue reconstruction and expansion for the Chinese dialogue show clip" data-en-aria-label="ConversationalVoice dialogue reconstruction and expansion for the Chinese dialogue show clip" data-zh-aria-label="ConversationalVoice 对中文对谈节目片段的对话重建与扩展">
+              <header class="method-header"><div class="method-kicker"><span class="our-badge"><span class="en">Ours</span><span class="zh" lang="zh-CN">我们的方法</span></span><span>ConversationalVoice</span></div><h4><span class="en">Dialogue Reconstruction and Expansion</span><span class="zh" lang="zh-CN">对话重建与扩展</span></h4></header>
+              <p class="sample-context"><span class="en">This example reconstructs a Mandarin two-speaker exchange and expands it into a longer dialogue while preserving speaker identity, expressive delivery, and conversational context.</span><span class="zh" lang="zh-CN">本示例重建一段普通话双人交流，并将其扩展为更长的对话，同时保留说话人身份、富有表现力的表达方式和对话语境。</span></p>
               <div class="audio-list">
                 <div class="audio-case dual-track-case">
                   <div class="dual-track-player" data-reconstruction-end="71.06">
@@ -382,17 +382,17 @@
                     <audio preload="metadata" data-track-audio="speaker1" src="assets/regeneration/dialog-show-zh/speaker-1.wav?v=20260827a"></audio>
                     <div class="dual-toolbar">
                       <button class="dual-play-both" type="button"><span class="dual-play-icon">▶</span><span class="dual-play-label">Play</span></button>
-                      <span class="dual-default-hint"><span class="en">Default · both tracks</span></span>
+                      <span class="dual-default-hint"><span class="en">Default · both tracks</span><span class="zh" lang="zh-CN">默认播放双轨</span></span>
                       <span class="dual-time">0:00 / 3:26</span>
                     </div>
-                    <div class="phase-legend" aria-label="Dialogue phases">
-                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span></span>
+                    <div class="phase-legend" aria-label="Dialogue phases" data-en-aria-label="Dialogue phases" data-zh-aria-label="对话阶段">
+                      <span class="phase-legend-item phase-reconstruction"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Voice reconstruction</span><span class="zh" lang="zh-CN">声音重建</span></span>
                       <span class="phase-transition" aria-hidden="true">→</span>
-                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span></span>
+                      <span class="phase-legend-item phase-expansion"><span class="phase-swatch" aria-hidden="true"></span><span class="en">Dialogue expansion</span><span class="zh" lang="zh-CN">对话扩展</span></span>
                     </div>
                     <div class="dual-tracks">
-                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker0"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 0</span><span class="zh" lang="zh-CN">说话人 0</span></span><button class="track-mute" type="button" data-track-mute="speaker0" aria-label="Mute Speaker 0" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+                      <div class="dual-track" data-track="speaker1"><div class="track-controls"><span class="track-speaker-label"><span class="en">Speaker 1</span><span class="zh" lang="zh-CN">说话人 1</span></span><button class="track-mute" type="button" data-track-mute="speaker1" aria-label="Mute Speaker 1" aria-pressed="false"><span class="track-mute-icon" aria-hidden="true"></span><span class="track-mute-label">Mute</span></button></div><div class="dual-waveform" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
                     </div>
                   </div>
                 </div>
@@ -403,13 +403,13 @@
       </section>
 
       <section id="citation" aria-labelledby="citation-heading">
-        <h2 id="citation-heading"><span class="en">Citation</span></h2>
-        <p class="en">If you use ConversationalVoice in your research, please cite <a href="https://arxiv.org/abs/2609.08147" target="_blank" rel="noopener noreferrer">our paper</a>:</p>
+        <h2 id="citation-heading"><span class="en">Citation</span><span class="zh" lang="zh-CN">引用</span></h2>
+        <p class="en">If you use ConversationalVoice in your research, please cite <a href="https://arxiv.org/abs/2609.08147" target="_blank" rel="noopener noreferrer">our paper</a>:</p><p class="zh" lang="zh-CN">如果您在研究中使用了 ConversationalVoice，请引用<a href="https://arxiv.org/abs/2609.08147" target="_blank" rel="noopener noreferrer">我们的论文</a>：</p>
         <div class="citation-card">
           <div class="citation-toolbar">
             <span class="citation-format">BibTeX</span>
             <span id="citation-copy-status" class="citation-copy-status" role="status"></span>
-            <button id="copy-citation" class="citation-copy" type="button" aria-label="Copy BibTeX citation" hidden>Copy</button>
+            <button id="copy-citation" class="citation-copy" type="button" aria-label="Copy BibTeX citation" data-en-aria-label="Copy BibTeX citation" data-zh-aria-label="复制 BibTeX 引用" hidden><span class="en">Copy</span><span class="zh" lang="zh-CN">复制</span></button>
           </div>
           <pre class="citation-code"><code id="citation-bibtex">@article{he2026conversationalvoice,
   title={{ConversationalVoice}: Full-Duplex Speech Data from Real Conversations through Source-Faithful Reconstruction and Conversation-Grounded Expansion},
@@ -423,24 +423,24 @@
       </section>
 
       <section id="license">
-        <h2><span class="en">License</span></h2>
-        <p class="en">Project-authored code is licensed under the <a href="LICENSE">Business Source License 1.1</a> and converts to the MIT License four years after release. Non-production and non-commercial academic use are permitted; other production use requires a commercial license from AveraLabs. Third-party components, including model weights, remain subject to their own terms; see the <a href="THIRD_PARTY_NOTICES.md">Third-Party Notices</a>.</p>
+        <h2><span class="en">License</span><span class="zh" lang="zh-CN">许可协议</span></h2>
+        <p class="en">Project-authored code is licensed under the <a href="LICENSE">Business Source License 1.1</a> and converts to the MIT License four years after release. Non-production and non-commercial academic use are permitted; other production use requires a commercial license from AveraLabs. Third-party components, including model weights, remain subject to their own terms; see the <a href="THIRD_PARTY_NOTICES.md">Third-Party Notices</a>.</p><p class="zh" lang="zh-CN">本项目自行编写的代码采用 <a href="LICENSE">Business Source License 1.1</a> 许可，并在发布四年后转为 MIT 许可。允许非生产用途及非商业学术用途；其他生产用途需要向 AveraLabs 获取商业许可。包括模型权重在内的第三方组件仍受各自条款约束，详见<a href="THIRD_PARTY_NOTICES.md">第三方声明</a>。</p>
       </section>
 
       <section id="references">
-        <h2><span class="en">References</span></h2>
+        <h2><span class="en">References</span><span class="zh" lang="zh-CN">参考文献</span></h2>
         <ol class="reference-list">
-          <li class="reference-item">Z. Du et al. “<a href="https://arxiv.org/abs/2511.00256" target="_blank" rel="noopener noreferrer">NaturalVoices: A Large-Scale, Spontaneous and Emotional Podcast Dataset for Voice Conversion</a>.” 2025. <span class="en">A dataset and annotation pipeline covering speech quality, sound events, and emotion.</span></li>
-          <li class="reference-item">D. Yu et al. “<a href="https://arxiv.org/abs/2601.01554" target="_blank" rel="noopener noreferrer">MOSS Transcribe Diarize Technical Report</a>.” 2026. <span class="en">End-to-end speaker-attributed, time-stamped transcription.</span></li>
-          <li class="reference-item">pyannote. “<a href="https://huggingface.co/pyannote/segmentation-3.0" target="_blank" rel="noopener noreferrer">segmentation-3.0</a>.” <span class="en">Voice activity detection and speaker segmentation.</span></li>
-          <li class="reference-item">J. Han et al. “<a href="https://arxiv.org/abs/2506.18623" target="_blank" rel="noopener noreferrer">Efficient and Generalizable Speaker Diarization via Structured Pruning of Self-Supervised Models</a>.” 2025. <span class="en">Efficient speaker diarization through structured pruning of self-supervised models.</span></li>
-          <li class="reference-item">W. Nakata et al. “<a href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon: Recovering Full-Duplex Dialogue Tracks from In-the-Wild Dialogue Audio</a>.” 2026. <span class="en">Joint restoration and separation of degraded two-speaker dialogue.</span></li>
-          <li class="reference-item">M. Sekoyan et al. “<a href="https://arxiv.org/abs/2509.14128" target="_blank" rel="noopener noreferrer">Canary-1B-v2 &amp; Parakeet-TDT-0.6B-v3: Efficient and High-Performance Models for Multilingual ASR and AST</a>.” 2025. <span class="en">Multilingual transcription with word- and segment-level timestamps.</span></li>
-          <li class="reference-item">Nari Labs. “<a href="https://huggingface.co/nari-labs/Dia-1.6B" target="_blank" rel="noopener noreferrer">Dia-1.6B</a>.” <span class="en">English dialogue synthesis with audio-conditioned control of voice, emotion, and tone.</span></li>
-          <li class="reference-item">H. Xie et al. “<a href="https://arxiv.org/abs/2510.23541" target="_blank" rel="noopener noreferrer">SoulX-Podcast: Towards Realistic Long-form Podcasts with Dialectal and Paralinguistic Diversity</a>.” 2025. <span class="en">Long-form, multi-turn, multi-speaker podcast synthesis.</span></li>
-          <li class="reference-item">2Noise. “<a href="https://github.com/2noise/ChatTTS" target="_blank" rel="noopener noreferrer">ChatTTS</a>.” <span class="en">Conversational text-to-speech for Chinese and English.</span></li>
-          <li class="reference-item">H. Hu et al. “<a href="https://arxiv.org/abs/2601.15621" target="_blank" rel="noopener noreferrer">Qwen3-TTS Technical Report</a>.” 2026. <span class="en">Multilingual text-to-speech with voice cloning and description-based control.</span></li>
-          <li class="reference-item">U.-H. Shin et al. “<a href="https://arxiv.org/abs/2406.05983" target="_blank" rel="noopener noreferrer">Separate and Reconstruct: Asymmetric Encoder-Decoder for Speech Separation</a>.” 2024. <span class="en">The SepReformer architecture for speech separation.</span></li>
+          <li class="reference-item">Z. Du et al. “<a href="https://arxiv.org/abs/2511.00256" target="_blank" rel="noopener noreferrer">NaturalVoices: A Large-Scale, Spontaneous and Emotional Podcast Dataset for Voice Conversion</a>.” 2025. <span class="en">A dataset and annotation pipeline covering speech quality, sound events, and emotion.</span><span class="zh" lang="zh-CN">涵盖语音质量、声音事件和情感的数据集及标注流程。</span></li>
+          <li class="reference-item">D. Yu et al. “<a href="https://arxiv.org/abs/2601.01554" target="_blank" rel="noopener noreferrer">MOSS Transcribe Diarize Technical Report</a>.” 2026. <span class="en">End-to-end speaker-attributed, time-stamped transcription.</span><span class="zh" lang="zh-CN">端到端转录，包含说话人归属和时间戳。</span></li>
+          <li class="reference-item">pyannote. “<a href="https://huggingface.co/pyannote/segmentation-3.0" target="_blank" rel="noopener noreferrer">segmentation-3.0</a>.” <span class="en">Voice activity detection and speaker segmentation.</span><span class="zh" lang="zh-CN">语音活动检测与说话人分段。</span></li>
+          <li class="reference-item">J. Han et al. “<a href="https://arxiv.org/abs/2506.18623" target="_blank" rel="noopener noreferrer">Efficient and Generalizable Speaker Diarization via Structured Pruning of Self-Supervised Models</a>.” 2025. <span class="en">Efficient speaker diarization through structured pruning of self-supervised models.</span><span class="zh" lang="zh-CN">通过对自监督模型进行结构化剪枝，实现高效的说话人日志标注。</span></li>
+          <li class="reference-item">W. Nakata et al. “<a href="https://arxiv.org/abs/2604.09344" target="_blank" rel="noopener noreferrer">DialogueSidon: Recovering Full-Duplex Dialogue Tracks from In-the-Wild Dialogue Audio</a>.” 2026. <span class="en">Joint restoration and separation of degraded two-speaker dialogue.</span><span class="zh" lang="zh-CN">对受损的双人对话音频进行联合修复与分离。</span></li>
+          <li class="reference-item">M. Sekoyan et al. “<a href="https://arxiv.org/abs/2509.14128" target="_blank" rel="noopener noreferrer">Canary-1B-v2 &amp; Parakeet-TDT-0.6B-v3: Efficient and High-Performance Models for Multilingual ASR and AST</a>.” 2025. <span class="en">Multilingual transcription with word- and segment-level timestamps.</span><span class="zh" lang="zh-CN">支持多语言转录，提供词级和片段级时间戳。</span></li>
+          <li class="reference-item">Nari Labs. “<a href="https://huggingface.co/nari-labs/Dia-1.6B" target="_blank" rel="noopener noreferrer">Dia-1.6B</a>.” <span class="en">English dialogue synthesis with audio-conditioned control of voice, emotion, and tone.</span><span class="zh" lang="zh-CN">英语对话合成，可通过音频条件控制声音、情感和语气。</span></li>
+          <li class="reference-item">H. Xie et al. “<a href="https://arxiv.org/abs/2510.23541" target="_blank" rel="noopener noreferrer">SoulX-Podcast: Towards Realistic Long-form Podcasts with Dialectal and Paralinguistic Diversity</a>.” 2025. <span class="en">Long-form, multi-turn, multi-speaker podcast synthesis.</span><span class="zh" lang="zh-CN">长篇、多轮、多说话人播客合成。</span></li>
+          <li class="reference-item">2Noise. “<a href="https://github.com/2noise/ChatTTS" target="_blank" rel="noopener noreferrer">ChatTTS</a>.” <span class="en">Conversational text-to-speech for Chinese and English.</span><span class="zh" lang="zh-CN">面向中文和英文的对话式语音合成。</span></li>
+          <li class="reference-item">H. Hu et al. “<a href="https://arxiv.org/abs/2601.15621" target="_blank" rel="noopener noreferrer">Qwen3-TTS Technical Report</a>.” 2026. <span class="en">Multilingual text-to-speech with voice cloning and description-based control.</span><span class="zh" lang="zh-CN">多语言语音合成，支持声音克隆及基于描述的控制。</span></li>
+          <li class="reference-item">U.-H. Shin et al. “<a href="https://arxiv.org/abs/2406.05983" target="_blank" rel="noopener noreferrer">Separate and Reconstruct: Asymmetric Encoder-Decoder for Speech Separation</a>.” 2024. <span class="en">The SepReformer architecture for speech separation.</span><span class="zh" lang="zh-CN">用于语音分离的 SepReformer 架构。</span></li>
         </ol>
       </section>
 
@@ -454,13 +454,13 @@
 
 
 
-    <footer class="container">ConversationalVoice · © 2026 AveraLabs. All rights reserved.</footer>
+    <footer class="container">ConversationalVoice · © 2026 AveraLabs. <span class="en">All rights reserved.</span><span class="zh" lang="zh-CN">保留所有权利。</span></footer>
 
     <script id="alignment-data" type="application/json">{"0":[{"w":"It's","s":0.0,"e":0.24},{"w":"my","s":0.24,"e":0.4},{"w":"first","s":0.4,"e":0.56},{"w":"language","s":0.56,"e":0.96},{"w":"and","s":0.96,"e":1.12},{"w":"I","s":1.12,"e":1.2},{"w":"couldn't","s":1.2,"e":1.44},{"w":"read","s":1.44,"e":1.6},{"w":"it.","s":1.6,"e":1.76},{"w":"That's","s":1.84,"e":2.08},{"w":"when","s":2.08,"e":2.16},{"w":"I","s":2.16,"e":2.24},{"w":"was","s":2.24,"e":2.4},{"w":"like,","s":2.4,"e":2.48},{"w":"I","s":2.64,"e":2.8},{"w":"need","s":2.8,"e":2.88},{"w":"to","s":2.88,"e":3.04},{"w":"go","s":3.04,"e":3.2},{"w":"back","s":3.2,"e":3.36},{"w":"in","s":3.36,"e":3.68},{"w":"touch.","s":3.68,"e":4.32},{"w":"Yeah,","s":5.12,"e":5.44},{"w":"I,","s":5.52,"e":5.6},{"w":"I","s":6.08,"e":6.16},{"w":"have","s":6.24,"e":6.32},{"w":"to","s":6.48,"e":6.64},{"w":"give","s":6.64,"e":6.8},{"w":"it","s":6.8,"e":6.88},{"w":"to","s":6.88,"e":7.04},{"w":"my","s":7.04,"e":7.2},{"w":"dad","s":7.2,"e":7.52},{"w":"to","s":7.52,"e":7.76},{"w":"translate","s":7.76,"e":8.24},{"w":"it","s":8.24,"e":8.4},{"w":"for","s":8.4,"e":8.64},{"w":"me.","s":8.64,"e":8.8},{"w":"And","s":9.04,"e":9.28},{"w":"my","s":9.28,"e":9.44},{"w":"dad's","s":9.44,"e":9.84},{"w":"reading","s":9.84,"e":10.16},{"w":"my","s":10.16,"e":10.32},{"w":"childhood","s":10.32,"e":10.8},{"w":"diary","s":10.8,"e":11.2},{"w":"just","s":11.28,"e":11.44},{"w":"laughing.","s":11.44,"e":11.76},{"w":"Like","s":11.84,"e":12.0},{"w":"haha,","s":12.0,"e":12.5},{"w":"haha","s":12.5,"e":14}],"1":[{"w":"Okay.","s":0.16,"e":0.24},{"w":"and","s":3.685,"e":3.845},{"w":"get","s":4.005,"e":4.245},{"w":"somebody","s":4.245,"e":4.565},{"w":"to","s":4.565,"e":4.645},{"w":"read","s":4.645,"e":4.965},{"w":"it","s":4.965,"e":5.125},{"w":"to","s":5.125,"e":5.285},{"w":"you.","s":5.285,"e":5.445},{"w":"Yeah.","s":5.685,"e":5.925},{"w":"It's","s":8.689,"e":9.169},{"w":"you.","s":9.169,"e":9.409}]}</script>
 
     <script id="transcript-data" type="application/json">{"0":[{"s":0.0,"e":1.76,"text":"It's my first language and I couldn't read it."},{"s":1.84,"e":4.32,"text":"That's when I was like, I need to go back in touch."},{"s":5.12,"e":8.8,"text":"Yeah, I, I have to give it to my dad to translate it for me."},{"s":9.04,"e":11.76,"text":"And my dad's reading my childhood diary just laughing."},{"s":11.84,"e":14.0,"text":"Like, haha, haha"}],"1":[{"s":3.685,"e":5.445,"text":"and get somebody to read it to you."},{"s":5.685,"e":5.925,"text":"Yeah."},{"s":8.689,"e":9.409,"text":"It's you."}]}</script>
 
     <script src="assets/js/waveform-peaks.js?v=20260821b"></script>
-    <script src="assets/js/main.js?v=20260909a"></script>
+    <script src="assets/js/main.js?v=20260918b"></script>
   </body>
 </html>

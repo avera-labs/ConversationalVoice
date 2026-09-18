@@ -354,19 +354,26 @@
 
   /** @returns {'en' | 'zh-CN'} */
   function readLanguage() {
-    try { return localStorage.getItem('avera-language') === 'zh-CN' ? 'zh-CN' : 'en'; }
-    catch { return 'en'; }
+    return new URL(window.location.href).searchParams.get('lang') === 'zh-CN' ? 'zh-CN' : 'en';
   }
 
   /** @param {'en' | 'zh-CN'} language */
   function applyLanguage(language) {
     const isChinese = language === 'zh-CN';
     document.documentElement.lang = language;
-    document.title = 'Conversational Voice';
+    document.title = isChinese
+      ? 'ConversationalVoice：源自真实对话的全双工语音数据'
+      : 'ConversationalVoice: Full-Duplex Speech Data from Real Conversations';
+    document.querySelector('meta[name="description"]').content = isChinese
+      ? 'ConversationalVoice 从真实对话中整理出经过说话人分离与对话扩展的全双工语音数据。'
+      : 'ConversationalVoice curates speaker-separated and expanded full-duplex speech data from real conversations.';
     languageToggle.setAttribute('aria-label', isChinese ? 'Switch to English' : '切换为中文');
+    document.querySelectorAll('[data-en-aria-label][data-zh-aria-label]').forEach((element) => {
+      element.setAttribute('aria-label', isChinese ? element.dataset.zhAriaLabel : element.dataset.enAriaLabel);
+    });
+    updateCitationStatus();
     updatePlayerLabels();
     requestAnimationFrame(alignComparisonRows);
-    try { localStorage.setItem('avera-language', language); } catch { /* file:// storage may be unavailable */ }
   }
 
   /** @param {number} seconds @returns {string} */
@@ -742,7 +749,9 @@
     renderCaption() {
       if (!this.captionPanel) return;
       if (this.element.dataset.captionLoadError) {
-        this.captionPanel.textContent = this.element.dataset.captionLoadError;
+        this.captionPanel.textContent = document.documentElement.lang === 'zh-CN'
+          ? '字幕 JSON 加载失败。请通过 HTTP 访问本页面，并检查 JSON 文件路径。'
+          : this.element.dataset.captionLoadError;
         return;
       }
       /** @type {SpeakerTrack[]} */
@@ -991,6 +1000,18 @@
     updateCurrentSection();
   }
 
+  /** Keeps copy feedback in the selected language, including after a language switch. */
+  function updateCitationStatus() {
+    const status = document.getElementById('citation-copy-status');
+    if (!status) return;
+    const isChinese = document.documentElement.lang === 'zh-CN';
+    status.textContent = status.dataset.state === 'copied'
+      ? (isChinese ? '已复制！' : 'Copied!')
+      : status.dataset.state === 'manual'
+        ? (isChinese ? '请手动选择并复制引用内容。' : 'Select and copy the citation manually.')
+        : '';
+  }
+
   /** Copies the displayed BibTeX, or selects it for manual copying if access is denied. */
   function initializeCitation() {
     const button = document.getElementById('copy-citation');
@@ -1001,18 +1022,20 @@
     button.hidden = false;
     button.addEventListener('click', async () => {
       button.disabled = true;
-      status.textContent = '';
+      status.dataset.state = '';
+      updateCitationStatus();
       try {
         await navigator.clipboard.writeText(citation.textContent.trim());
-        status.textContent = 'Copied!';
+        status.dataset.state = 'copied';
       } catch {
         const selection = window.getSelection();
         const range = document.createRange();
         range.selectNodeContents(citation);
         selection?.removeAllRanges();
         selection?.addRange(range);
-        status.textContent = 'Select and copy the citation manually.';
+        status.dataset.state = 'manual';
       } finally {
+        updateCitationStatus();
         button.disabled = false;
       }
     });
@@ -1022,6 +1045,18 @@
 
   /** Loads file-backed captions before player construction so the first frame is correct. */
   async function initializePage() {
+    // Language controls must be ready even while media and captions are loading.
+    languageToggle.addEventListener('click', () => {
+      const language = document.documentElement.lang === 'en' ? 'zh-CN' : 'en';
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', language);
+      // Keep other query parameters and the current section without reloading media.
+      window.history.replaceState(window.history.state, '', url);
+      applyLanguage(language);
+    });
+    window.addEventListener('popstate', () => applyLanguage(readLanguage()));
+    applyLanguage(readLanguage());
+    languageToggle.hidden = false;
     initializeSectionNavigation();
     initializeCitation();
     await Promise.all(Array.from(dualPlayerElements, async (element) => {
@@ -1035,7 +1070,6 @@
     const waveformLoads = Array.from(players, initializeSingleTrackPlayer);
     dualPlayerElements.forEach((element) => dualPlayerControllers.push(new DualTrackPlayer(element)));
     waveformLoads.push(...dualPlayerControllers.map((controller) => controller.waveformReady));
-    languageToggle.addEventListener('click', () => applyLanguage(document.documentElement.lang === 'en' ? 'zh-CN' : 'en'));
     window.addEventListener('resize', () => {
       if (waveformResizeTimer !== null) window.clearTimeout(waveformResizeTimer);
       waveformResizeTimer = window.setTimeout(() => requestAnimationFrame(() => {
@@ -1044,7 +1078,7 @@
         dualPlayerControllers.forEach((controller) => controller.update());
       }), RESIZE_DEBOUNCE_MS);
     });
-    applyLanguage(readLanguage());
+    updatePlayerLabels();
     await Promise.all(waveformLoads);
   }
 

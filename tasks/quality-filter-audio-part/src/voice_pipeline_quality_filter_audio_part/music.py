@@ -185,7 +185,12 @@ class KerasMusicDetector:
         )
         bands = librosa.power_to_db(mel_filter @ spectrum, ref=1.0, amin=1e-7)
         normalized = (bands - self._mean[:, None]) / self._std[:, None]
-        prediction = np.asarray(self._model.predict(normalized.T[None, ...], batch_size=1, verbose=0))[0]
+        # Call the model directly instead of ``model.predict``: with Keras 3 the
+        # compiled predict loop returns the full frame sequence for the first
+        # call in a process, but collapses any later input whose sequence
+        # length differs from that first call to a single frame, which silently
+        # disables the music gate for nearly every window a worker processes.
+        prediction = np.asarray(self._model(normalized.T[None, ...], training=False))[0]
         if prediction.ndim != 2 or 2 not in prediction.shape:
             raise RuntimeError("music model output shape is invalid")
         channels_by_frames = prediction.T if prediction.shape[-1] == 2 else prediction

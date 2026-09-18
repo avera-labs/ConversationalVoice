@@ -354,8 +354,7 @@
 
   /** @returns {'en' | 'zh-CN'} */
   function readLanguage() {
-    try { return localStorage.getItem('avera-language') === 'zh-CN' ? 'zh-CN' : 'en'; }
-    catch { return 'en'; }
+    return new URL(window.location.href).searchParams.get('lang') === 'zh-CN' ? 'zh-CN' : 'en';
   }
 
   /** @param {'en' | 'zh-CN'} language */
@@ -375,7 +374,6 @@
     updateCitationStatus();
     updatePlayerLabels();
     requestAnimationFrame(alignComparisonRows);
-    try { localStorage.setItem('avera-language', language); } catch { /* file:// storage may be unavailable */ }
   }
 
   /** @param {number} seconds @returns {string} */
@@ -1048,7 +1046,15 @@
   /** Loads file-backed captions before player construction so the first frame is correct. */
   async function initializePage() {
     // Language controls must be ready even while media and captions are loading.
-    languageToggle.addEventListener('click', () => applyLanguage(document.documentElement.lang === 'en' ? 'zh-CN' : 'en'));
+    languageToggle.addEventListener('click', () => {
+      const language = document.documentElement.lang === 'en' ? 'zh-CN' : 'en';
+      const url = new URL(window.location.href);
+      url.searchParams.set('lang', language);
+      // Keep other query parameters and the current section without reloading media.
+      window.history.replaceState(window.history.state, '', url);
+      applyLanguage(language);
+    });
+    window.addEventListener('popstate', () => applyLanguage(readLanguage()));
     applyLanguage(readLanguage());
     languageToggle.hidden = false;
     initializeSectionNavigation();
